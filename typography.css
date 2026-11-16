@@ -1,0 +1,78 @@
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('./art/fonts/CormorantGaramond.woff2') format('woff2');
+  font-display: swap;
+  font-weight: 600 700;
+}
+
+:root, :root[lang='ru'] {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.war-button {
+  font-size: clamp(17px, 4.6vmin, 22px);
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.front-heading {
+  font-size: clamp(23px, 7.6vmin, 36px);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.front-content h2 {
+  font-size: clamp(17px, 5.4vmin, 23px);
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.front-content .war-button {
+  font-size: clamp(21px, 6.1vmin, 27px);
+  overflow-wrap: anywhere;
+}
+
+.front-update { font-size: 15px; }
+
+#front[data-screen='missions'] .front-heading { font-size: clamp(22px, 6.4vmin, 28px); }
+#front[data-screen='missions'] .mission-list .war-button { font-size: clamp(18px, 5.3vmin, 23px); }
+
+.quick-field .war-button,
+.scenario-filter-menu .war-button { font-size: clamp(15px, 4.3vmin, 19px); }
+
+.quick-fields .check-control,
+.scenario-details { font-size: clamp(15px, 4.4vmin, 19px); }
+
+#modal {
+  font-size: clamp(17px, 4.8vmin, 21px);
+  line-height: 1.25;
+}
+
+#modal h1 { font-size: clamp(24px, 7.1vmin, 32px); line-height: 1.1; }
+
+#resources,
+#selection .stats,
+.result-score-value,
+.result-meter-number { font-variant-numeric: lining-nums tabular-nums; }
+
+#resources {
+  font-size: clamp(15px, 4.1vmin, 20px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+#selection,
+#command-detail { font-size: clamp(15px, 4.15vmin, 20px); }
+
+.one-selected > span { font-weight: 700; }
+#command-detail { font-weight: 700; line-height: 1.15; }
+
+.result-prompt h1,
+.result-player-name,
+.result-rank-value,
+.result-score-value { font-weight: 700; }
+
+.result-field dt { white-space: normal; }
+.story-credits-roll { font-weight: 400; }

@@ -345,8 +345,6 @@ async function start() {
   let renderer;
   const defaultArt = artwork(uiMeta, uiAtlas);
   let art = defaultArt;
-  document.documentElement.style.setProperty('--button-art', 'url(./art/button.webp)');
-  document.documentElement.style.setProperty('--panel-art', 'url(./art/panel.webp)');
   let canvasRect = game.getBoundingClientRect();
   let frameRequested = false;
   let nextTick = 0;

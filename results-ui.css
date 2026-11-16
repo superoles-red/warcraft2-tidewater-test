@@ -1,6 +1,5 @@
 .warcraft-results {
   --result-texture: url('./art/panel.webp');
-  --result-green: url('./art/menu/human-accept-button.webp');
   position: fixed;
   inset: 0;
   width: 100%;
@@ -19,12 +18,10 @@
 
 .warcraft-results[data-race='orc'] {
   --result-texture: url('./art/menu/title-background.webp');
-  --result-green: url('./art/menu/title-accept-button.webp');
 }
 
 .warcraft-results[open] { display: grid; place-items: center; }
 .warcraft-results::backdrop { background: #000; }
-.warcraft-results .positive { --button-art: var(--result-green); }
 .warcraft-results .war-button { min-height: 44px; }
 
 .result-prompt {
@@ -126,9 +123,6 @@
   line-height: 1;
   font-size: clamp(16px, 4.6vw, 23px);
 }
-
-.result-actions .result-menu { --button-art: url('./art/menu/title-button.webp'); }
-.result-actions .result-menu::before { filter: none; }
 
 @media (min-aspect-ratio: 6/5) {
   .result-content {

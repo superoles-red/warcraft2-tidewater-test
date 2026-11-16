@@ -74,11 +74,14 @@ export async function openQuickBattle({
       fixed.addEventListener('change', () => { options = {...options, fixedStarts:fixed.checked}; });
       position.append(fixed, t('Fixed starting positions'));
       fields.append(position);
-      const mapTitle = element('p', selected.title, 'quick-map-title');
-      show('quick', 'Quick Battle', [
-        fields, mapTitle, control('Select Scenario', scenarios),
+      const details = element('div', null, 'quick-details');
+      details.append(fields, element('p', selected.title, 'quick-map-title'));
+      const actions = element('div', null, 'quick-actions');
+      actions.append(
+        control('Select Scenario', scenarios),
         control('Start Game', () => offerStart(false), {tone:'positive'}),
-      ], close);
+      );
+      show('quick', 'Quick Battle', [details, actions], close);
     }
 
     function filter(label, values, current, set) {

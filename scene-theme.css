@@ -1,0 +1,76 @@
+.warcraft-results {
+  color: var(--theme-ink);
+  background: linear-gradient(#171413ef, #100e0df5), var(--theme-stone) center / cover #141211;
+  text-shadow: 0 2px 2px #090706;
+}
+
+.result-prompt,
+.result-records,
+.story-message {
+  border: 1px solid var(--theme-panel-rim);
+  background: var(--theme-panel);
+  background-color: #26231f;
+  box-shadow: var(--theme-panel-shadow);
+}
+
+.result-records { padding-inline: 8px; }
+.result-summary, .result-player { border-bottom-color: #ac926258; }
+
+.result-meter {
+  border-color: #9e875e8c;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #100e0c;
+}
+
+.result-meter-fill {
+  background-image: linear-gradient(#faf1d626, #0c09044d);
+  box-shadow: inset 0 1px #fff3;
+}
+
+.result-meter-number { font-variant-numeric: tabular-nums; }
+
+.act-interlude[data-phase="card"] {
+  background: var(--theme-panel);
+  background-color: #26231f;
+}
+
+.story-back {
+  isolation: isolate;
+  color: #e9ce96;
+  border: 1px solid var(--theme-button-rim);
+  border-radius: 2px;
+  background: linear-gradient(hsl(1 41% 30%), hsl(1 49% 16%));
+  box-shadow: var(--theme-button-shadow);
+}
+
+.story-back::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 3px;
+  background: url('./art/menu/orc-wide-button.webp') center / cover;
+  opacity: .18;
+  pointer-events: none;
+}
+
+.story-back::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 18px;
+  height: 17px;
+  transform: translate(-50%, -50%);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  background: currentColor;
+  pointer-events: none;
+}
+
+.story-back:active { filter: brightness(1.2); }
+
+@media (orientation: portrait) {
+  .story-media--credits {
+    background: var(--theme-panel);
+    background-color: #26231f;
+  }
+}
