@@ -38,6 +38,9 @@ const russian = {
   'Humans':'Люди', 'Orcs':'Орки',
   'Unable to load the mission':'Не удалось открыть миссию', 'Quick Battle':'Быстрый бой',
   'Select Scenario':'Выбор сценария', 'All categories':'Все категории', 'Any size':'Любой размер',
+  'Built-in':'Встроенные', 'Classic':'Классические', 'Expansion':'Дополнение',
+  'Classic scenarios':'Сценарии оригинала', 'Expansion scenarios':'Сценарии дополнения',
+  'Ladder':'Рейтинговые', 'Scenarios':'Сценарии',
   'Start Game':'Начать игру', 'Race':'Раса', 'Opponents':'Противники', 'Resources':'Ресурсы',
   'Terrain':'Местность', 'Starting units':'Начальные войска', 'Map default':'По умолчанию',
   'Human':'Люди', 'Orc':'Орки', 'Random':'Случайно', 'Low':'Мало', 'High':'Много',
@@ -57,7 +60,7 @@ export const unitLabel = (kind, fallback) => data?.units?.[kind] ?? translate(fa
 export function commandLabel(command) {
   const value = language === 'ru' ? data?.stats?.[command.string] : null;
   if (typeof value === 'string' && /[А-ЯЁ]/i.test(value) && value.length > 2) {
-    return value.replace(/^[a-z]/, '').replace(/\s*\([A-Z]?[0-9]*\)$/i, '').trim();
+    return value.replace(/^[a-z]/, '').replace(/\s*\([A-ZА-ЯЁ]?[0-9]*\)$/i, '').trim();
   }
   return translate(command.label);
 }

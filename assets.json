@@ -1,5 +1,5 @@
 {
-  "release": "920af1750afeacf0",
+  "release": "810b91039c4b7dd5",
   "files": [
     {
       "path": "art/app-icon-512.png",
@@ -2578,8 +2578,8 @@
     },
     {
       "path": "localization.js",
-      "bytes": 6069,
-      "integrity": "sha256-M64mMagHBMGWulJfNTnhyG+U9vdhbbGj4/GOkmW9XuA="
+      "bytes": 6380,
+      "integrity": "sha256-cBF37sJxivbJuatfBIdY0eetgDVQ9amkOHC87GhNSR8="
     },
     {
       "path": "map-renderer.js",
