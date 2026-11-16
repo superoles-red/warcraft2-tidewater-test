@@ -56,7 +56,7 @@ impl Files for Archives {
         } else {
             return Ok(None);
         };
-        Ok((!source.is_empty()).then(|| Box::new(Cursor::new(Arc::clone(source))) as Box<dyn ReadSeek>))
+        Ok((!source.as_ref().is_empty()).then(|| Box::new(Cursor::new(source.clone())) as Box<dyn ReadSeek>))
     }
 }
 

@@ -212,7 +212,7 @@ export async function createMapRenderer(game, minimap, initialWorld) {
     const right = left + view.width;
     const bottom = top + view.height;
     const key = [paintRevision, left, top, right, bottom, pixelWidth, pixelHeight,
-      placement?.x, placement?.y, placement?.valid, placement?.kind, placement?.width, placement?.height,
+      placement?.x, placement?.y, placement?.valid, placement?.kind, placement?.width, placement?.height, placement?.blocked,
       selectBox?.x1, selectBox?.y1, selectBox?.x2, selectBox?.y2].join(':');
     if (painted !== key) {
       painted = key;
@@ -251,14 +251,17 @@ export async function createMapRenderer(game, minimap, initialWorld) {
           x: placement.x * tile, y: placement.y * tile, width: placement.width * tile, height: placement.height * tile,
         });
         ctx.restore();
-        ctx.fillStyle = placement.valid ? '#35fc1170' : '#fa152a85';
-        ctx.fillRect(placement.x * tile, placement.y * tile,
-          placement.width * tile, placement.height * tile);
-        ctx.strokeStyle = placement.valid ? '#57ff29' : '#ff293e';
         ctx.lineWidth = 1 / scale;
-        for (let i = 0; i < placement.width; ++i)
-          for (let j = 0; j < placement.height; ++j)
-            ctx.strokeRect((placement.x + i) * tile, (placement.y + j) * tile, tile, tile);
+        for (let j = 0; j < placement.height; ++j) {
+          for (let i = 0; i < placement.width; ++i) {
+            const green = !(placement.blocked?.[j * placement.width + i] ?? !placement.valid);
+            const cx = (placement.x + i) * tile, cy = (placement.y + j) * tile;
+            ctx.fillStyle = green ? '#35fc1170' : '#fa152a85';
+            ctx.strokeStyle = green ? '#57ff29' : '#ff293e';
+            ctx.fillRect(cx, cy, tile, tile);
+            ctx.strokeRect(cx, cy, tile, tile);
+          }
+        }
       }
       if (selectBox) {
         ctx.strokeStyle = '#9afa3d';

@@ -1,5 +1,5 @@
 {
-  "release": "9574183893df008b",
+  "release": "0603f6b851cefe8e",
   "files": [
     {
       "path": "art/app-icon-512.png",
@@ -223,13 +223,13 @@
     },
     {
       "path": "battle.css",
-      "bytes": 7751,
-      "integrity": "sha256-fFUP55roeC27UaAzsOYsUANW+FABhmMjke8B+Ua+7YA="
+      "bytes": 7920,
+      "integrity": "sha256-tXyjX+WH6pQ4Zm5WcYTP9ratI0ryQjnnglYU5T6/VUY="
     },
     {
       "path": "battle.js",
-      "bytes": 29564,
-      "integrity": "sha256-gA6344NM+kWPHcgEJEv3zCZJSLmHvOMg8/7XLaY6++E="
+      "bytes": 30834,
+      "integrity": "sha256-WU0p5jVVyrB+69b1eoMKHnLD98Drhlj45uaEWxc0VIc="
     },
     {
       "path": "engine.js",
@@ -273,8 +273,8 @@
     },
     {
       "path": "map-renderer.js",
-      "bytes": 11212,
-      "integrity": "sha256-vFWwxvMds2Wx1K3+9s9pAzyrtZcKUcy/0RCvWJHQCKE="
+      "bytes": 11302,
+      "integrity": "sha256-KIT3CkrMRjkgYibz3dk4Y0gNu0KC7GxZMENvPCIxAuo="
     },
     {
       "path": "offline.js",
@@ -288,8 +288,8 @@
     },
     {
       "path": "tidewater_web.wasm",
-      "bytes": 1269505,
-      "integrity": "sha256-UcKSjxv2AgBgfJNM8wOp0doPbDf4kA8J+SVEvMRJtYA="
+      "bytes": 1258537,
+      "integrity": "sha256-LHjLtdJi/iIFMtH5EFFA7XqOeC3l5JqOtjLCPe8Fhgk="
     }
   ]
 }

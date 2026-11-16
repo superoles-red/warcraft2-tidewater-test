@@ -11,6 +11,7 @@ const modal = byId('modal');
 const cancelGlyph = 91;
 const tickMs = 40;
 const costNames = ['Gold', 'Lumber', 'Oil'];
+const unitNames = {0: 'Footman', 2: 'Peasant', 58: 'Farm', 60: 'Barracks', 74: 'Town Hall', 92: 'Gold Mine'};
 const targetIcons = {move: 83, attack: 116, repair: 85, harvest: 86, patrol: 184};
 const targetSlots = {move: 0, attack: 2, repair: 3, harvest: 4, patrol: 3};
 const clamp = (value, max) => Math.max(0, Math.min(max, value));
@@ -291,6 +292,7 @@ async function start() {
   let placementTile = null;
   let selectBox = null;
   let lastPortrait = null;
+  let notice = null;
   let infoKey = '';
   let panelKey = '';
 
@@ -332,8 +334,8 @@ async function start() {
   const controls = createWarcraftDuneControls({...adapter.input, canvasElement: game}, () => canvasRect).enable();
 
   function onError(error) {
-    detail.textContent = error.message || String(error);
-    detail.hidden = false;
+    notice = {message: error.message || String(error), until: performance.now() + 2200};
+    updateHud(adapter.world);
     audio.play('error');
   }
 
@@ -436,7 +438,23 @@ async function start() {
 
   function showOutcome(result) {
     const won = String(result).toLowerCase().includes('victory') || String(result).toLowerCase() === 'win';
-    showModal(won ? 'Victory' : 'Defeat', [], [['Play again', () => location.reload(), 'positive']]);
+    const score = adapter.world.score;
+    const rows = score ? [
+      ['Units defeated', score.kills], ['Buildings destroyed', score.razings],
+      ['Units lost', score.unitsLost], ['Buildings lost', score.buildingsLost],
+      ['Score', score.score],
+    ] : [];
+    const table = document.createElement('dl');
+    table.className = 'score';
+    for (const [label, value] of rows) {
+      const title = document.createElement('dt');
+      const count = document.createElement('dd');
+      title.textContent = label;
+      count.textContent = value;
+      table.append(title, count);
+    }
+    showModal(won ? 'Victory' : 'Defeat', rows.length ? [table] : [],
+      [['Play again', () => location.reload(), 'positive']]);
   }
 
   function purchase(command) {
@@ -444,7 +462,7 @@ async function start() {
     const preview = document.createElement('div');
     preview.className = 'purchase-preview';
     preview.append(art.icon(commandIcon(command)), text(description(command) || command.label));
-    showModal(cancellation ? command.label : `Buy ${command.label}?`, [preview], [
+    showModal(`${command.label}?`, [preview], [
       [cancellation ? 'OK' : 'Buy', () => {
         const current = adapter.world.actions.find(entry => commandKey(entry) === commandKey(command));
         if (!current?.enabled) return;
@@ -465,10 +483,7 @@ async function start() {
       if (placement !== pending) return;
       placementTile = world.placement && {...world.placement, kind: pending.kind, point};
       byId('place-button').disabled = !placementTile?.valid;
-      if (placementTile?.message) {
-        detail.textContent = placementTile.message;
-        detail.hidden = false;
-      }
+      updateHud(world);
       scheduleFrame();
     }).catch(() => {});
   }
@@ -535,7 +550,7 @@ async function start() {
       const portrait = document.createElement('button');
       portrait.type = 'button';
       portrait.className = 'portrait';
-      portrait.setAttribute('aria-label', unit.name ?? 'Center on unit');
+      portrait.setAttribute('aria-label', unit.name ?? unitNames[unit.kind] ?? 'Center on unit');
       const meter = document.createElement('div');
       meter.className = 'health';
       const bar = document.createElement('span');
@@ -557,11 +572,20 @@ async function start() {
     if (units.length === 1) {
       const unit = units[0];
       const name = document.createElement('span');
-      name.textContent = unit.name ?? ['Footman', 'Grunt', 'Peasant'][unit.kind] ?? 'Building';
+      name.textContent = unit.name ?? unitNames[unit.kind] ?? (unit.building ? 'Building' : 'Unit');
       grid.append(name);
       const stats = document.createElement('div');
       stats.className = 'stats';
       stats.textContent = `${unit.hp} / ${unit.maxHp}`;
+      const rows = unit.kind === 92 ? [['Gold', unit.resources]] : !unit.building ? [
+        ['Armor', unit.armor], ['Damage', unit.damage?.join('–')], ['Range', unit.range], ['Sight', unit.sight],
+      ] : [];
+      for (const [label, value] of rows) {
+        if (value == null) continue;
+        const row = document.createElement('div');
+        row.textContent = `${label}: ${value}`;
+        stats.append(row);
+      }
       if (typeof unit.progress === 'number' && unit.progress >= 0) {
         const progress = unit.progress * 100 / 255;
         const bar = document.createElement('div');
@@ -629,9 +653,10 @@ async function start() {
     byId('placement').hidden = !placement;
     byId('command-area').classList.toggle('placing', Boolean(placement));
     const armedCommand = actions.find(cmd => commandKey(cmd) === armed);
-    const message = placement ? 'Choose a site, then tap Place' :
+    const message = notice?.until > performance.now() ? notice.message : placement ?
+      (placementTile && !placementTile.valid ? 'Choose another site' : 'Choose a site, then tap Place') :
       aim ? aim.label + ' — Tap a target' : armedCommand ? priceLabel(armedCommand) : '';
-    detail.textContent = message;
+    if (detail.textContent !== message) detail.textContent = message;
     detail.hidden = !message;
   }
 

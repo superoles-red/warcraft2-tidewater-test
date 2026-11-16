@@ -136,7 +136,7 @@ button:focus-visible { outline: 2px solid #faff87; outline-offset: 1px; }
 .health { width: 100%; height: 3px; background: #16110d; }
 .health span { display: block; height: 100%; background: #4e8d24; }
 .stats { padding: 5px 0 0 10px; line-height: 1.26; }
-.progress-track { position: relative; margin-top: 4px; max-width: 144px; line-height: 1.3; white-space: nowrap; }
+.progress-track { position: relative; isolation: isolate; margin-top: 4px; max-width: 144px; line-height: 1.3; white-space: nowrap; }
 .progress-track::before { content: ''; position: absolute; z-index: -1; inset: 0; width: var(--progress); background: #4a852ba8; }
 
 #command-area {
@@ -217,6 +217,8 @@ button:focus-visible { outline: 2px solid #faff87; outline-offset: 1px; }
 .sound-control { display: block; padding: 7px 0; text-align: left; }
 .sound-control input { display: block; width: 100%; height: 34px; margin: 0; accent-color: #d9b969; touch-action: pan-y; }
 .warning { color: #f6a887; }
+.score { display: grid; grid-template-columns: 1fr auto; margin: 0; gap: 5px 20px; text-align: left; }
+.score dd { margin: 0; color: var(--paper); }
 @media (orientation: landscape) {
   :root {
     --command: clamp(42px, 12vh, 60px);
