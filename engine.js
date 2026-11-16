@@ -25,9 +25,10 @@ export async function createTidewater(data, patch, {wasmUrl, wasmBytes} = {}) {
     memory.set(first, pointer);
     if (second?.length) memory.set(second, pointer + first.length);
   };
-  const read = () => decoder.decode(new Uint8Array(
+  const readBytes = () => new Uint8Array(
     wasm.memory.buffer, wasm.wc2_output(), wasm.wc2_output_len(),
-  ));
+  );
+  const read = () => decoder.decode(readBytes());
 
   const bytes = value => ArrayBuffer.isView(value)
     ? new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
@@ -38,8 +39,24 @@ export async function createTidewater(data, patch, {wasmUrl, wasmBytes} = {}) {
   if (wasm.wc2_init(game.length)) throw new Error(read());
 
   return request => {
-    write(encoder.encode(JSON.stringify(request)));
-    if (wasm.wc2_request()) throw new Error(read());
+    let status;
+    if (request.op === 'saveCheckpoint') {
+      if (wasm.wc2_save_checkpoint()) throw new Error(read());
+      return readBytes().slice();
+    }
+    if (request.op === 'restoreCheckpoint') {
+      write(bytes(request.checkpoint));
+      status = wasm.wc2_restore_checkpoint();
+    } else if (request.op === 'loadScenario') {
+      const {pud, ...fields} = request;
+      const metadata = encoder.encode(JSON.stringify(fields));
+      write(metadata, bytes(pud));
+      status = wasm.wc2_scenario(metadata.byteLength);
+    } else {
+      write(encoder.encode(JSON.stringify(request)));
+      status = wasm.wc2_request();
+    }
+    if (status) throw new Error(read());
     return JSON.parse(read());
   };
 }

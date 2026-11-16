@@ -4,6 +4,12 @@
   font-display: swap;
   font-weight: 400;
 }
+@font-face {
+  font-family: 'Warcraft HUD Russian';
+  src: url('./art/lang/ru/hud.woff') format('woff');
+  font-display: swap;
+  font-weight: 400;
+}
 
 :root {
   color-scheme: dark;
@@ -20,6 +26,8 @@
   --menu-height: clamp(38px, 9.8vw, 54px);
   --mini: clamp(94px, 34vw, 156px);
 }
+
+html[lang="ru"] { font-family: 'Warcraft HUD', 'Warcraft HUD Russian', Georgia, serif; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -77,8 +85,8 @@ button:focus-visible { outline: 2px solid #faff87; outline-offset: 1px; }
   border-image: var(--button-art, none) 5 fill stretch;
   image-rendering: pixelated;
 }
-.war-button.positive { background: #205132; }
-.war-button.positive::before { filter: hue-rotate(262deg) saturate(.9) brightness(1.14); }
+.war-button.positive { --button-art: url('./art/menu/human-accept-button.webp'); background: #205132; }
+.war-button.positive::before { filter: none; }
 .war-button.negative { background: #652016; }
 .war-button.negative::before { filter: hue-rotate(135deg) saturate(1.3) brightness(1.15); }
 .war-button:active { filter: brightness(1.2); }
@@ -178,14 +186,14 @@ button:focus-visible { outline: 2px solid #faff87; outline-offset: 1px; }
 #loading {
   position: absolute;
   display: grid;
-  align-content: center;
+  align-content: end;
   justify-items: center;
   inset: 0;
   gap: 12px;
-  padding: 24px;
+  padding: 24px 24px max(9vh, var(--safe-bottom));
   color: var(--paper);
   text-align: center;
-  background: #080706 var(--loading-art, none) center / min(100%, 620px) auto no-repeat;
+  background: #080706 url('./art/menu/title-splash.webp') center / contain no-repeat;
   text-shadow: 1px 2px #000;
 }
 #loading p { margin: 0; padding: 5px 8px; background: #080706db; }
@@ -194,6 +202,7 @@ button:focus-visible { outline: 2px solid #faff87; outline-offset: 1px; }
   width: min(420px, calc(100% - 28px));
   max-height: calc(100% - var(--safe-top) - var(--safe-bottom));
   overflow: auto;
+  touch-action: pan-y;
   margin: auto;
   padding: 16px;
   border: 2px solid var(--rim);
@@ -215,10 +224,277 @@ button:focus-visible { outline: 2px solid #faff87; outline-offset: 1px; }
 .purchase-preview { display: flex; justify-content: center; align-items: center; gap: 10px; color: var(--paper); }
 .purchase-preview canvas { width: 52px; height: 44px; border: 1px solid var(--rim); }
 .sound-control { display: block; padding: 7px 0; text-align: left; }
-.sound-control input { display: block; width: 100%; height: 34px; margin: 0; accent-color: #d9b969; touch-action: pan-y; }
+.sound-control input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  accent-color: #d9b969;
+  touch-action: pan-y;
+}
+.sound-control input::-webkit-slider-runnable-track {
+  height: 15px;
+  border: 1px solid #a38b48;
+  background: #18203a url('./art/menu/volume-track.webp') center / 100% 100%;
+}
+.sound-control input::-moz-range-track {
+  height: 15px;
+  border: 1px solid #a38b48;
+  background: #18203a url('./art/menu/volume-track.webp') center / 100% 100%;
+}
+.sound-control input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 25px;
+  height: 25px;
+  margin-top: -6px;
+  background: url('./art/menu/volume-thumb.webp') center / contain no-repeat;
+}
+.sound-control input::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border: 0;
+  background: url('./art/menu/volume-thumb.webp') center / contain no-repeat;
+}
+.check-control { display: flex; align-items: center; gap: 7px; min-height: 40px; text-align: left; }
+.check-control input {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 31px;
+  height: 30px;
+  margin: 0;
+  background: url('./art/menu/human-checkbox.webp') center / contain no-repeat;
+}
+.check-control input:checked { background-image: url('./art/menu/human-checkbox-checked.webp'); }
+[data-race="orc"] .check-control input { background-image: url('./art/menu/orc-checkbox.webp'); }
+[data-race="orc"] .check-control input:checked { background-image: url('./art/menu/orc-checkbox-checked.webp'); }
+.speed-controls { display: flex; margin: 6px 0 10px; gap: 5px; }
+.speed-controls .war-button { flex: 1 1 0; min-width: 0; min-height: 38px; padding: 3px; }
+.speed-controls .war-button.active { outline: 1px solid #fdf592; }
 .warning { color: #f6a887; }
 .score { display: grid; grid-template-columns: 1fr auto; margin: 0; gap: 5px 20px; text-align: left; }
 .score dd { margin: 0; color: var(--paper); }
+
+#front {
+  --button-art: url('./art/menu/title-button.webp');
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(60px, 1fr) minmax(0, 4fr) minmax(54px, .7fr);
+  justify-items: center;
+  align-items: center;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-x);
+  isolation: isolate;
+  background: #2b1f0f url('./art/menu/title-background.webp') center / cover;
+  color: var(--light);
+  text-shadow: 1px 2px #080702;
+}
+.front-art {
+  position: absolute;
+  z-index: -1;
+  inset: 3% 3% 2%;
+  background: url('./art/menu/title-art-portrait.webp') center / contain no-repeat;
+}
+.front-logo {
+  align-self: start;
+  width: clamp(170px, 63vw, 425px);
+  margin-top: 8px;
+  max-height: min(21vh, 145px);
+  object-fit: contain;
+}
+.front-panel {
+  align-self: end;
+  min-width: 0;
+  width: min(475px, 86%);
+  max-height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.front-heading {
+  color: var(--light);
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: clamp(17px, 4vw, 22px);
+  font-weight: 400;
+}
+.front-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: clamp(5px, 1.15vh, 12px);
+  text-align: center;
+}
+.front-content h2 { margin: 1px 0; font-size: clamp(15px, 3.7vw, 20px); font-weight: 400; }
+.front-content .war-button {
+  min-height: clamp(44px, 8.2vh, 71px);
+  font-size: clamp(18px, 5.6vw, 25px);
+  color: var(--paper);
+}
+.front-content .recent { outline: 1px solid #fff566; }
+.front-content .positive { --button-art: url('./art/menu/title-accept-button.webp'); }
+.front-content .positive::before { filter: none; }
+.front-back {
+  --button-art: url('./art/menu/menu-back-orc.webp');
+  position: absolute;
+  right: var(--safe-right);
+  bottom: var(--safe-bottom);
+  color: transparent;
+  text-shadow: none;
+  aspect-ratio: 1;
+  width: clamp(44px, 8vh, 62px);
+  padding: 0;
+}
+.front-back::before { border: 0; border-image: none; background: var(--button-art) center / 100% 100% no-repeat; }
+.front-update {
+  position: absolute;
+  right: var(--safe-right);
+  top: var(--safe-top);
+  min-width: 75px;
+  min-height: 34px;
+  padding: 4px 7px;
+  font-size: 13px;
+}
+#front[data-screen="main"] .front-content .war-button { min-height: clamp(56px, 10.5vh, 86px); }
+.front-content .war-button:disabled { --button-art: url('./art/menu/language-disabled.webp'); opacity: .7; }
+.mission-list, .briefing-text {
+  min-height: 0;
+  max-height: 55vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: #b7a063 #35210d;
+}
+.mission-list { padding-right: 5px; }
+.mission-list .war-button { display: block; width: 100%; margin-bottom: 5px; }
+#front[data-screen="missions"]::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:#0009;
+}
+#front[data-screen="missions"] .front-panel {
+  position:absolute;
+  width:min(calc(100% - var(--safe-x) - var(--safe-right)), 380px);
+  max-height: calc(100% - var(--safe-top) - var(--safe-bottom));
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  padding:11px 12px 102px;
+  border:2px solid #f1c568;
+  box-shadow:1px 2px #14110b;
+  background:#402709 url('./art/menu/title-background.webp') center / cover;
+}
+#front[data-screen="missions"] .front-heading { font-size:20px; }
+#front[data-screen="missions"] .mission-list {
+  height:min(54vh, 476px);
+  max-height:none;
+  scrollbar-color:#e4bd65 #402709;
+}
+.mission-list::-webkit-scrollbar, .scenario-list::-webkit-scrollbar { width:7px; }
+.mission-list::-webkit-scrollbar-thumb, .scenario-list::-webkit-scrollbar-thumb { background:#dab464; }
+.mission-list::-webkit-scrollbar-track, .scenario-list::-webkit-scrollbar-track { background:#4d3519; }
+#front[data-screen="missions"] .mission-list .war-button {
+  min-height:clamp(61px,9.8vh,86px);
+  font-size:clamp(16px,4.5vw,20px);
+}
+#front[data-screen="missions"] .mission-list .war-button:disabled {
+  --button-art:url('./art/menu/title-button.webp');
+  color:#ddd;
+  opacity:1;
+  filter:grayscale(1) brightness(.72);
+}
+#front[data-screen="missions"] .front-back {
+  right:12px;
+  bottom:12px;
+  width:80px;
+}
+.briefing-text, #front[data-screen="about"] .front-content > p {
+  background: #35220ce8;
+  padding: 12px;
+  border: 1px solid var(--rim);
+  text-align: left;
+}
+.briefing-text p { white-space: pre-line; line-height: 1.4; }
+.briefing-goals { margin: 8px 0 0; padding-left: 20px; }
+.briefing-illustration { display: block; width: 100%; max-height: 26vh; object-fit: contain; }
+#front[data-screen="briefing"] {
+  background: linear-gradient(#0009, #000b), var(--briefing-art) center / cover no-repeat, #14100b;
+  grid-template-rows: minmax(0, 1fr);
+}
+#front[data-screen="briefing"] .front-logo, #front[data-screen="briefing"] .front-art { display:none; }
+#front[data-screen="briefing"] .front-panel { align-self:center; }
+#front[data-screen="briefing"] .briefing-text { max-height:64vh; background:#12100db0; border-color:transparent; }
+.accent { color: var(--paper); }
+.quick-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px 9px; text-align:left; }
+.quick-field { display: grid; gap: 3px; }
+.quick-field .war-button { min-height: 44px; text-align: left; font-size: clamp(13px,3.7vw,17px); }
+.quick-map-title { margin: 4px 0; }
+.quick-fields .check-control { font-size: clamp(12px,3.5vw,16px); }
+.dropdown::after, .scenario-filter summary::after { content: '▾'; margin-left: 8px; color: #ffde78; }
+#front[data-screen="scenarios"] {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding-bottom: calc(var(--safe-bottom) + 3px);
+}
+#front[data-screen="scenarios"] .front-logo, #front[data-screen="scenarios"] .front-art { display: none; }
+#front[data-screen="scenarios"] .front-panel { align-self: stretch; width: min(100%, 900px); }
+#front[data-screen="scenarios"] .front-content { height: 100%; }
+#front[data-screen="scenarios"] .front-content > .war-button { align-self: start; width: min(170px,45%); }
+.scenario-filters { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 5px; }
+.scenario-filter { --button-art:url('./art/menu/human-wide-button.webp'); position: relative; min-width: 0; z-index: 2; }
+.scenario-filter[open] { z-index: 3; }
+.scenario-filter summary { list-style: none; display:flex; justify-content:center; align-items:center; cursor:pointer; }
+.scenario-filter summary::-webkit-details-marker { display:none; }
+.scenario-filter-menu {
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  display: grid;
+  padding: 3px;
+  background: #49301b;
+  border: 1px solid var(--rim);
+}
+.scenario-filter-menu .war-button { min-height: 42px; font-size: clamp(13px,3.7vw,17px); padding: 3px; }
+.scenario-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b7a063 #35210d;
+  display: flex;
+  align-items: start;
+  gap: 6px;
+}
+.scenario-column { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.scenario-card { border: 1px solid transparent; }
+.scenario-card.selected, .scenario-card.open { border-color: #fae2a0; }
+.scenario-card > .war-button { width:100%; }
+.scenario-card.open > .war-button { border-bottom-color: transparent; }
+.scenario-details {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #332218e6;
+  padding: 7px;
+  font-size: clamp(12px,3.7vw,17px);
+  text-align: left;
+}
+.scenario-details img { width: clamp(52px,19vw,110px); aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; }
+.scenario-details p { margin: 5px 0 0; }
+[data-race="orc"] #hud-top, [data-race="orc"] #modal { --button-art: url('./art/menu/title-button.webp'); }
+[data-race="orc"] #modal { --panel-art: url('./art/menu/title-background.webp'); }
+[data-race="orc"] #modal .positive { --button-art:url('./art/menu/orc-accept-button.webp'); }
+#minimap { border-color: #fff; }
+
 @media (orientation: landscape) {
   :root {
     --command: clamp(42px, 12vh, 60px);
@@ -230,4 +506,19 @@ button:focus-visible { outline: 2px solid #faff87; outline-offset: 1px; }
   #selection { width: min(245px, 32vw); }
   #resources { justify-content: start; }
   #modal-actions .war-button { min-height: 40px; }
+  #front { grid-template-rows: minmax(55px, 1fr) minmax(0, 4fr) minmax(14px, .35fr); }
+  .front-art { background-image: url('./art/menu/title-art.webp'); }
+  .front-logo { width: clamp(169px, 44vh, 350px); max-height: 25vh; }
+  .front-panel { width: min(420px, 66%); }
+  .front-content .war-button { min-height: clamp(36px, 10.8vh, 52px); }
+  #front[data-screen="main"] .front-content .war-button { min-height: clamp(45px, 13vh, 60px); }
+  .mission-list, .briefing-text { max-height: 47vh; }
+  #front[data-screen="missions"] .front-panel { padding-bottom:72px; }
+  #front[data-screen="missions"] .mission-list { height:min(64vh,390px); }
+  #front[data-screen="missions"] .mission-list .war-button { min-height:clamp(45px,14vh,60px); }
+  #front[data-screen="missions"] .front-back { width:58px; min-height:58px; bottom:8px; }
+  #front[data-screen="briefing"] .briefing-text { max-height:65vh; }
+  #front[data-screen="quick"] { grid-template-rows:minmax(0,1fr); }
+  #front[data-screen="quick"] .front-logo { display:none; }
+  #front[data-screen="quick"] .front-panel { align-self:center; }
 }

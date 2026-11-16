@@ -1,5 +1,8 @@
 import {createTidewater} from './engine.js';
-import {createMapRenderer, readImage, readJson} from './map-renderer.js';
+import {createMapRenderer, readImage, readJson, eraDirectory} from './map-renderer.js';
+import {createCampaignUi} from './campaign-ui.js';
+import {checkpointKey, createCheckpointStore} from './checkpoint-store.js';
+import {commandLabel, currentLanguage, missionLabel, setLanguage, translate as t, unitLabel} from './localization.js';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');
@@ -10,8 +13,10 @@ const detail = byId('command-detail');
 const modal = byId('modal');
 const cancelGlyph = 91;
 const tickMs = 40;
+const checkpointUpdates = new Set(['smart','move','target','build','train','upgrade','research','cancel','returnGoods','cast']);
 const costNames = ['Gold', 'Lumber', 'Oil'];
-const unitNames = {0: 'Footman', 2: 'Peasant', 58: 'Farm', 60: 'Barracks', 74: 'Town Hall', 92: 'Gold Mine'};
+const unitNames = {0: 'Footman', 1: 'Grunt', 2: 'Peasant', 3: 'Peon', 58: 'Farm', 59: 'Pig Farm',
+  60: 'Barracks', 61: 'Barracks', 74: 'Town Hall', 75: 'Great Hall', 92: 'Gold Mine'};
 const targetIcons = {move: 83, attack: 116, repair: 85, harvest: 86, patrol: 184};
 const targetSlots = {move: 0, attack: 2, repair: 3, harvest: 4, patrol: 3};
 const clamp = (value, max) => Math.max(0, Math.min(max, value));
@@ -30,16 +35,16 @@ function button(label, activate, tone = '') {
 }
 
 function description(command) {
-  return (command.cost ?? []).flatMap((cost, index) => cost ? [`${cost} ${costNames[index]}`] : []).join(' · ');
+  return (command.cost ?? []).flatMap((cost, index) => cost ? [`${cost} ${t(costNames[index])}`] : []).join(' · ');
 }
 
 function priceLabel(command) {
   const price = description(command);
-  return price ? `${command.label} — ${price}` : command.label;
+  return price ? `${commandLabel(command)} — ${price}` : commandLabel(command);
 }
 
 function commandKey(command) {
-  return [command.op, command.action, command.kind].join(':');
+  return [command.op, command.action, command.kind, command.spell].join(':');
 }
 
 function createInterface({
@@ -53,11 +58,21 @@ function createInterface({
   let queued = Promise.resolve();
   let remembered = [];
   const pressed = new Map();
-  const geometry = {
-    ...viewport, active: true, cameraX: 0, cameraY: 0, maxX: 0, maxY: 0,
-    mapWidth: world.width, mapHeight: world.height,
-    world: {left: 0, top: 0, right: world.width * world.tileSize, bottom: world.height * world.tileSize},
-  };
+  const geometry = {};
+  function sizeWorld() {
+    Object.assign(geometry, {
+      ...viewport, active: true, fullWorld: true, cameraX: 0, cameraY: 0, maxX: 0, maxY: 0,
+      mapWidth: world.width, mapHeight: world.height,
+      world: {left: 0, top: 0, right: world.width * world.tileSize, bottom: world.height * world.tileSize},
+    });
+    geometry.width = Math.max(viewport.width, geometry.world.right);
+    geometry.height = Math.max(viewport.height, geometry.world.bottom);
+    camera.reset();
+    view = undefined;
+    pressed.clear();
+    remembered = [];
+  }
+  sizeWorld();
 
   function run(command) {
     const operation = queued.then(async () => {
@@ -68,6 +83,7 @@ function createInterface({
         explored: next.explored ?? world.explored,
         mission: next.mission ?? world.mission,
       };
+      if (['loadMission', 'loadScenario', 'restart', 'restoreCheckpoint'].includes(command.op)) sizeWorld();
       onWorld(world, command);
       return world;
     });
@@ -92,6 +108,12 @@ function createInterface({
 
   function send(command) {
     run(command).catch(() => {});
+  }
+
+  function checkpoint() {
+    const operation = queued.then(() => request({op:'saveCheckpoint'}));
+    queued = operation.catch(() => {});
+    return operation;
   }
 
   function nativeMove(x, y) {
@@ -129,7 +151,7 @@ function createInterface({
     commandSelectionV15: true,
     explicitBuildingPlacement: true,
     state: () => ({
-      inGame: true, modal: modal.open, inputAllowed: active(),
+      inGame: active(), modal: modal.open, inputAllowed: active(),
       dialogOpen: modal.open, selectionCount: world.selection.length,
       targetPending: Boolean(action.target()), buildingPending: Boolean(action.placement()),
     }),
@@ -158,7 +180,7 @@ function createInterface({
     cancelPendingInput() { pressed.clear(); onBox(null); },
   };
   return {
-    frame, run, input, send,
+    frame, run, input, send, checkpoint,
     centerOn(x, y) { camera.centerOn(x, y, {useEdgeRoom: true}); onFrame(); },
     get world() { return world; },
     get view() { return view; },
@@ -196,13 +218,21 @@ async function bytes(path) {
 
 function makeAudio() {
   let files = {};
+  let languageFiles = {};
+  let race = 'human';
   let music;
+  let narration;
   let audioContext;
   let unlocked = false;
   const cache = new Map();
   readJson('./art/audio.json').then(source => { files = source; }).catch(() => {});
-  const musicSource = () => files.music?.[0];
+  const musicSource = () => files['music-' + race]?.[0] ?? files.music?.[0];
   const audioPath = path => './art/' + path;
+  const clip = key => {
+    const localized = languageFiles[key];
+    if (localized?.length) return localized.map(path => './art/lang/ru/' + path);
+    return (files[key] ?? []).map(audioPath);
+  };
   const getVolume = (key, fallback) => {
     try {
       const value = localStorage.getItem('tidewater-pilot-' + key);
@@ -213,10 +243,12 @@ function makeAudio() {
   function sync() {
     if (!unlocked || !musicSource()) return;
     if (!music) {
-      music = new Audio(audioPath(musicSource()));
+      music = new Audio();
       music.loop = true;
       music.preload = 'auto';
     }
+    const source = audioPath(musicSource());
+    if (music.getAttribute('src') !== source) music.src = source;
     music.volume = volumes.music;
     if (document.hidden || !volumes.music) music.pause();
     else music.play().catch(() => {});
@@ -228,13 +260,14 @@ function makeAudio() {
     audioContext?.resume().catch(() => {});
     sync();
   }
-  async function play(key) {
-    const paths = files[key];
+  async function play(key, fallback) {
+    const preferred = clip(key);
+    const paths = preferred.length ? preferred : clip(fallback);
     if (!unlocked || !audioContext || !paths?.length || !volumes.effects || document.hidden) return;
     const file = paths[Math.floor(Math.random() * paths.length)];
     try {
       if (!cache.has(file))
-        cache.set(file, fetch(audioPath(file)).then(response => response.arrayBuffer())
+        cache.set(file, fetch(file).then(response => response.arrayBuffer())
           .then(buffer => audioContext.decodeAudioData(buffer)));
       const data = await cache.get(file);
       if (document.hidden || audioContext.state !== 'running') return;
@@ -253,33 +286,70 @@ function makeAudio() {
     try { localStorage.setItem('tidewater-pilot-' + key, value); } catch {}
     if (key === 'music') sync();
   }
+  function stopBriefing() {
+    narration?.pause();
+    narration = undefined;
+  }
+  function briefing(id) {
+    stopBriefing();
+    const path = clip('briefing-' + id)[0];
+    if (!path || !unlocked) return;
+    narration = new Audio(path);
+    narration.volume = volumes.effects;
+    narration.play().catch(() => {});
+  }
   window.addEventListener('pointerdown', activate, {passive: true, capture: true});
   window.addEventListener('pointerup', activate, {passive: true, capture: true});
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) audioContext?.suspend().catch(() => {});
     else if (unlocked) audioContext?.resume().catch(() => {});
     sync();
+    if (document.hidden) narration?.pause();
+    else narration?.play().catch(() => {});
   });
-  return {play, change, volumes};
+  return {
+    play, change, volumes, briefing, stopBriefing,
+    race(value) { race = value; sync(); },
+    async language() {
+      languageFiles = currentLanguage() === 'ru'
+        ? await readJson('./art/lang/ru/audio.json').catch(() => ({})) : {};
+    },
+  };
 }
 
 async function start() {
   const audio = makeAudio();
+  await setLanguage().catch(() => setLanguage('en'));
+  audio.language();
   byId('loading-text').textContent = 'Loading the game files…';
   const [data, patch, uiMeta, uiAtlas] = await Promise.all([
     bytes('./game/War2Dat.mpq'), bytes('./game/War2Patch.mpq'),
     readJson('./art/ui.json'), readImage('./art/ui.webp'),
   ]);
   const request = await createTidewater(data, patch, {wasmUrl: new URL('./tidewater_web.wasm', import.meta.url)});
-  await request({op: 'speed', speed: 7});
-  const initialWorld = await request({op: 'snapshot'});
-  const renderer = await createMapRenderer(game, minimap, initialWorld);
-  const art = artwork(uiMeta, uiAtlas);
+  const initialWorld = await request({op: 'campaigns'});
+  const campaigns = initialWorld.campaigns;
+  if (!Array.isArray(campaigns)) throw new Error('The campaign list is unavailable.');
+  const direct = new URLSearchParams(location.search).get('mission');
+  const directMode = direct != null && /^\d+$/.test(direct) &&
+    campaigns.some(c => c.missions.some(m => m.id === Number(direct)));
+  const checkpoints = createCheckpointStore();
+  let checkpointEpoch = 0;
+  let checkpointWork = Promise.resolve();
+  let savingCheckpoint;
+  let checkpointTime = 0;
+  let checkpointSoon = false;
+  let savedCamera;
+  let renderer;
+  const defaultArt = artwork(uiMeta, uiAtlas);
+  let art = defaultArt;
   document.documentElement.style.setProperty('--button-art', 'url(./art/button.webp)');
   document.documentElement.style.setProperty('--panel-art', 'url(./art/panel.webp)');
   let canvasRect = game.getBoundingClientRect();
   let frameRequested = false;
   let nextTick = 0;
+  let battleActive = false;
+  let loadingMission = false;
   let tickTimer;
   let stepPending = false;
   let stopped = false;
@@ -295,12 +365,24 @@ async function start() {
   let notice = null;
   let infoKey = '';
   let panelKey = '';
+  const showHud = visible => {
+    for (const id of ['hud-top', 'selection', 'minimap', 'command-area']) byId(id).hidden = !visible;
+  };
+  function setting(name, fallback) {
+    try {
+      const value = localStorage.getItem('tidewater-pilot-' + name);
+      return value == null ? fallback : value === 'true';
+    } catch { return fallback; }
+  }
+  function setSetting(name, value) {
+    try { localStorage.setItem('tidewater-pilot-' + name, value); } catch {}
+  }
 
   const resourceValues = Object.fromEntries(resourceFields.map(([key, label]) => {
     const item = document.createElement('span');
     const value = document.createElement('span');
     item.className = 'resource';
-    item.title = label;
+    item.title = t(label);
     item.append(art.resource(key), value);
     byId('resources').append(item);
     return [key, value];
@@ -316,7 +398,7 @@ async function start() {
     onWorld, onError,
     onBox(box) { selectBox = box; scheduleFrame(); },
     onFrame: scheduleFrame,
-    active: () => !stopped && !document.hidden && !outcomeShown,
+    active: () => battleActive && !loadingMission && !stopped && !document.hidden && !outcomeShown,
     action: {
       target: () => aim,
       placement: () => placement,
@@ -324,22 +406,183 @@ async function start() {
       preview: previewBuilding,
       finishTarget(x, y) {
         if (!aim) return;
-        const action = aim.action;
+        const {action, spell} = aim;
         aim = null;
-        adapter.send({op: 'target', action, x, y});
+        adapter.send({op: 'target', action, spell, x, y});
         updateHud(adapter.world);
       },
     },
   });
   const controls = createWarcraftDuneControls({...adapter.input, canvasElement: game}, () => canvasRect).enable();
+  const front = createCampaignUi(byId('front'), campaigns, {
+    click: () => audio.play('button'),
+    confirm: showModal,
+    dismiss: closeModal,
+    load: loadMission,
+    play: () => playMission(),
+    briefing: id => audio.briefing(id),
+    stopBriefing: () => audio.stopBriefing(),
+    sound: back => showSound(() => { closeModal(); back(); }),
+    language: updateLanguage,
+    imported: discardCheckpoint,
+    async fast(back, show, control, progress, resume) {
+      const {openQuickBattle} = await import('./quick-battle-ui.js');
+      await openQuickBattle({
+        show, control, confirm:showModal, dismiss:closeModal, back, resume,
+        load: loadQuickBattle,
+        active: () => progress.active(),
+        complete: record => progress.saveQuick(record),
+        fog: () => setting('fog', true),
+        stop: () => { front.close(); playMission(); },
+      });
+    },
+    async update() {
+      const message = text(t('Checking for updates…'));
+      showModal('Update', [message], [['Back', closeModal, 'negative']]);
+      try {
+        const result = await window.TidewaterOffline?.checkForUpdate();
+        const statuses = {current:'You have the latest version.', updated:'The update is ready.',
+          unavailable:'Updates are unavailable right now.'};
+        message.textContent = t(statuses[result] || statuses.unavailable);
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    },
+    async files(back, progress) {
+      const {openFiles} = await import('./files-ui.js');
+      openFiles({confirm:showModal, dismiss:closeModal, back, progress, translate:t, campaigns});
+    },
+  });
+
+  function updateLanguage() {
+    audio.language();
+    for (const [id, label] of [['menu-button', 'Menu'], ['place-button', 'Place'], ['cancel-placement', 'Cancel']]) {
+      byId(id).textContent = t(label);
+    }
+    for (const [field, label] of resourceFields) resourceValues[field].parentElement.title = t(label);
+    infoKey = panelKey = '';
+    if (battleActive) updateHud(adapter.world);
+  }
+
+  function loadMission(id, resume = false) { return loadBattle({op:'loadMission', id}, resume); }
+
+  async function loadQuickBattle(entry, options, resume = false) {
+    const {readScenarioMap} = await import('./scenarios/data.js');
+    const pud = await readScenarioMap(entry);
+    return loadBattle({op:'loadScenario', id:entry.id, title:entry.title,
+      description:entry.description, pud, options}, resume);
+  }
+
+  function discardCheckpoint() {
+    ++checkpointEpoch;
+    if (!directMode) checkpointWork = checkpointWork.then(() => checkpoints.clear()).catch(() => {});
+  }
+
+  function saveCheckpoint(force = false) {
+    if (directMode || !battleActive || loadingMission || outcomeShown) return Promise.resolve();
+    if (savingCheckpoint) return savingCheckpoint;
+    const now = performance.now();
+    if (!force && now - checkpointTime < (checkpointSoon ? 2000 : 15000)) return Promise.resolve();
+    const key = checkpointKey(adapter.world);
+    if (!key) return Promise.resolve();
+    checkpointTime = now;
+    checkpointSoon = false;
+    const epoch = checkpointEpoch;
+    const view = adapter.view;
+    const camera = view && {x:view.visibleGlobal.x + view.width / 2, y:view.visibleGlobal.y + view.height / 2};
+    savingCheckpoint = adapter.checkpoint().then(bytes => {
+      if (epoch !== checkpointEpoch) return;
+      checkpointWork = checkpointWork.then(() => checkpoints.write(key, bytes, camera)).catch(() => {});
+      return checkpointWork;
+    }).catch(() => {}).finally(() => { savingCheckpoint = undefined; });
+    return savingCheckpoint;
+  }
+
+  async function loadBattle(command, resume = false) {
+    battleActive = false;
+    loadingMission = true;
+    outcomeShown = false;
+    clearTimeout(tickTimer);
+    tickTimer = undefined;
+    controls.cancel();
+    showHud(false);
+    commandGroup = armed = aim = placement = placementTile = selectBox = notice = lastPortrait = null;
+    selectionKey = infoKey = panelKey = '';
+    savedCamera = undefined;
+    ++checkpointEpoch;
+    try {
+      let mission = await adapter.run(command);
+      let restored = false;
+      if (resume && !directMode) {
+        const saved = await checkpoints.read(checkpointKey(mission)).catch(() => null);
+        if (saved) {
+          try {
+            mission = await adapter.run({op:'restoreCheckpoint', checkpoint:saved.bytes});
+            savedCamera = saved.camera;
+            restored = true;
+          } catch {
+            mission = await adapter.run(command);
+          }
+        }
+      }
+      const source = eraDirectory(mission);
+      const nextRenderer = createMapRenderer(game, minimap, mission, scheduleFrame);
+      art = await Promise.all([readJson(source + '/ui.json'), readImage(source + '/ui.webp')])
+        .then(([meta, picture]) => artwork(meta, picture)).catch(() => defaultArt);
+      for (const [field, element] of Object.entries(resourceValues)) {
+        element.parentElement.firstChild.replaceWith(art.resource(field));
+      }
+      renderer = await nextRenderer;
+      if (!restored) {
+        await adapter.run({op:'speed', speed:7});
+        if (mission.mission.campaign !== 'quick' && !setting('fog', true))
+          await adapter.run({op:'fog', enabled:false});
+      }
+      renderer.update(adapter.world);
+      const race = mission.race === 1 || mission.mission.campaign === 'orc' || mission.mission.campaign === 'xorc'
+        ? 'orc' : 'human';
+      byId('battle').dataset.race = race;
+      audio.race(race);
+      if (!restored) discardCheckpoint();
+      return adapter.world;
+    } finally { loadingMission = false; }
+  }
+
+  function playMission(showObjectivesAtStart = true) {
+    battleActive = true;
+    outcomeShown = false;
+    showHud(true);
+    adapter.frame(performance.now());
+    const world = adapter.world;
+    const home = world.units.find(unit => unit.owner === world.player && [74,75].includes(unit.kind)) ??
+      world.units.find(unit => unit.owner === world.player);
+    if (Number.isFinite(savedCamera?.x) && Number.isFinite(savedCamera?.y))
+      adapter.centerOn(savedCamera.x, savedCamera.y);
+    else if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2);
+    updateHud(world);
+    nextTick = 0;
+    checkpointTime = performance.now();
+    checkpointSoon = true;
+    if (showObjectivesAtStart && setting('objectives', true)) showObjectives(closeModal);
+    scheduleFrame();
+    scheduleTick();
+  }
+
+  function toFront() {
+    battleActive = false;
+    closeModal();
+    showHud(false);
+    front.home();
+  }
 
   function onError(error) {
     notice = {message: error.message || String(error), until: performance.now() + 2200};
-    updateHud(adapter.world);
+    if (battleActive) updateHud(adapter.world);
     audio.play('error');
   }
 
   function onWorld(world, command) {
+    if (!battleActive || loadingMission || !renderer) return;
     const visual = renderer.update(world);
     const sounds = {
       acknowledge: 'ack', select: 'select', ready: 'ready', attack: 'sword',
@@ -354,7 +597,10 @@ async function start() {
       if (['acknowledge', 'select', 'ready'].includes(cue)) {
         audio.play(sounds[cue] + '-' + kind);
       } else if (cue === 'buildingSelect') {
-        audio.play(kind === 58 ? 'farm' : kind === 92 ? 'mine' : 'button');
+        audio.play('buildingSelect-' + kind, [58,59].includes(kind) ? 'farm' : kind === 92 ? 'mine' : 'button');
+      } else if (cue === 'workComplete' || cue === 'help' || cue === 'buildingHelp') {
+        const race = byId('battle').dataset.race;
+        audio.play((cue === 'workComplete' ? 'workComplete-' : 'under-attack-') + race, sounds[cue]);
       } else if (sounds[cue]) {
         audio.play(sounds[cue]);
       }
@@ -362,8 +608,13 @@ async function start() {
     updateHud(world);
     if (!outcomeShown && world.outcome && world.outcome !== 'running') {
       outcomeShown = true;
+      discardCheckpoint();
+      if (!directMode) front.recordResult(world.outcome, world.mission, world.nextMission);
       showOutcome(world.outcome);
     }
+    if (checkpointUpdates.has(command.op)) checkpointSoon = true;
+    if (command.op === 'step' && performance.now() - checkpointTime >= (checkpointSoon ? 2000 : 15000))
+      saveCheckpoint();
     if (visual || command.op !== 'step') scheduleFrame();
   }
 
@@ -371,10 +622,10 @@ async function start() {
     controls.cancel();
     clearTimeout(tickTimer);
     tickTimer = undefined;
-    byId('modal-title').textContent = title;
+    byId('modal-title').textContent = t(title);
     byId('modal-content').replaceChildren(...content);
     byId('modal-actions').replaceChildren(...actions.map(([label, activate, tone, wide]) =>
-      button(label, () => { audio.play('button'); activate(); }, (tone ?? '') + (wide ? ' wide' : ''))));
+      button(t(label), () => { audio.play('button'); activate(); }, (tone ?? '') + (wide ? ' wide' : ''))));
     if (!modal.open) modal.showModal();
   }
 
@@ -392,48 +643,98 @@ async function start() {
   }
 
   function showMenu() {
-    audio.play('button');
     showModal('Game Menu', [], [
       ['Objectives', showObjectives, '', true],
-      ['Sound', showSound, '', true],
+      ['Settings', showBattleSettings, '', true],
       ['Restart', showRestart, '', true],
-      ['Back', closeModal, '', true],
+      ['Exit to Main Menu', showExit, '', true],
+      ['Back', closeModal, 'negative', true],
     ]);
   }
 
-  function showObjectives() {
-    const goals = adapter.world.mission?.objectives;
+  function checkControl(label, enabled, onChange) {
+    const row = document.createElement('label');
+    row.className = 'check-control';
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.checked = enabled;
+    check.addEventListener('change', () => { audio.play('button'); onChange(check.checked); });
+    row.append(check, t(label));
+    return row;
+  }
+
+  function showObjectives(back = showMenu) {
+    const goals = missionLabel(adapter.world.mission).objectives;
     const list = document.createElement('ul');
-    for (const goal of Array.isArray(goals) ? goals : ['Build four Farms', 'Build a Barracks']) {
+    for (const goal of goals ?? []) {
       const line = document.createElement('li');
       line.textContent = goal;
       list.append(line);
     }
-    showModal('Mission Objectives', [list], [['Back', showMenu]]);
+    showModal('Mission Objectives', [list, checkControl('Show every time', setting('objectives', true),
+      value => setSetting('objectives', value))], [['OK', back, 'positive']]);
   }
 
-  function showSound() {
-    const controls = [['music', 'Music'], ['effects', 'Sound effects']].map(([key, name]) => {
+  function volumeControls() {
+    return [['music', 'Music'], ['effects', 'Sound effects']].map(([key, name]) => {
       const label = document.createElement('label');
       label.className = 'sound-control';
-      label.append(text(name));
+      label.append(text(t(name)));
       const slider = document.createElement('input');
       slider.type = 'range';
       slider.min = '0'; slider.max = '100';
       slider.value = String(Math.round(audio.volumes[key] * 100));
+      slider.setAttribute('aria-label', t(name));
       slider.addEventListener('input', () => audio.change(key, Number(slider.value) / 100));
       label.append(slider);
       return label;
     });
-    showModal('Sound', controls, [['Back', showMenu]]);
+  }
+
+  function showSound(back) {
+    showModal('Sound', volumeControls(), [['Back', back, 'negative']]);
+  }
+
+  function showBattleSettings() {
+    const fog = checkControl('Fog of war', adapter.world.fog, enabled => {
+      setSetting('fog', enabled);
+      adapter.send({op:'fog', enabled});
+    });
+    const speed = document.createElement('div');
+    speed.className = 'speed-controls';
+    const choices = [['Slow', 4], ['Medium', 7], ['Fast', 8]];
+    for (const [label, value] of choices) {
+      const choice = button(t(label), () => {
+        audio.play('button');
+        adapter.send({op:'speed', speed:value});
+        for (const other of speed.children) other.classList.toggle('active', other === choice);
+      });
+      choice.classList.toggle('active', adapter.world.speed === value);
+      speed.append(choice);
+    }
+    showModal('Settings', [...volumeControls(), fog, text(t('Game speed')), speed],
+      [['Back', showMenu, 'negative']]);
   }
 
   function showRestart() {
-    const warning = text('Progress in this battle will be replaced.');
+    const warning = text(t('Progress in this battle will be replaced.'));
     warning.className = 'warning';
     showModal('Restart the mission?', [warning], [
-      ['Restart', () => location.reload(), 'positive'], ['Back', showMenu, 'negative'],
+      ['OK', async () => {
+        try {
+          await loadBattle({op:'restart'});
+          closeModal();
+          playMission();
+        } catch (error) {
+          showModal('Unable to load the mission', [text(error.message)], [['Main Menu', toFront, 'positive']]);
+        }
+      }, 'positive'], ['Back', showMenu, 'negative'],
     ]);
+  }
+
+  function showExit() {
+    showModal('Exit to the Main Menu?', [],
+      [['OK', async () => { await saveCheckpoint(true); toFront(); }, 'positive'], ['Back', showMenu, 'negative']]);
   }
 
   function showOutcome(result) {
@@ -449,20 +750,23 @@ async function start() {
     for (const [label, value] of rows) {
       const title = document.createElement('dt');
       const count = document.createElement('dd');
-      title.textContent = label;
+      title.textContent = t(label);
       count.textContent = value;
       table.append(title, count);
     }
-    showModal(won ? 'Victory' : 'Defeat', rows.length ? [table] : [],
-      [['Play again', () => location.reload(), 'positive']]);
+    const next = adapter.world.nextMission;
+    showModal(won ? 'Victory' : 'Defeat', rows.length ? [table] : [], [
+      ...(won && Number.isInteger(next) ? [['Next Mission', () => { toFront(); front.next(next); }, 'positive']] : []),
+      ['Main Menu', toFront, won ? 'negative' : 'positive'],
+    ]);
   }
 
   function purchase(command) {
     const cancellation = command.op === 'cancel';
     const preview = document.createElement('div');
     preview.className = 'purchase-preview';
-    preview.append(art.icon(commandIcon(command)), text(description(command) || command.label));
-    showModal(`${command.label}?`, [preview], [
+    preview.append(art.icon(commandIcon(command)), text(description(command) || commandLabel(command)));
+    showModal(`${commandLabel(command)}?`, [preview], [
       [cancellation ? 'OK' : 'Buy', () => {
         const current = adapter.world.actions.find(entry => commandKey(entry) === commandKey(command));
         if (!current?.enabled) return;
@@ -539,7 +843,7 @@ async function start() {
   function paintSelection(world) {
     const units = world.selection.map(id => world.units.find(unit => unit.id === id)).filter(Boolean);
     const key = units.map(unit => [unit.id, unit.kind, unit.hp, unit.progress, unit.construction,
-      unit.production, unit.level].join(':')).join(',');
+      unit.production, unit.level, unit.resourcesAmount].join(':')).join(',');
     if (infoKey === key) return;
     infoKey = key;
     selection.replaceChildren();
@@ -550,7 +854,7 @@ async function start() {
       const portrait = document.createElement('button');
       portrait.type = 'button';
       portrait.className = 'portrait';
-      portrait.setAttribute('aria-label', unit.name ?? unitNames[unit.kind] ?? 'Center on unit');
+      portrait.setAttribute('aria-label', unitLabel(unit.kind, unit.name ?? unitNames[unit.kind] ?? 'Center on unit'));
       const meter = document.createElement('div');
       meter.className = 'health';
       const bar = document.createElement('span');
@@ -572,18 +876,19 @@ async function start() {
     if (units.length === 1) {
       const unit = units[0];
       const name = document.createElement('span');
-      name.textContent = unit.name ?? unitNames[unit.kind] ?? (unit.building ? 'Building' : 'Unit');
+      name.textContent = unitLabel(unit.kind, unit.name ?? unitNames[unit.kind] ?? (unit.building ? 'Building' : 'Unit'));
       grid.append(name);
       const stats = document.createElement('div');
       stats.className = 'stats';
       stats.textContent = `${unit.hp} / ${unit.maxHp}`;
-      const rows = unit.kind === 92 ? [['Gold', unit.resources]] : !unit.building ? [
-        ['Armor', unit.armor], ['Damage', unit.damage?.join('–')], ['Range', unit.range], ['Sight', unit.sight],
+      const rows = unit.kind === 92 ? [['Gold left', unit.resourcesAmount ?? unit.resources * 100]] : !unit.building ? [
+        ['Armor', unit.armor], ['Damage', unit.damageRange?.join('–')], ['Range', unit.range],
+        ['Sight', unit.sight], ['Speed', unit.displaySpeed],
       ] : [];
       for (const [label, value] of rows) {
         if (value == null) continue;
         const row = document.createElement('div');
-        row.textContent = `${label}: ${value}`;
+        row.textContent = `${t(label)}: ${value}`;
         stats.append(row);
       }
       if (typeof unit.progress === 'number' && unit.progress >= 0) {
@@ -591,7 +896,7 @@ async function start() {
         const bar = document.createElement('div');
         bar.className = 'progress-track';
         bar.style.setProperty('--progress', progress + '%');
-        bar.textContent = Math.floor(progress) + '% complete';
+        bar.textContent = Math.floor(progress) + '% ' + t('complete');
         stats.append(bar);
       }
       selection.append(grid, stats);
@@ -636,7 +941,7 @@ async function start() {
           (armed === commandKey(command) ? ' armed' : '') +
           (command.enabled === false ? ' unavailable' : '');
         el.title = priceLabel(command);
-        el.setAttribute('aria-label', command.label);
+        el.setAttribute('aria-label', commandLabel(command));
         el.dataset.command = command.op;
         if (command.kind != null) el.dataset.kind = command.kind;
         if (command.action != null) el.dataset.action = command.action;
@@ -654,8 +959,8 @@ async function start() {
     byId('command-area').classList.toggle('placing', Boolean(placement));
     const armedCommand = actions.find(cmd => commandKey(cmd) === armed);
     const message = notice?.until > performance.now() ? notice.message : placement ?
-      (placementTile && !placementTile.valid ? 'Choose another site' : 'Choose a site, then tap Place') :
-      aim ? aim.label + ' — Tap a target' : armedCommand ? priceLabel(armedCommand) : '';
+      t(placementTile && !placementTile.valid ? 'Choose another site' : 'Choose a site, then tap Place') :
+      aim ? commandLabel(aim) + ' — ' + t('Tap a target') : armedCommand ? priceLabel(armedCommand) : '';
     if (detail.textContent !== message) detail.textContent = message;
     detail.hidden = !message;
   }
@@ -690,7 +995,7 @@ async function start() {
   minimap.addEventListener('pointermove', event => {
     if (minimap.hasPointerCapture(event.pointerId)) centerFromMinimap(event);
   });
-  byId('menu-button').addEventListener('click', showMenu);
+  byId('menu-button').addEventListener('click', () => { audio.play('button'); showMenu(); });
   byId('place-button').addEventListener('click', confirmPlacement);
   byId('cancel-placement').addEventListener('click', () => { audio.play('button'); cancelPlacement(); });
   modal.addEventListener('cancel', event => {
@@ -713,24 +1018,24 @@ async function start() {
 
   function draw(time) {
     frameRequested = false;
-    if (stopped || document.hidden) return;
+    if (!battleActive || stopped || document.hidden || !renderer) return;
     const view = adapter.frame(time);
     renderer.draw(view, canvasRect, placementTile, selectBox);
     if (adapter.cameraMoving) scheduleFrame();
   }
 
   function scheduleFrame() {
-    if (!frameRequested && !stopped && !document.hidden) {
+    if (battleActive && !frameRequested && !stopped && !document.hidden) {
       frameRequested = true;
       requestAnimationFrame(draw);
     }
   }
 
   function scheduleTick() {
-    if (tickTimer !== undefined || stepPending || stopped || document.hidden || modal.open || outcomeShown) return;
+    if (!battleActive || tickTimer !== undefined || stepPending || stopped || document.hidden || modal.open || outcomeShown) return;
     tickTimer = setTimeout(async () => {
       tickTimer = undefined;
-      if (stopped || document.hidden || modal.open || outcomeShown) return;
+      if (!battleActive || stopped || document.hidden || modal.open || outcomeShown) return;
       const time = performance.now();
       const duration = adapter.world.cycleMs || tickMs;
       const cycles = nextTick === 0 ? 1 : Math.min(3, 1 + Math.max(0, Math.floor((time - nextTick) / duration)));
@@ -744,6 +1049,7 @@ async function start() {
   document.addEventListener('visibilitychange', () => {
     nextTick = 0;
     if (document.hidden) {
+      saveCheckpoint(true);
       clearTimeout(tickTimer);
       tickTimer = undefined;
       controls.cancel();
@@ -753,6 +1059,7 @@ async function start() {
     }
   });
   window.addEventListener('pagehide', event => {
+    saveCheckpoint(true);
     if (event.persisted) { controls.cancel(); return; }
     stopped = true;
     clearTimeout(tickTimer);
@@ -761,15 +1068,9 @@ async function start() {
     controls.destroy();
   });
 
-  for (const id of ['hud-top', 'selection', 'minimap', 'command-area']) byId(id).hidden = false;
-  byId('loading').hidden = true;
-  updateHud(initialWorld);
-  adapter.frame(performance.now());
-  const home = initialWorld.units.find(unit => unit.owner === initialWorld.player && unit.kind === 74) ??
-    initialWorld.units.find(unit => unit.owner === initialWorld.player);
-  if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2);
   window.__tidewaterPilot = Object.freeze({
     world: () => structuredClone(adapter.world),
+    state: () => ({screen:battleActive ? 'battle' : byId('front').dataset.screen, progress:front.progress.exportProgress()}),
     camera() {
       syncProjection();
       return structuredClone(adapter.view);
@@ -783,6 +1084,12 @@ async function start() {
         y: canvasRect.top + (y - view.visibleGlobal.y) * scale};
     },
   });
+  updateLanguage();
+  if (directMode) {
+    await loadMission(Number(direct));
+    playMission(false);
+  } else front.home();
+  byId('loading').hidden = true;
   window.dispatchEvent(new Event('tidewater:ready'));
   scheduleFrame();
   scheduleTick();
