@@ -8,6 +8,7 @@
 //!
 //! Our reading of the spec where it is open is marked "Our reading:" at the place it applies.
 
+pub mod score;
 pub mod stats;
 
 use tidewater_sim::economy;

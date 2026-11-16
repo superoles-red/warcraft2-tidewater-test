@@ -29,6 +29,8 @@ const russian = {
   'Units defeated':'Убито врагов', 'Buildings destroyed':'Уничтожено строений', 'Units lost':'Потеряно бойцов',
   'Buildings lost':'Потеряно строений', 'Score':'Очки',
   'Language':'Язык', 'Delete Russian':'Удалить русский', 'Delete Russian?':'Удалить русский язык?',
+  'Story':'История', 'Introduction':'Вступление', 'Credits':'Об авторах', 'Demo':'Демо',
+  'Media unavailable':'Не удалось открыть этот экран.',
   'Download language?':'Скачать язык?', 'MB of storage required':'МБ свободного места',
   'Download':'Скачать', 'Downloading language…':'Загрузка языка…', 'Delete':'Удалить',
   'Language unavailable':'Язык недоступен', 'Files':'Файлы', 'About the game':'Об игре', 'Update':'Обновить',

@@ -1,0 +1,122 @@
+@font-face {
+  font-family: 'Warcraft Credits Title';
+  src: url('./art/story/credits-title.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Warcraft Credits Body';
+  src: url('./art/story/credits-body.woff') format('woff');
+  font-display: swap;
+}
+
+.story-back {
+  position: absolute;
+  z-index: 2;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  width: clamp(48px, 11vmin, 66px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: url('./art/menu/menu-back-orc.webp') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+.story-media {
+  --story-top: max(6px, env(safe-area-inset-top));
+  --story-bottom: max(10px, env(safe-area-inset-bottom));
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  color: var(--light);
+  background: #000;
+}
+
+.story-media::backdrop { background: #000; }
+
+.story-media-content {
+  position: absolute;
+  inset: var(--story-top) max(6px, env(safe-area-inset-right))
+    var(--story-bottom) max(6px, env(safe-area-inset-left));
+  display: grid;
+  place-items: center;
+}
+
+.story-video {
+  display: block;
+  width: min(100%, calc((100vh - var(--story-top) - var(--story-bottom)) * 20 / 9));
+  width: min(100%, calc((100dvh - var(--story-top) - var(--story-bottom)) * 20 / 9));
+  aspect-ratio: 20 / 9;
+  object-fit: fill;
+}
+
+.story-message, .story-start {
+  z-index: 1;
+  position: absolute;
+  inset-inline: 12%;
+  justify-self: center;
+}
+
+.story-message {
+  bottom: 12%;
+  padding: 0.55em 1em;
+  text-align: center;
+  background-color: #12100de8;
+}
+
+.story-start {
+  --button-art: url('./art/menu/title-button.webp');
+  padding-inline: 28px;
+}
+
+.story-credits-stage {
+  position: relative;
+  width: min(100%, calc((100vh - var(--story-top) - var(--story-bottom)) * 4 / 3));
+  width: min(100%, calc((100dvh - var(--story-top) - var(--story-bottom)) * 4 / 3));
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #000 center / 100% 100% no-repeat;
+}
+
+.story-credits-clip {
+  position: absolute;
+  inset: 16.667% 13% 26.042% 21.875%;
+  overflow: hidden;
+}
+
+.story-credits-roll {
+  color: #fff;
+  font-family: 'Warcraft Credits Body', 'Warcraft HUD Russian', Georgia, serif;
+  text-shadow: 1px 1px #000, 0 1px 3px #100900;
+}
+
+.story-credits-roll h2 {
+  margin: 0;
+  font-family: 'Warcraft Credits Title', 'Warcraft HUD Russian', Georgia, serif;
+  font-size: var(--credits-title-size, 22px);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.story-credits-names {
+  margin-top: var(--credits-gap, 52px);
+  font-size: var(--credits-body-size, 15px);
+  line-height: var(--credits-line, 18px);
+  overflow-wrap: anywhere;
+}
+
+.story-credits-indent { padding-inline-start: 9%; }
+
+@media (orientation: portrait) {
+  .story-media--credits {
+    background: #2b1f0f url('./art/menu/title-background.webp') center / cover;
+  }
+}

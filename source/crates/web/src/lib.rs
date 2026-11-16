@@ -7,8 +7,9 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
+use tidewater_command_panel::score as results;
 use tidewater_formats::{
-    identity::data_hash,
+    identity::{FNV_BASIS, data_hash, fnv_extend},
     install::{Files, Install},
     mpq::ReadSeek,
 };
@@ -72,6 +73,11 @@ enum Request {
     Campaigns,
     LoadMission {
         id: u8,
+    },
+    LoadDemo {
+        id: u8,
+        #[serde(default)]
+        seed: u32,
     },
     Hash,
     Step {
@@ -219,6 +225,26 @@ struct Score {
     buildings_lost: u32,
     gathered: [u32; 3],
     score: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    mission_score: Option<u32>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    rows: Vec<ScoreRow>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ScoreRow {
+    slot: u8,
+    color: u8,
+    name_entry: u16,
+    label: u16,
+    values: [u32; 7],
+}
+
+#[derive(Serialize)]
+struct DemoView {
+    id: u8,
+    finished: bool,
 }
 
 #[derive(Serialize)]
@@ -243,6 +269,8 @@ struct Snapshot<'a> {
     campaigns: Option<Vec<Campaign>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     scenario: Option<&'a scenario::Metadata>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    demo: Option<DemoView>,
     score: Score,
     #[serde(skip_serializing_if = "Option::is_none")]
     mission: Option<&'a Mission>,
@@ -276,6 +304,8 @@ pub struct Engine {
     player: u8,
     mission: Mission,
     scenario: Option<Scenario>,
+    demo: Option<u8>,
+    start_controllers: [u8; 8],
     speeds: Vec<u8>,
     clock: Option<Scheduler>,
     sent_explored: Vec<u8>,
@@ -294,6 +324,7 @@ impl Engine {
         let simulation_data = data_hash(|name| install.read(name))?;
         let (world, player, mission) = catalog.start(&mut install, campaign::FIRST)?;
         let speeds = tidewater_command_panel::stats::speeds(&world.scripts, &world.stats.0);
+        let start_controllers = std::array::from_fn(|slot| world.players[slot].controller);
         let origin = Origin {
             data: simulation_data,
             map: mission.map_hash,
@@ -308,6 +339,8 @@ impl Engine {
             player,
             mission,
             scenario: None,
+            demo: None,
+            start_controllers,
             speeds,
             clock: None,
             sent_explored: Vec::new(),
@@ -318,6 +351,21 @@ impl Engine {
     /// Decode one browser request and return a compact, JSON-encoded state update.
     pub fn request(&mut self, request: &[u8]) -> Result<Vec<u8>> {
         let request: Request = serde_json::from_slice(request)?;
+        if self.demo.is_some()
+            && !matches!(
+                request,
+                Request::Snapshot
+                    | Request::Campaigns
+                    | Request::LoadMission { .. }
+                    | Request::LoadDemo { .. }
+                    | Request::Hash
+                    | Request::Step { .. }
+                    | Request::Frame { .. }
+                    | Request::ResetClock
+            )
+        {
+            bail!("Demo playback does not take battle commands");
+        }
         let mut full = false;
         let mut hash = false;
         let mut placement = None;
@@ -328,6 +376,10 @@ impl Engine {
             Request::Campaigns => campaigns = Some(self.catalog.campaigns()?),
             Request::LoadMission { id } => {
                 self.load_mission(id)?;
+                full = true;
+            }
+            Request::LoadDemo { id, seed } => {
+                self.load_demo(id, seed)?;
                 full = true;
             }
             Request::Hash => hash = true,
@@ -437,6 +489,8 @@ impl Engine {
         self.origin.map = self.mission.map_hash;
         self.origin.start = self.world.state_hash();
         self.speeds = tidewater_command_panel::stats::speeds(&self.world.scripts, &self.world.stats.0);
+        self.start_controllers = std::array::from_fn(|slot| self.world.players[slot].controller);
+        self.demo = None;
         self.clock = None;
     }
 
@@ -445,6 +499,42 @@ impl Engine {
         self.activate(state);
         self.scenario = None;
         Ok(())
+    }
+
+    fn load_demo(&mut self, id: u8, seed: u32) -> Result<()> {
+        use tidewater_formats::pud::Pud;
+        use tidewater_sim::{
+            cheats::Flags,
+            setup::{Setup, Start},
+            victory::Victory,
+        };
+
+        if !(1..=4).contains(&id) {
+            bail!("Unknown Warcraft II demo");
+        }
+        let path = format!("OrigMaps\\Attract\\ATTRCT{id:02}.PUD");
+        let data = self.install.read(&path)?;
+        let map = Pud::parse(&data)?;
+        let setup = Setup {
+            enhanced: false,
+            ..Setup::default()
+        };
+        let start = Start::choose(&map, &setup, seed)?;
+        let (mut world, _) = tidewater_replay::start::build_world(&mut self.install, &map, &start)?;
+        world.victory = Victory::for_demo();
+        world.sounds.demo = true;
+        world.start_cheats(Flags::default().for_demo());
+        world.start_up();
+        let mission = Mission::demo(path, world.start.view, start.era, fnv_extend(FNV_BASIS, &data));
+        self.activate((world, start.local, mission));
+        self.scenario = None;
+        self.demo = Some(id);
+        Ok(())
+    }
+
+    fn demo_finished(&self) -> bool {
+        // Two start-up cycles run before the displayed tick counter starts.
+        self.demo.is_some() && self.world.tick >= tidewater_sim::victory::DEMO_COUNTDOWN - 1
     }
 
     fn fresh_current(&mut self) -> Result<(World, u8, Mission)> {
@@ -464,6 +554,9 @@ impl Engine {
 
     /// Saves the world of the current battle for the browser's single Continue slot.
     pub fn save_checkpoint(&self) -> Result<Vec<u8>> {
+        if self.demo.is_some() {
+            bail!("A demo cannot be continued as a battle");
+        }
         if self.world.players[self.player as usize].result.is_some() {
             bail!("A finished battle cannot be continued");
         }
@@ -493,7 +586,7 @@ impl Engine {
 
     fn step(&mut self, n: u32) {
         for _ in 0..n {
-            if self.world.players[self.player as usize].result.is_some() {
+            if self.demo_finished() || self.world.players[self.player as usize].result.is_some() {
                 break;
             }
             self.world.step(&[]);
@@ -618,9 +711,32 @@ impl Engine {
             || Scheduler::new(self.pacing(), self.world.speed, 0).cycle_ms(),
             Scheduler::cycle_ms,
         );
-        let actions = self.commands().actions(&self.text);
+        let demo = self.demo.map(|id| DemoView {
+            id,
+            finished: self.demo_finished(),
+        });
+        let actions = if demo.is_some() {
+            Vec::new()
+        } else {
+            self.commands().actions(&self.text)
+        };
         let world = &mut self.world;
         let player = &world.players[self.player as usize];
+        let outcome = demo.is_none().then_some(player.result).flatten();
+        let score_rows = if outcome.is_some() {
+            results::rows(world, self.player, &self.start_controllers, self.mission.is_expansion())
+                .into_iter()
+                .map(|row| ScoreRow {
+                    slot: row.slot,
+                    color: world.players[usize::from(row.slot)].colour,
+                    name_entry: row.name,
+                    label: row.label,
+                    values: row.stats.values(),
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
         let explored = world.vision.flags(Map::Explored);
         let visible = world.vision.flags(Map::Visible);
         let send_explored = full || explored != self.sent_explored;
@@ -668,7 +784,7 @@ impl Engine {
                 .filter(|unit| {
                     !unit.inside
                         && !unit.removing
-                        && (unit.owner == self.player || world.visible_to(self.player, unit.id))
+                        && (demo.is_some() || unit.owner == self.player || world.visible_to(self.player, unit.id))
                 })
                 .map(|unit| unit_view(world, unit, &self.text, &self.speeds))
                 .collect(),
@@ -676,10 +792,11 @@ impl Engine {
             fog: world.rules.fog_of_war,
             speed: world.speed,
             cycle_ms,
-            outcome: player.result.map(outcome_name),
+            outcome: outcome.map(outcome_name),
             next_mission: self.mission.next,
             campaigns,
             scenario: self.scenario.as_ref().map(|scenario| &scenario.meta),
+            demo,
             score: Score {
                 kills: player.kills,
                 razings: player.razings,
@@ -687,6 +804,14 @@ impl Engine {
                 buildings_lost: player.buildings_lost,
                 gathered: player.gathered,
                 score: player.score,
+                mission_score: outcome.map(|o| {
+                    player.score.saturating_add(if o == Outcome::Victory {
+                        results::VICTORY_BONUS
+                    } else {
+                        0
+                    })
+                }),
+                rows: score_rows,
             },
             actions,
             mission: full.then_some(&self.mission),

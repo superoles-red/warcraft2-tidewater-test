@@ -206,7 +206,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   }
 
   function updateFog(state) {
-    if (!state.visible || !state.explored ||
+    if (state.demo || !state.visible || !state.explored ||
         (fogArrays[0] === state.visible && fogArrays[1] === state.explored)) return false;
     fogArrays = [state.visible, state.explored];
     let dirty = false;

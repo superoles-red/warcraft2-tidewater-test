@@ -12,11 +12,13 @@ function loadProgress() {
       last: Number.isInteger(stored.last) ? stored.last : null,
       lastQuick: typeof stored.lastQuick?.id === 'string' ? stored.lastQuick : null,
       recent: campaignOrder.includes(stored.recent) ? stored.recent : null,
+      scores: Object.fromEntries(Object.entries(stored.scores ?? {}).filter(([id, score]) =>
+        /^\d+$/.test(id) && Number(id) < 52 && Number.isSafeInteger(score) && score >= 0)),
       completed: Array.isArray(stored.completed)
         ? stored.completed.filter(id => Number.isInteger(id) && id >= 0 && id < 52)
         : [],
     };
-  } catch { return {last: null, lastQuick: null, recent: null, completed: []}; }
+  } catch { return {last: null, lastQuick: null, recent: null, completed: [], scores: {}}; }
 }
 
 function saveProgress(progress) {
@@ -138,12 +140,13 @@ export function createCampaignUi(root, campaigns, actions) {
         actions.dismiss();
         show('loading', 'Loading mission…', []);
         try {
-          const world = await actions.load(mission.id, resume);
+          const {world, restored} = await actions.load(mission.id, resume);
           progress.last = mission.id;
           progress.lastQuick = null;
           progress.recent = mission.campaign;
           saveProgress(progress);
-          briefing(world.mission, resume);
+          if (!restored) await actions.act?.(world.mission);
+          briefing(world.mission, restored);
         } catch (error) {
           show('loading', 'Unable to load the mission', [node('p', error.message)], () => chapters(campaign));
         }
@@ -188,6 +191,7 @@ export function createCampaignUi(root, campaigns, actions) {
     show('settings', 'Settings', [
       control('Sound', () => actions.sound(settings)),
       control('Language', languages),
+      control('Story', () => actions.story({show, control, back:settings})),
       control('Files', () => actions.files(settings, progressAccess)),
       control('About the game', about),
     ], home);
@@ -264,6 +268,7 @@ export function createCampaignUi(root, campaigns, actions) {
         last: record.last ?? null, recent: record.recent ?? findMission(record.last)?.campaign ?? null,
         lastQuick: null,
         completed: [...new Set(record.completed)],
+        scores: {},
       };
       try { localStorage.setItem(storageKey, JSON.stringify(updated)); }
       catch { return false; }
@@ -277,7 +282,13 @@ export function createCampaignUi(root, campaigns, actions) {
     home, confirm, briefing, launch, progress: progressAccess,
     close() { root.hidden = true; },
     open: () => !root.hidden,
-    recordResult(outcome, mission, nextId) {
+    scoreTotal(mission, missionScore) {
+      const chapter = campaigns.find(campaign => campaign.id === mission?.campaign);
+      if (!chapter) return missionScore;
+      const prior = chapter.missions.filter(item => item.number < mission.number);
+      return prior.reduce((total, item) => total + (progress.scores[item.id] || 0), missionScore);
+    },
+    recordResult(outcome, mission, nextId, missionScore) {
       if (mission?.campaign === 'quick') {
         progress.lastQuick = null;
         saveProgress(progress);
@@ -286,6 +297,7 @@ export function createCampaignUi(root, campaigns, actions) {
       if (!mission || progress.last !== mission.id) return;
       if (outcome === 'victory') {
         if (!progress.completed.includes(mission.id)) progress.completed.push(mission.id);
+        if (Number.isSafeInteger(missionScore)) progress.scores[mission.id] = missionScore;
         progress.last = Number.isInteger(nextId) ? nextId : null;
       } else progress.last = null;
       saveProgress(progress);

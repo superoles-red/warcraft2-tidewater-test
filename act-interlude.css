@@ -1,0 +1,92 @@
+.act-interlude {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: #080602 url('./art/menu/title-background.webp') center / cover;
+  color: #fff;
+  touch-action: manipulation;
+}
+
+.act-interlude[open] { display: grid; place-items: center; }
+.act-interlude::backdrop { background: #000; }
+.act-interlude[data-phase="movie"] { background: #000; }
+
+.act-frame {
+  width: min(100%, calc((100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 4 / 3));
+  width: min(100%, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 4 / 3));
+  aspect-ratio: 4 / 3;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  transition: opacity .4s ease;
+}
+
+.act-interlude.act-closing .act-frame { opacity: 0; }
+
+.act-art,
+.act-caption {
+  position: absolute;
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.act-art {
+  height: 100%;
+  opacity: 0;
+  transition: opacity .6s linear;
+}
+
+.act-caption {
+  top: 33.333333%;
+  filter: brightness(0) invert(1);
+  animation: act-text-in .3s ease both;
+  transition: filter .6s linear;
+}
+
+.act-visible .act-art { opacity: 1; }
+.act-visible .act-caption { filter: none; }
+@keyframes act-text-in { from { opacity: 0; } to { opacity: 1; } }
+
+.act-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.act-interlude .act-next {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  min-width: 104px;
+  min-height: 44px;
+  padding: 6px 14px;
+  font-size: 16px;
+  --button-art: url('./art/menu/title-button.webp');
+}
+
+.act-film { position: relative; width: 100%; height: 100%; display: grid; place-items: center; min-height: 0; }
+.act-film .story-video {
+  width: min(100%, calc((100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 20 / 9));
+  width: min(100%, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 20 / 9));
+  aspect-ratio: 20 / 9;
+  object-fit: fill;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act-frame, .act-art, .act-caption { transition: none; animation: none; }
+}

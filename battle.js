@@ -83,7 +83,7 @@ function createInterface({
         explored: next.explored ?? world.explored,
         mission: next.mission ?? world.mission,
       };
-      if (['loadMission', 'loadScenario', 'restart', 'restoreCheckpoint'].includes(command.op)) sizeWorld();
+      if (['loadMission', 'loadScenario', 'loadDemo', 'restart', 'restoreCheckpoint'].includes(command.op)) sizeWorld();
       onWorld(world, command);
       return world;
     });
@@ -181,7 +181,7 @@ function createInterface({
   };
   return {
     frame, run, input, send, checkpoint,
-    centerOn(x, y) { camera.centerOn(x, y, {useEdgeRoom: true}); onFrame(); },
+    centerOn(x, y, options = {useEdgeRoom:true}) { camera.centerOn(x, y, options); onFrame(); },
     get world() { return world; },
     get view() { return view; },
     get cameraMoving() { return camera.active; },
@@ -224,6 +224,7 @@ function makeAudio() {
   let narration;
   let audioContext;
   let unlocked = false;
+  let mediaActive = false;
   const cache = new Map();
   readJson('./art/audio.json').then(source => { files = source; }).catch(() => {});
   const musicSource = () => files['music-' + race]?.[0] ?? files.music?.[0];
@@ -250,7 +251,7 @@ function makeAudio() {
     const source = audioPath(musicSource());
     if (music.getAttribute('src') !== source) music.src = source;
     music.volume = volumes.music;
-    if (document.hidden || !volumes.music) music.pause();
+    if (document.hidden || mediaActive || !volumes.music) music.pause();
     else music.play().catch(() => {});
   }
   function activate() {
@@ -309,6 +310,7 @@ function makeAudio() {
   });
   return {
     play, change, volumes, briefing, stopBriefing,
+    media(active) { mediaActive = active; sync(); },
     race(value) { race = value; sync(); },
     async language() {
       languageFiles = currentLanguage() === 'ru'
@@ -350,6 +352,10 @@ async function start() {
   let nextTick = 0;
   let battleActive = false;
   let loadingMission = false;
+  let demoReturn;
+  let demoBack;
+  let nextDemo = 1;
+  let acts;
   let tickTimer;
   let stepPending = false;
   let stopped = false;
@@ -398,7 +404,7 @@ async function start() {
     onWorld, onError,
     onBox(box) { selectBox = box; scheduleFrame(); },
     onFrame: scheduleFrame,
-    active: () => battleActive && !loadingMission && !stopped && !document.hidden && !outcomeShown,
+    active: () => battleActive && !demoReturn && !loadingMission && !stopped && !document.hidden && !outcomeShown,
     action: {
       target: () => aim,
       placement: () => placement,
@@ -422,6 +428,28 @@ async function start() {
     play: () => playMission(),
     briefing: id => audio.briefing(id),
     stopBriefing: () => audio.stopBriefing(),
+    async act(mission) {
+      const {createActInterlude} = await import('./act-interlude.js');
+      acts ??= createActInterlude();
+      audio.media(true);
+      try {
+        await acts.play(mission.id, {
+          language: currentLanguage(), volume: audio.volumes.effects,
+        });
+      } finally { audio.media(false); }
+    },
+    async story(view) {
+      try {
+        const {createStoryUi} = await import('./story-ui.js');
+        createStoryUi({
+          ...view, onDemo: startDemo,
+          gain: kind => audio.volumes[kind],
+          onMediaChange: active => audio.media(active),
+        }).open();
+      } catch {
+        showModal('Story', [text(t('Media unavailable'))], [['Back', closeModal, 'negative']]);
+      }
+    },
     sound: back => showSound(() => { closeModal(); back(); }),
     language: updateLanguage,
     imported: discardCheckpoint,
@@ -466,11 +494,49 @@ async function start() {
 
   function loadMission(id, resume = false) { return loadBattle({op:'loadMission', id}, resume); }
 
+  async function startDemo(returnToStory) {
+    if (demoReturn) return;
+    demoReturn = returnToStory;
+    try {
+      const {createStoryBack} = await import('./story-ui.js');
+      await loadBattle({op:'loadDemo', id:nextDemo, seed:crypto.getRandomValues(new Uint32Array(1))[0]});
+      nextDemo = nextDemo % 4 + 1;
+      demoBack = createStoryBack(() => {
+        audio.play('button');
+        stopDemo();
+      });
+      byId('battle').append(demoBack);
+      front.close();
+      playMission(false);
+    } catch {
+      stopDemo();
+      showModal('Demo', [text(t('Media unavailable'))], [['Back', closeModal, 'negative']]);
+    }
+  }
+
+  function stopDemo() {
+    const returnToStory = demoReturn;
+    demoReturn = undefined;
+    battleActive = false;
+    clearTimeout(tickTimer);
+    tickTimer = undefined;
+    demoBack?.remove();
+    demoBack = undefined;
+    showHud(false);
+    returnToStory?.();
+  }
+
+  function centerDemo(world) {
+    const [x, y] = world.mission.start;
+    adapter.centerOn((x + 7) * world.tileSize, (y + 6) * world.tileSize, {useEdgeRoom:false});
+  }
+
   async function loadQuickBattle(entry, options, resume = false) {
     const {readScenarioMap} = await import('./scenarios/data.js');
     const pud = await readScenarioMap(entry);
-    return loadBattle({op:'loadScenario', id:entry.id, title:entry.title,
+    const {world} = await loadBattle({op:'loadScenario', id:entry.id, title:entry.title,
       description:entry.description, pud, options}, resume);
+    return world;
   }
 
   function discardCheckpoint() {
@@ -479,7 +545,7 @@ async function start() {
   }
 
   function saveCheckpoint(force = false) {
-    if (directMode || !battleActive || loadingMission || outcomeShown) return Promise.resolve();
+    if (directMode || demoReturn || !battleActive || loadingMission || outcomeShown) return Promise.resolve();
     if (savingCheckpoint) return savingCheckpoint;
     const now = performance.now();
     if (!force && now - checkpointTime < (checkpointSoon ? 2000 : 15000)) return Promise.resolve();
@@ -533,7 +599,7 @@ async function start() {
         element.parentElement.firstChild.replaceWith(art.resource(field));
       }
       renderer = await nextRenderer;
-      if (!restored) {
+      if (!restored && !mission.demo) {
         await adapter.run({op:'speed', speed:7});
         if (mission.mission.campaign !== 'quick' && !setting('fog', true))
           await adapter.run({op:'fog', enabled:false});
@@ -543,23 +609,24 @@ async function start() {
         ? 'orc' : 'human';
       byId('battle').dataset.race = race;
       audio.race(race);
-      if (!restored) discardCheckpoint();
-      return adapter.world;
+      if (!restored && !mission.demo) discardCheckpoint();
+      return {world:adapter.world, restored};
     } finally { loadingMission = false; }
   }
 
   function playMission(showObjectivesAtStart = true) {
     battleActive = true;
     outcomeShown = false;
-    showHud(true);
+    showHud(!demoReturn);
     adapter.frame(performance.now());
     const world = adapter.world;
     const home = world.units.find(unit => unit.owner === world.player && [74,75].includes(unit.kind)) ??
       world.units.find(unit => unit.owner === world.player);
-    if (Number.isFinite(savedCamera?.x) && Number.isFinite(savedCamera?.y))
+    if (demoReturn) centerDemo(world);
+    else if (Number.isFinite(savedCamera?.x) && Number.isFinite(savedCamera?.y))
       adapter.centerOn(savedCamera.x, savedCamera.y);
     else if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2);
-    updateHud(world);
+    if (!demoReturn) updateHud(world);
     nextTick = 0;
     checkpointTime = performance.now();
     checkpointSoon = true;
@@ -570,6 +637,7 @@ async function start() {
 
   function toFront() {
     battleActive = false;
+    audio.media(false);
     closeModal();
     showHud(false);
     front.home();
@@ -605,12 +673,19 @@ async function start() {
         audio.play(sounds[cue]);
       }
     }
+    if (demoReturn) {
+      if (world.demo?.finished) stopDemo();
+      else if (visual) scheduleFrame();
+      return;
+    }
     updateHud(world);
     if (!outcomeShown && world.outcome && world.outcome !== 'running') {
       outcomeShown = true;
       discardCheckpoint();
-      if (!directMode) front.recordResult(world.outcome, world.mission, world.nextMission);
-      showOutcome(world.outcome);
+      const score = world.score.missionScore ?? world.score.score;
+      const total = front.scoreTotal(world.mission, score);
+      if (!directMode) front.recordResult(world.outcome, world.mission, world.nextMission, score);
+      showOutcome(world, total);
     }
     if (checkpointUpdates.has(command.op)) checkpointSoon = true;
     if (command.op === 'step' && performance.now() - checkpointTime >= (checkpointSoon ? 2000 : 15000))
@@ -737,28 +812,22 @@ async function start() {
       [['OK', async () => { await saveCheckpoint(true); toFront(); }, 'positive'], ['Back', showMenu, 'negative']]);
   }
 
-  function showOutcome(result) {
-    const won = String(result).toLowerCase().includes('victory') || String(result).toLowerCase() === 'win';
-    const score = adapter.world.score;
-    const rows = score ? [
-      ['Units defeated', score.kills], ['Buildings destroyed', score.razings],
-      ['Units lost', score.unitsLost], ['Buildings lost', score.buildingsLost],
-      ['Score', score.score],
-    ] : [];
-    const table = document.createElement('dl');
-    table.className = 'score';
-    for (const [label, value] of rows) {
-      const title = document.createElement('dt');
-      const count = document.createElement('dd');
-      title.textContent = t(label);
-      count.textContent = value;
-      table.append(title, count);
+  async function showOutcome(world, totalScore) {
+    const won = world.outcome === 'victory';
+    const next = world.nextMission;
+    const advance = won && Number.isInteger(next) ? () => { toFront(); front.next(next); } : undefined;
+    try {
+      const {showResults} = await import('./results-ui.js');
+      await showResults({
+        world:{...world, score:{...world.score, totalScore}}, won, language:currentLanguage(),
+        onAdvance:advance, onMenu:toFront, musicVolume:audio.volumes.music,
+        onClick:() => audio.play('button'), onSound:key => audio.play(key),
+        onMediaChange:stage => audio.media(stage === 'statistics'),
+      });
+    } catch {
+      audio.media(false);
+      showModal(won ? 'Victory' : 'Defeat', [], [['Continue', advance ?? toFront, 'positive']]);
     }
-    const next = adapter.world.nextMission;
-    showModal(won ? 'Victory' : 'Defeat', rows.length ? [table] : [], [
-      ...(won && Number.isInteger(next) ? [['Next Mission', () => { toFront(); front.next(next); }, 'positive']] : []),
-      ['Main Menu', toFront, won ? 'negative' : 'positive'],
-    ]);
   }
 
   function purchase(command) {
@@ -1009,6 +1078,7 @@ async function start() {
       controls.cancel();
       canvasRect = next;
       adapter.frame(performance.now());
+      if (battleActive && demoReturn) centerDemo(adapter.world);
       scheduleFrame();
     }
   }
@@ -1070,7 +1140,10 @@ async function start() {
 
   window.__tidewaterPilot = Object.freeze({
     world: () => structuredClone(adapter.world),
-    state: () => ({screen:battleActive ? 'battle' : byId('front').dataset.screen, progress:front.progress.exportProgress()}),
+    state: () => ({
+      screen:battleActive ? (demoReturn ? 'demo' : outcomeShown ? 'results' : 'battle') : byId('front').dataset.screen,
+      progress:front.progress.exportProgress(),
+    }),
     camera() {
       syncProjection();
       return structuredClone(adapter.view);

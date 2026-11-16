@@ -1,0 +1,155 @@
+.warcraft-results {
+  --result-texture: url('./art/panel.webp');
+  --result-green: url('./art/menu/human-accept-button.webp');
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  overflow: hidden;
+  color: #fff9eb;
+  background: linear-gradient(#0005, #0005), var(--result-texture) center / cover #120e0b;
+  text-shadow: 1px 2px #080702;
+}
+
+.warcraft-results[data-race='orc'] {
+  --result-texture: url('./art/menu/title-background.webp');
+  --result-green: url('./art/menu/title-accept-button.webp');
+}
+
+.warcraft-results[open] { display: grid; place-items: center; }
+.warcraft-results::backdrop { background: #000; }
+.warcraft-results .positive { --button-art: var(--result-green); }
+.warcraft-results .war-button { min-height: 44px; }
+
+.result-prompt {
+  display: grid;
+  gap: clamp(9px, 3vh, 19px);
+  background: var(--result-texture) center / cover #292623;
+  width: min(100%, 476px);
+  padding: clamp(12px, 4vw, 21px);
+  border: 4px solid #eee3c733;
+  border-right-color: #0806048c;
+  border-bottom-color: #0806048c;
+  box-shadow: inset 0 0 0 2px #241e15a8, 0 2px 12px #0007;
+  text-align: center;
+}
+
+.result-prompt h1 { margin: 0; font-size: clamp(20px, 5.6vw, 27px); font-weight: normal; line-height: 1.22; }
+.result-prompt h1 span { display: block; }
+.result-prompt button { font-size: clamp(20px, 6vw, 29px); }
+
+.result-content {
+  width: min(100%, 1070px);
+  height: min(100%, 920px);
+  min-height: 0;
+  display: grid;
+  grid-template: 'art' auto 'records' minmax(0, 1fr) 'actions' auto / minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(7px, 1.8vh, 15px);
+}
+
+.result-art {
+  grid-area: art;
+  width: auto;
+  height: min(33vh, 270px);
+  max-width: 100%;
+  justify-self: center;
+  object-fit: contain;
+}
+
+.result-records {
+  grid-area: records;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-self: stretch;
+  min-height: 0;
+  background: #0008;
+  padding: 5px 5px 0;
+}
+
+.result-summary {
+  display: grid;
+  grid-template: 'outcome outcome' auto 'rank score' auto / 1fr 1fr;
+  justify-items: center;
+  align-items: start;
+  padding: 0 3px 7px;
+  border-bottom: 1px solid #f5d58b56;
+  text-align: center;
+  row-gap: 5px;
+}
+
+.result-outcome { grid-area: outcome; }
+.result-rank { grid-area: rank; }
+.result-score { grid-area: score; }
+.result-caption { display: block; font-size: clamp(10px, 3vw, 14px); line-height: 1; margin: 2px 0 4px; }
+.result-word { font-size: clamp(28px, 8vw, 45px); font-weight: normal; line-height: 1.09; margin: 0; }
+.result-word-image { display: block; width: auto; max-width: 100%; height: 1em; object-fit: contain; image-rendering: pixelated; }
+.result-rank-value, .result-score-value { font-size: clamp(16px, 5vw, 25px); font-weight: normal; line-height: 1.12; }
+
+.result-standings {
+  overflow: auto;
+  scrollbar-width: thin;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.result-player {
+  padding: clamp(4px, 1.1vh, 9px) 3px;
+  border-bottom: 1px solid #f5d58b56;
+}
+
+.result-player:last-child { border-bottom: 0; }
+.result-player-name { margin: 0 0 3px; text-align: center; font-size: clamp(15px, 4.6vw, 23px); font-weight: normal; line-height: 1.13; }
+.result-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px 6px; margin: 0; }
+.result-field dt { font-size: clamp(9px, 2.9vw, 14px); text-align: center; line-height: 1.04; white-space: nowrap; }
+.result-meter { position: relative; margin: 2px 0 0; border: 1px solid #bcb32a; min-height: 13px; background: #070600; }
+.result-meter-fill { position: absolute; inset: 0 auto 0 0; }
+.result-meter-number { position: relative; display: block; text-align: center; font-size: clamp(10px, 3.3vw, 15px); line-height: 1; padding: 2px 1px; }
+
+.result-actions {
+  grid-area: actions;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.result-actions .war-button {
+  min-height: clamp(44px, 8vh, 68px);
+  min-width: min(41%, 166px);
+  line-height: 1;
+  font-size: clamp(16px, 4.6vw, 23px);
+}
+
+.result-actions .result-menu { --button-art: url('./art/menu/title-button.webp'); }
+.result-actions .result-menu::before { filter: none; }
+
+@media (min-aspect-ratio: 6/5) {
+  .result-content {
+    grid-template: 'art records' minmax(0, 1fr) 'art actions' auto /
+      minmax(0, .91fr) minmax(0, 1.09fr);
+    max-height: 620px;
+    column-gap: clamp(8px, 2vw, 20px);
+  }
+  .result-art { width: 100%; max-height: 100%; height: auto; }
+  .result-summary {
+    align-items: center;
+    grid-template: 'outcome rank score' auto / minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, .8fr);
+  }
+  .result-word { font-size: clamp(21px, 4vw, 36px); }
+  .result-player-name { font-size: clamp(15px, 3.6vh, 23px); }
+  .result-field dt { font-size: clamp(9px, 2.8vh, 13px); }
+  .result-actions .war-button { min-height: clamp(44px, 12vh, 56px); }
+}
+
+@media (max-height: 600px) and (max-aspect-ratio: 6/5) {
+  .result-art { height: 26vh; }
+  .result-summary { grid-template: 'outcome rank score' auto / minmax(0, 1.3fr) 1fr .8fr; }
+  .result-word { font-size: clamp(16px, 6vw, 32px); }
+}

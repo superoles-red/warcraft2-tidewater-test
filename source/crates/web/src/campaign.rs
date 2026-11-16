@@ -110,6 +110,26 @@ pub struct Mission {
 }
 
 impl Mission {
+    pub fn demo(path: String, view: (i32, i32), era: Era, map_hash: u64) -> Self {
+        Self {
+            id: None,
+            campaign: "demo",
+            number: None,
+            path,
+            title: "Demo".to_string(),
+            story: String::new(),
+            objectives: Vec::new(),
+            start: [view.0, view.1],
+            era,
+            next: None,
+            map_hash,
+        }
+    }
+
+    pub fn is_expansion(&self) -> bool {
+        matches!(self.campaign, "xhuman" | "xorc")
+    }
+
     pub fn quick(
         path: String,
         title: String,

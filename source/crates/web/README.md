@@ -71,3 +71,9 @@ read.
 
 All missions use the original campaign technology allowances and the same
 command-panel rules as the desktop game.
+
+The read-only attract mode uses `{op: 'loadDemo', id, seed}` (IDs 1–4) to run the
+original installed demo maps with the Classic scheduler and both computer sides.
+Steps report `demo.finished` at the end of playback. Demo state cannot overwrite
+the browser's battle checkpoint. Winning and losing return the original score
+rows and mission score, including the victory bonus.
