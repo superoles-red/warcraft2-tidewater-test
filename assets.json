@@ -1,0 +1,295 @@
+{
+  "release": "9574183893df008b",
+  "files": [
+    {
+      "path": "art/app-icon-512.png",
+      "bytes": 203728,
+      "integrity": "sha256-kghaPfFk2V1c9cj2j+LEAXefOmbyhRWyPq27k10PlBU="
+    },
+    {
+      "path": "art/app-icon.png",
+      "bytes": 43526,
+      "integrity": "sha256-J0/aRnp/rMvxlSncWNhUwRfW4Px0XaiHW2GKLdZOlwg="
+    },
+    {
+      "path": "art/audio/ack-0-1.m4a",
+      "bytes": 4232,
+      "integrity": "sha256-4SayhUjVdeBqZzKOQmzZbMR+z53579bWNeR9T/arvqY="
+    },
+    {
+      "path": "art/audio/ack-0-2.m4a",
+      "bytes": 6305,
+      "integrity": "sha256-7uE+q5xPAvVUETFdeX8W3UgNCw9d47grW1/m2s0d+es="
+    },
+    {
+      "path": "art/audio/ack-0-3.m4a",
+      "bytes": 5911,
+      "integrity": "sha256-/qjmeuDE+QB3mSv5TLHfSwDPMpf6ovkDXZj1aAi55+0="
+    },
+    {
+      "path": "art/audio/ack-2-1.m4a",
+      "bytes": 5440,
+      "integrity": "sha256-QFeItQmClOu8r0nKUDGAYa9jq8FY8blaQ2vBVg+0lbM="
+    },
+    {
+      "path": "art/audio/ack-2-2.m4a",
+      "bytes": 5729,
+      "integrity": "sha256-z5sN3kzL9uatbNEV2tcl8AG6pi7ZJIK7ibKuGLTyc0U="
+    },
+    {
+      "path": "art/audio/ack-2-3.m4a",
+      "bytes": 4344,
+      "integrity": "sha256-p9em+myPa69AdM7kk+dNrJKlJKx4l7XjMXojDe9iLcQ="
+    },
+    {
+      "path": "art/audio/button.m4a",
+      "bytes": 1809,
+      "integrity": "sha256-W09/+2yUpAhDWLppuSJgz3dy/EcXOy/7G1//i7d7Ps0="
+    },
+    {
+      "path": "art/audio/chop-1.m4a",
+      "bytes": 1761,
+      "integrity": "sha256-iWjUi5tk4hOHxySfU6bG9vR3inDGGZddKjjm3JEbstk="
+    },
+    {
+      "path": "art/audio/chop-2.m4a",
+      "bytes": 1716,
+      "integrity": "sha256-2dIGcCw6XAhZMXds07+n5S0k6f4s+tf7loTWAszFG5o="
+    },
+    {
+      "path": "art/audio/chop-3.m4a",
+      "bytes": 1688,
+      "integrity": "sha256-kRZ2m4B6leb7OtXAGWqj88Hbm88I3AJqokK4kONgvDg="
+    },
+    {
+      "path": "art/audio/chop-4.m4a",
+      "bytes": 1765,
+      "integrity": "sha256-1tRxMsHVEVzZLXGHKSldeATc6DBEqvJx2wS0SpsdiMc="
+    },
+    {
+      "path": "art/audio/construct-1.m4a",
+      "bytes": 12386,
+      "integrity": "sha256-0/Z2rHaFRnRcl+zAOnhBWNQyZACU4AfYruJOejUkqSU="
+    },
+    {
+      "path": "art/audio/error-1.m4a",
+      "bytes": 2457,
+      "integrity": "sha256-fOlHW8pj5hZ3KugYVrqwUswDTF69x2qhH73XRduGDMg="
+    },
+    {
+      "path": "art/audio/farm-1.m4a",
+      "bytes": 9990,
+      "integrity": "sha256-v93un92/XyhB2iyn2JPIEnqw6a/RmCGIe09Whk/0H48="
+    },
+    {
+      "path": "art/audio/mine-1.m4a",
+      "bytes": 9937,
+      "integrity": "sha256-3mOeXRJDPBDOhdhbBaNaZHFQijmDxAt6d1M6MQleMxk="
+    },
+    {
+      "path": "art/audio/music.m4a",
+      "bytes": 1686147,
+      "integrity": "sha256-JJfXNyQ0SmdPKpb3+zrgVBTeDbYDc6NMkjZ9QRq9FsM="
+    },
+    {
+      "path": "art/audio/ready-0-1.m4a",
+      "bytes": 7390,
+      "integrity": "sha256-72lDXQ9nF//C+/TZ3QZaXP6ZM+jWBvINaoStAKF45No="
+    },
+    {
+      "path": "art/audio/ready-2-1.m4a",
+      "bytes": 6683,
+      "integrity": "sha256-rZtIR1TRLbOH5gPitoV0QOshqyijXmAsQ67Sc7XVnTw="
+    },
+    {
+      "path": "art/audio/select-0-1.m4a",
+      "bytes": 5907,
+      "integrity": "sha256-gu/aAp28dtM9NVFj2vOzZ91wvVf/YXia+JeNxW2TYco="
+    },
+    {
+      "path": "art/audio/select-0-2.m4a",
+      "bytes": 6328,
+      "integrity": "sha256-748T67oqIdM7tpok6489+jmbfvhaDSuvJxAgqVwKzf0="
+    },
+    {
+      "path": "art/audio/select-0-3.m4a",
+      "bytes": 5232,
+      "integrity": "sha256-7wFdMYcfO5M7cJJ4bahv3oNQ/UD2Gk+N0WGRBfJrZe8="
+    },
+    {
+      "path": "art/audio/select-2-1.m4a",
+      "bytes": 3815,
+      "integrity": "sha256-4g7iFlmCDDbIeBYS1u992fNL4XL9NaqimRKf1tA2aQQ="
+    },
+    {
+      "path": "art/audio/select-2-2.m4a",
+      "bytes": 4700,
+      "integrity": "sha256-/bsP4gQjR7EL8napFdT2CpVnziwlVvSw13+9/ATvqg4="
+    },
+    {
+      "path": "art/audio/select-2-3.m4a",
+      "bytes": 5052,
+      "integrity": "sha256-19qryfQgtpgRd0X8JM0LcN2K/6Kr7HtoEdAXAnv+LsI="
+    },
+    {
+      "path": "art/audio/sword-1.m4a",
+      "bytes": 2836,
+      "integrity": "sha256-iQ1nYMpSa8hO9yQv1kP5xrBdB8uNyKmPkOV3chotrAY="
+    },
+    {
+      "path": "art/audio/sword-2.m4a",
+      "bytes": 3184,
+      "integrity": "sha256-TjJJ624226+hS8YgrXnJzRda9qB//ffM5jcdSUl+0LQ="
+    },
+    {
+      "path": "art/audio/sword-3.m4a",
+      "bytes": 3434,
+      "integrity": "sha256-nEiaz1KdrI096zVh6mjfMjVnHkvYPjtNNRSUst7V534="
+    },
+    {
+      "path": "art/audio/workComplete-1.m4a",
+      "bytes": 7111,
+      "integrity": "sha256-L6OuESFkbylUUCpQPyfUAfwRkuIfZurrCEkDUa0tdPw="
+    },
+    {
+      "path": "art/audio.json",
+      "bytes": 755,
+      "integrity": "sha256-ZFPoNqwCWyy4S5b1fJshHXXpsDoNh1QNO1yA0jU+vj0="
+    },
+    {
+      "path": "art/button.webp",
+      "bytes": 448,
+      "integrity": "sha256-o4QI7QxCc7LtONddMgrd2M4mrrXHfcHoSy9/vuJsD+M="
+    },
+    {
+      "path": "art/fog-codes.json",
+      "bytes": 40,
+      "integrity": "sha256-4KrNniLu48aQzLhQqCSNwDl+N5z6Yjpq3JErT7Gw6+4="
+    },
+    {
+      "path": "art/fog-shapes.png",
+      "bytes": 1505,
+      "integrity": "sha256-GiipxcvvCd56fGEfzn2sF+nt45GAF8R8pNdem7gmi5I="
+    },
+    {
+      "path": "art/font.json",
+      "bytes": 3456,
+      "integrity": "sha256-TNRwPj+fJEvy660Jwj8wxg56tULGVCFJ4gsZUyVSaiw="
+    },
+    {
+      "path": "art/font.webp",
+      "bytes": 2886,
+      "integrity": "sha256-m7ELKPH5o0gWT6n1V+cbxj8dLutsSEGN9VsXkwSTG6s="
+    },
+    {
+      "path": "art/panel.webp",
+      "bytes": 8472,
+      "integrity": "sha256-hTnPciB+TyLQRMOfIsxmJ04xSoRO+xQlag45pYFZKbk="
+    },
+    {
+      "path": "art/sprites.json",
+      "bytes": 8165,
+      "integrity": "sha256-11Qo37vaRAM47awRU3X4q6/HecWA/x57TdSJ+OiPkbY="
+    },
+    {
+      "path": "art/sprites.webp",
+      "bytes": 136072,
+      "integrity": "sha256-ERfRRm/EN8hH0t1TyxS7tLhzbPIvuYPdn5lXTM09NL8="
+    },
+    {
+      "path": "art/terrain.webp",
+      "bytes": 73924,
+      "integrity": "sha256-d2pLar0P4Fq41IDDz5mDvk0lIHyjJzzovqTh9uoVIkU="
+    },
+    {
+      "path": "art/tiles.webp",
+      "bytes": 74310,
+      "integrity": "sha256-q3FPwqruKXq7TzcYkxiE4hPKMRfx78KN0rzrMj011PY="
+    },
+    {
+      "path": "art/ui.json",
+      "bytes": 3483,
+      "integrity": "sha256-BgoW/oMiHkXvpS0mhKl80kbAoi4o3AmUXgNOAkrDYdo="
+    },
+    {
+      "path": "art/ui.webp",
+      "bytes": 135014,
+      "integrity": "sha256-jOC9eK75A1SE0uhUALE5szutuLtIR807Z7YwiGr1gRY="
+    },
+    {
+      "path": "art/wc2-hud.woff",
+      "bytes": 3304,
+      "integrity": "sha256-nNVwSCHuOolHg5TnT2NogafknYi9f2Xw+ml/tl9aSJo="
+    },
+    {
+      "path": "battle.css",
+      "bytes": 7751,
+      "integrity": "sha256-fFUP55roeC27UaAzsOYsUANW+FABhmMjke8B+Ua+7YA="
+    },
+    {
+      "path": "battle.js",
+      "bytes": 29564,
+      "integrity": "sha256-gA6344NM+kWPHcgEJEv3zCZJSLmHvOMg8/7XLaY6++E="
+    },
+    {
+      "path": "engine.js",
+      "bytes": 1895,
+      "integrity": "sha256-vQV/amOrH2t+AQMUCsHwi5AxJlX+SEteQHXwhKjHnAM="
+    },
+    {
+      "path": "game/War2Dat.mpq",
+      "bytes": 26476178,
+      "integrity": "sha256-IY300DeX5PSFmAHCvttmUXYdXDYGtpursENP77pnRhA="
+    },
+    {
+      "path": "game/War2Patch.mpq",
+      "bytes": 271962,
+      "integrity": "sha256-vi5PhaXr0sGliw0Ax/Z/9nPNnCWwaUachNsgUAbGvDY="
+    },
+    {
+      "path": "index.html",
+      "bytes": 2133,
+      "integrity": "sha256-iLO/LmPcmN8irHSNwyYtcO6QdJUQWK2vqUa1pJBgzjY="
+    },
+    {
+      "path": "lib/dune-controls.js",
+      "bytes": 37543,
+      "integrity": "sha256-HT47peIt5JaR+MilH/EU5Q9SoNARW3rsNjhxgTk6YZk="
+    },
+    {
+      "path": "lib/independent-camera-pilot.js",
+      "bytes": 11464,
+      "integrity": "sha256-AKE/NUsQFZeKQso3xdmDnvMeqJmlegQX9NfZ5hFw+nQ="
+    },
+    {
+      "path": "lib/presentation.js",
+      "bytes": 10222,
+      "integrity": "sha256-ZJ7WnRTM8xSENYX99LXcjgzX0DF/AKcsJfGRRTaw+sQ="
+    },
+    {
+      "path": "lib/smooth-camera.js",
+      "bytes": 25842,
+      "integrity": "sha256-U+nJ7iJ6RYDC9p2jfEnR+xE6Tzc0DqtCcD9MKN32qzE="
+    },
+    {
+      "path": "map-renderer.js",
+      "bytes": 11212,
+      "integrity": "sha256-vFWwxvMds2Wx1K3+9s9pAzyrtZcKUcy/0RCvWJHQCKE="
+    },
+    {
+      "path": "offline.js",
+      "bytes": 361,
+      "integrity": "sha256-zt8Y9NbwkL9S12RGNe/TMW/88rSZdXZI+O4imC5L9/A="
+    },
+    {
+      "path": "pilot.webmanifest",
+      "bytes": 495,
+      "integrity": "sha256-An5/e+BNDCZcvBSlWudA+KPGBXnCyk2Nk+zPjuJyDe0="
+    },
+    {
+      "path": "tidewater_web.wasm",
+      "bytes": 1269505,
+      "integrity": "sha256-UcKSjxv2AgBgfJNM8wOp0doPbDf4kA8J+SVEvMRJtYA="
+    }
+  ]
+}
