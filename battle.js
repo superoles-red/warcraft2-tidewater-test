@@ -394,7 +394,7 @@ function makeAudio() {
   let loopPoint = 0;
   let nextTrack;
   let narration;
-  let releaseNarration;
+  let languageAudio;
   let audioContext;
   let channels;
   let unlocked = false;
@@ -404,7 +404,7 @@ function makeAudio() {
   const effects = new Set();
   const nativePlayers = {music: new Set(), effects: new Set()};
   const cache = new Map();
-  readJson('./art/audio.json').then(source => { files = source; sync(); }).catch(() => {});
+  const baseAudio = readJson('./art/audio.json').then(source => { files = source; sync(); }).catch(() => {});
   const audioPath = path => './art/' + path;
   const clip = key => {
     const localized = languageFiles[key];
@@ -534,6 +534,7 @@ function makeAudio() {
     }
     if (audioContext?.state !== 'running') audioContext?.resume().catch(() => {});
     sync();
+    resumeNarration();
   }
   function play(key) {
     const paths = clip(key);
@@ -619,20 +620,62 @@ function makeAudio() {
     else if (previous && !value) stopEffects();
   }
   function stopBriefing() {
-    narration?.pause();
-    releaseNarration?.();
+    const speech = narration;
     narration = undefined;
-    releaseNarration = undefined;
+    speech?.source?.stop();
+    speech?.source?.disconnect();
+    speech?.player?.pause();
+    speech?.release?.();
   }
-  function briefing(id) {
+  function resumeNarration() {
+    if (!unlocked || document.hidden || !narration) return;
+    const speech = narration;
+    if (speech.buffer) {
+      const source = audioContext.createBufferSource();
+      source.buffer = speech.buffer;
+      speech.buffer = undefined;
+      speech.source = source;
+      source.connect(channels.effects);
+      source.addEventListener('ended', () => {
+        source.disconnect();
+        speech.source = undefined;
+        nextNarration(speech);
+      }, {once:true});
+      source.start();
+    } else if (speech.player?.paused && !speech.player.ended) {
+      speech.player.play().catch(() => {});
+    }
+  }
+  async function nextNarration(speech) {
+    if (narration !== speech) return;
+    const path = speech.paths.shift();
+    if (!path) return stopBriefing();
+    if (audioContext && !speech.player) {
+      const buffer = await bytes(path).then(data => audioContext.decodeAudioData(data.buffer)).catch(() => null);
+      if (narration !== speech) return;
+      if (buffer) {
+        speech.buffer = buffer;
+        resumeNarration();
+        return;
+      }
+    }
+    if (!speech.player) {
+      speech.player = new Audio();
+      speech.release = routeMedia(speech.player, 'effects');
+      speech.player.addEventListener('ended', () => nextNarration(speech));
+    }
+    speech.player.src = path;
+    resumeNarration();
+  }
+  async function briefing(id) {
     stopBriefing();
     const orc = id % 2 !== 0;
     setMusic(orc ? 'music-orc-briefing' : 'music-human-briefing', 0, {loopFrom: orc ? 0 : 3.020});
-    const path = clip('briefing-' + id)[0];
-    if (!path || !unlocked) return;
-    narration = new Audio(path);
-    releaseNarration = routeMedia(narration, 'effects');
-    narration.play().catch(() => {});
+    const speech = {};
+    narration = speech;
+    await Promise.all([baseAudio, languageAudio]);
+    speech.paths = clip('briefing-' + id);
+    nextNarration(speech);
   }
   window.addEventListener('pointerdown', activate, {passive: true, capture: true});
   window.addEventListener('pointerup', activate, {passive: true, capture: true});
@@ -642,8 +685,8 @@ function makeAudio() {
       audioContext?.suspend().catch(() => {});
     } else if (unlocked) audioContext?.resume().catch(() => {});
     sync();
-    if (document.hidden) narration?.pause();
-    else narration?.play().catch(() => {});
+    if (document.hidden) narration?.player?.pause();
+    else resumeNarration();
   });
   return {
     play, playBattleSound, change, volumes, routeMedia, briefing, stopBriefing,
@@ -668,9 +711,14 @@ function makeAudio() {
       const first = campaign ? Math.floor(mission.id / 2) % 6 : Math.floor(Math.random() * 6);
       setMusic('music-' + race, first, {skipFirst: campaign && mission.id < 28});
     },
-    async language() {
-      languageFiles = currentLanguage() === 'ru'
-        ? await readJson('./art/lang/ru/audio.json').catch(() => ({})) : {};
+    language() {
+      languageFiles = {};
+      const loading = currentLanguage() === 'ru'
+        ? readJson('./art/lang/ru/audio.json').catch(() => ({})) : Promise.resolve({});
+      const ready = loading.then(source => {
+        if (languageAudio === ready) languageFiles = source;
+      });
+      languageAudio = ready;
     },
   };
 }

@@ -174,7 +174,11 @@ button:focus-visible,
   transform: translateY(-60%) rotate(45deg);
   pointer-events: none;
 }
-#menu-button { min-height: var(--menu-height); min-width: clamp(58px, 23vw, 126px); }
+#menu-button {
+  min-height: var(--menu-height);
+  min-width: clamp(58px, 23vw, 126px);
+  margin-inline-start: auto;
+}
 
 #resources {
   display: flex;
@@ -856,10 +860,16 @@ button:focus-visible,
     --mini: clamp(86px, 26vh, 142px);
     --safe-bottom: max(13px, calc(env(safe-area-inset-bottom) + 10px));
   }
-  #minimap { top: var(--hud-top); }
-  #hud-top { right: calc(var(--safe-right) + var(--mini) + 12px); }
-  #selection { width: min(245px, 32vw); }
-  #resources { justify-content: start; }
+  #hud-top { left: 0; right: 0; }
+  #menu-button { margin-inline-end: var(--safe-right); }
+  #selection { top: var(--hud-top); width: min(245px, 32vw); }
+  #resources {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    justify-content: center;
+  }
   #modal { --modal-action-height: 40px; }
   #modal-panel { padding-block: 12px; }
   #modal[data-layout="battle-settings"] #modal-panel { padding-block: 8px; }
