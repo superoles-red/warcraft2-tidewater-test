@@ -196,20 +196,20 @@ button:focus-visible,
 
 #resources {
   --resource-width: calc(100vw - var(--safe-x) - var(--safe-right) - var(--menu-height) - 24px);
-  --resource-icon: clamp(1em, 5.5vw, 1.3em);
+  --resource-icon: clamp(1em, calc(5.5vw * var(--resource-scale, 1)), 1.3em);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: clamp(6px, 1.8vmin, 16px);
   min-height: var(--menu-height);
+  min-width: 0;
   flex: 1;
   margin-inline-end: 8px;
-  padding: 0 5px;
   color: var(--paper);
   font-variant-numeric: tabular-nums;
   text-shadow: 1px 2px #000, -1px -1px #000;
 }
-.resource { display: flex; gap: 4px; align-items: center; white-space: nowrap; }
+.resource { display: flex; flex: none; gap: calc(4px * var(--resource-scale, 1)); align-items: center; white-space: nowrap; }
 .resource canvas { width: var(--resource-icon); height: var(--resource-icon); }
 
 #minimap {
@@ -873,6 +873,7 @@ button:focus-visible,
     --command: clamp(46px, 14vh, 68px);
     --hud-top: calc(var(--safe-top) + 7px);
     --mini: clamp(110px, min(38vh, 24vw), 176px);
+    --selection-width: min(245px, 32vw);
     --safe-bottom: max(13px, calc(env(safe-area-inset-bottom) + 10px));
   }
   #hud-top { left: 0; right: 0; }
@@ -880,14 +881,13 @@ button:focus-visible,
   #menu-button {
     margin-inline-end: calc(var(--safe-right) + var(--mini) + 8px);
   }
-  #selection { top: var(--hud-top); width: min(245px, 32vw); }
+  #selection { top: var(--hud-top); width: var(--selection-width); }
   #resources {
     --resource-right: calc(var(--safe-right) + var(--mini) + var(--menu-height) + 16px);
     --resource-width: calc(100vw - var(--resource-right) - var(--safe-x));
     position: absolute;
+    left: calc(var(--safe-x) + var(--selection-width) + 12px);
     right: var(--resource-right);
-    transform: translateX(min(0px, var(--resource-right) - 50vw + 50%));
-    width: max-content;
     margin-inline-end: 0;
   }
   #modal { --modal-action-height: 40px; }

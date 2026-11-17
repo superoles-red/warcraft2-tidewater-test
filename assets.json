@@ -1,5 +1,5 @@
 {
-  "release": "177dcbf3c5e861b9",
+  "release": "c6d0e9be872b822e",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,13 +3919,13 @@
     },
     {
       "path": "battle.css",
-      "bytes": 30978,
-      "integrity": "sha256-4aMbqLIYv+it9dE9RbxRRME37L5d1X8n7lYiEHlMpAc="
+      "bytes": 31074,
+      "integrity": "sha256-5hX1MiyDn5n8u9HF/2Z8oL+69NU8yDYte2Yi2LjbRRc="
     },
     {
       "path": "battle.js",
-      "bytes": 72213,
-      "integrity": "sha256-zVLW23fqKVYXiwr7ZTKFm8wNrSkzeJBodL7FuXiIado="
+      "bytes": 73283,
+      "integrity": "sha256-NxUOqAig6vuJ5ypGqRQIrUEvtUF+W8DOoeVrgojcjTI="
     },
     {
       "path": "campaign-ui.js",
@@ -4089,8 +4089,8 @@
     },
     {
       "path": "typography.css",
-      "bytes": 1853,
-      "integrity": "sha256-MG74tN2IIPyTmKvR/qRz0mQwrJp1mlqMiAKhvmpAVqk="
+      "bytes": 1886,
+      "integrity": "sha256-eGa3iuA+vOP5rjbnVYWjJNYssmkmZzjkV3KriRUfzZM="
     }
   ],
   "optional": [

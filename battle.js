@@ -792,15 +792,36 @@ async function start() {
     try { localStorage.setItem('tidewater-pilot-' + name, value); } catch {}
   }
 
+  const resourceRow = byId('resources');
   const resourceValues = Object.fromEntries(resourceFields.map(([key, label]) => {
     const item = document.createElement('span');
     const value = document.createElement('span');
     item.className = 'resource';
     item.title = t(label);
     item.append(art.resource(key), value);
-    byId('resources').append(item);
+    resourceRow.append(item);
     return [key, value];
   }));
+  const resourceItems = [...resourceRow.children];
+  let resourceScale = 1;
+  let resourceFitFrame = 0;
+  const resourceFit = new ResizeObserver(() => {
+    if (resourceFitFrame) return;
+    resourceFitFrame = requestAnimationFrame(() => {
+      resourceFitFrame = 0;
+      const width = resourceRow.getBoundingClientRect().width;
+      const itemsWidth = resourceItems.reduce((sum, item) => sum + item.getBoundingClientRect().width, 0);
+      const gap = parseFloat(getComputedStyle(resourceRow).columnGap);
+      const available = width - gap * (resourceItems.length - 1);
+      if (available <= 0 || !itemsWidth) return;
+      const scale = Math.min(1, resourceScale * available / itemsWidth);
+      if (Math.abs(scale - resourceScale) < .002) return;
+      resourceScale = scale;
+      resourceRow.style.setProperty('--resource-scale', scale);
+    });
+  });
+  resourceFit.observe(resourceRow);
+  for (const item of resourceItems) resourceFit.observe(item);
 
   const adapter = createInterface({
     initialWorld, request,
@@ -1826,6 +1847,8 @@ async function start() {
     stopped = true;
     clearTimeout(tickTimer);
     resize.disconnect();
+    resourceFit.disconnect();
+    cancelAnimationFrame(resourceFitFrame);
     window.removeEventListener('resize', syncProjection);
     window.removeEventListener('pageshow', syncProjection);
     window.visualViewport?.removeEventListener('resize', syncProjection);
