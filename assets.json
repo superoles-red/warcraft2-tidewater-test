@@ -1,5 +1,5 @@
 {
-  "release": "519e51158225ebcd",
+  "release": "f2713aad039e97b7",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,13 +3919,13 @@
     },
     {
       "path": "battle.css",
-      "bytes": 29773,
-      "integrity": "sha256-aJYN0BmjHvKgPvxoFuSOrMstZaKMOEr4HH2RUQniOK0="
+      "bytes": 29994,
+      "integrity": "sha256-pztr/BkNAsWoFnMn29gzACYe3I1FeeMJuCWeI6XeWMk="
     },
     {
       "path": "battle.js",
-      "bytes": 69560,
-      "integrity": "sha256-XselGmNXy1Y3cIVqvS6hy3jgoffyRquHSCQk4WhlAms="
+      "bytes": 70467,
+      "integrity": "sha256-HclkcOwUE9g9U12ut92Lp9Ds9qagzFgXilIYOCQfrsE="
     },
     {
       "path": "campaign-ui.js",
@@ -4069,13 +4069,13 @@
     },
     {
       "path": "scene-theme.css",
-      "bytes": 1748,
-      "integrity": "sha256-c7Ikj1D7E+/kF1mYxJtj8aQxwoRlgCZS43UA+eEAZD0="
+      "bytes": 1492,
+      "integrity": "sha256-Z5r+o2YUu7ieLTKr0Bqd5K8IHWyZ/Truco+QWqGztt8="
     },
     {
       "path": "story-ui.css",
-      "bytes": 2899,
-      "integrity": "sha256-bufmtW62KbtkJtKKXdeLCPg/EumaaCRNc0ryxc2o9zQ="
+      "bytes": 2890,
+      "integrity": "sha256-gOeYNPhOnKBhrxpFZf84yJha+x21LiC9yRt0vnFkvp8="
     },
     {
       "path": "story-ui.js",
@@ -4084,8 +4084,8 @@
     },
     {
       "path": "tidewater_web.wasm",
-      "bytes": 1793984,
-      "integrity": "sha256-nCSTfI+F25l/ivITv5vcc63wENOSzwf6+kqBIRt5CYc="
+      "bytes": 1796029,
+      "integrity": "sha256-YV2vftYZh4otwYJmRolIzIXWJyY0WG2bhOLwbxJAULM="
     },
     {
       "path": "typography.css",

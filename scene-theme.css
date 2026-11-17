@@ -54,18 +54,6 @@
   pointer-events: none;
 }
 
-.story-back::after {
-  content: '';
-  position: absolute;
-  inset: 50% auto auto 50%;
-  width: 18px;
-  height: 17px;
-  transform: translate(-50%, -50%);
-  clip-path: polygon(0 50%, 100% 0, 100% 100%);
-  background: currentColor;
-  pointer-events: none;
-}
-
 .story-back:active { filter: brightness(1.2); }
 
 @media (orientation: portrait) {

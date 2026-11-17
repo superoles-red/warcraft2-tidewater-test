@@ -74,6 +74,7 @@ function createInterface({
   let manualVerticalPan = false;
   let queued = Promise.resolve();
   let remembered = [];
+  let demoSelection;
   const pressed = new Map();
   const geometry = {};
   function sizeWorld() {
@@ -89,6 +90,7 @@ function createInterface({
     manualVerticalPan = false;
     pressed.clear();
     remembered = [];
+    demoSelection = undefined;
   }
   sizeWorld();
 
@@ -102,6 +104,10 @@ function createInterface({
         mission: next.mission ?? world.mission,
       };
       if (['loadMission', 'loadScenario', 'loadDemo', 'restart', 'restoreCheckpoint'].includes(command.op)) sizeWorld();
+      if (world.demo) {
+        const retained = world.units.some(unit => unit.id === demoSelection && selectable(unit));
+        world.selection = retained ? [demoSelection] : [];
+      }
       onWorld(world, command);
       return world;
     });
@@ -177,7 +183,17 @@ function createInterface({
     return found?.id;
   }
 
+  function inspectDemo(x, y) {
+    demoSelection = touchTapSubject({x, y});
+    world = {...world, selection:demoSelection == null ? [] : [demoSelection], sounds:[]};
+    onWorld(world, {op:'inspectDemo'});
+  }
+
   function handleSameUnitDoubleTap(id, point, restoreSelection) {
+    if (world.demo) {
+      inspectDemo(point.x, point.y);
+      return true;
+    }
     if (id == null || touchTapSubject(point) !== id) return false;
     const leader = world.units.find(unit => unit.id === id);
     if (!leader) return false;
@@ -236,6 +252,10 @@ function createInterface({
     pressed.delete(id);
     if (!start) return;
     onBox(null);
+    if (world.demo) {
+      if (id === 0 && Math.hypot(start.x - x, start.y - y) <= 5) inspectDemo(x, y);
+      return;
+    }
     if (id === 1) {
       if (action.placement()) action.cancelPlacement();
       else send({op: 'smart', x, y});
@@ -744,7 +764,7 @@ async function start() {
     onWorld, onError,
     onBox(box) { selectBox = box; scheduleFrame(); },
     onFrame: scheduleFrame,
-    active: () => battleActive && !demoReturn && !loadingMission && !stopped && !document.hidden && !outcomeShown,
+    active: () => battleActive && !loadingMission && !stopped && !document.hidden && !outcomeShown,
     action: {
       target: () => aim,
       placement: () => placement,
@@ -854,6 +874,7 @@ async function start() {
     const returnToStory = demoReturn;
     demoReturn = undefined;
     battleActive = false;
+    controls.cancel();
     clearTimeout(tickTimer);
     tickTimer = undefined;
     demoBack?.remove();
@@ -968,7 +989,11 @@ async function start() {
     audio.battle(world, byId('battle').dataset.race);
     const home = world.units.find(unit => unit.owner === world.player && [74,75].includes(unit.kind)) ??
       world.units.find(unit => unit.owner === world.player);
-    if (demoReturn) centerDemo(world);
+    if (demoReturn) {
+      centerDemo(world);
+      selection.hidden = minimap.hidden = false;
+      paintSelection(world);
+    }
     else if (Number.isFinite(savedCamera?.x) && Number.isFinite(savedCamera?.y))
       adapter.centerOn(savedCamera.x, savedCamera.y);
     else if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2, {useEdgeRoom:false});
@@ -1016,8 +1041,8 @@ async function start() {
       audio.playBattleSound(file, level);
     }
     if (demoReturn) {
-      if (world.demo?.finished) stopDemo();
-      else if (visual) scheduleFrame();
+      paintSelection(world);
+      if (visual) scheduleFrame();
       return;
     }
     updateHud(world);
@@ -1049,8 +1074,11 @@ async function start() {
       control.classList.toggle('wide', Boolean(wide));
       if (caption === t('Back')) {
         control.classList.add('modal-back');
-        control.setAttribute('aria-label', caption);
-        control.textContent = '';
+        if (layout !== 'battle-confirmation') {
+          control.classList.add('back-arrow');
+          control.setAttribute('aria-label', caption);
+          control.textContent = '';
+        }
       }
       control.classList.toggle('modal-ok', caption === t('OK'));
       if (tone === 'current-choice') control.setAttribute('aria-current', 'true');
@@ -1190,12 +1218,13 @@ async function start() {
           showModal('Unable to load the mission', [text(error.message)], [['Main Menu', toFront, 'positive']]);
         }
       }, 'positive'], ['Back', showMenu, 'negative'],
-    ]);
+    ], {layout:'battle-confirmation'});
   }
 
   function showExit() {
     showModal('Exit to the Main Menu?', [],
-      [['OK', async () => { await saveCheckpoint(true); toFront(); }, 'positive'], ['Back', showMenu, 'negative']]);
+      [['OK', async () => { await saveCheckpoint(true); toFront(); }, 'positive'], ['Back', showMenu, 'negative']],
+      {layout:'battle-confirmation'});
   }
 
   async function finishCampaign(mission) {
@@ -1642,6 +1671,7 @@ async function start() {
   let minimapPan;
   minimap.addEventListener('pointerdown', event => {
     if (!event.isPrimary || ![0, 2].includes(event.button) || !adapter.input.state().inputAllowed || modal.open) return;
+    if (demoReturn && event.button === 2) return;
     controls.cancel();
     const {x, y} = minimapPoint(event);
     if (event.button === 0 && aim) return finishTarget(x, y, true);
@@ -1684,7 +1714,6 @@ async function start() {
       controls.cancel();
       canvasRect = next;
       adapter.frame(performance.now());
-      if (battleActive && demoReturn) centerDemo(adapter.world);
       scheduleFrame();
     }
   }

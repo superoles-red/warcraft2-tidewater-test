@@ -35,6 +35,7 @@
   --command: clamp(52px, 15.7vw, 74px);
   --command-height: calc(var(--command) * .86);
   --menu-height: clamp(44px, 11.5vw, 54px);
+  --back-size: clamp(64px, 20vmin, 80px);
   --mini: clamp(94px, 34vw, 156px);
 }
 
@@ -370,19 +371,19 @@ button:focus-visible,
 #modal-actions { display: flex; flex-wrap: wrap; gap: var(--modal-row-gap); }
 #modal-actions .war-button { flex: 1 1 40%; min-height: var(--modal-action-height); }
 #modal-actions .wide { flex-basis: 100%; }
-#modal-actions .modal-back {
-  flex: 0 0 var(--modal-action-height);
-  width: var(--modal-action-height);
-  height: var(--modal-action-height);
+#modal-actions .back-arrow {
+  flex: 0 0 var(--back-size);
+  width: var(--back-size);
+  height: var(--back-size);
   margin-inline-start: auto;
   padding: 0;
 }
 #modal-actions .modal-back:not(.wide):not(:first-child) {
   margin-inline-start: calc(var(--modal-action-spacing) - var(--modal-row-gap));
 }
-#modal-actions .modal-back.wide {
+#modal-actions .back-arrow.wide {
   /* Reserve the row while keeping the arrow square at its right edge. */
-  margin-inline-start: calc(100% - var(--modal-action-height));
+  margin-inline-start: calc(100% - var(--back-size));
 }
 #modal-actions .modal-back.wide:not(:first-child) {
   margin-block-start: calc(var(--modal-action-spacing) - var(--modal-row-gap));
@@ -395,13 +396,13 @@ button:focus-visible,
 #modal:has(#modal-actions :is(.modal-ok, .modal-back:only-child)):has(#modal-content:empty) #modal-title {
   margin-block-end: var(--modal-action-spacing);
 }
-#modal:is([data-layout="about"], [data-layout="scenario-options"])[open] {
+#modal:is([data-layout="about"], [data-layout="scenario-options"], [data-layout="battle-settings"])[open] {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
 }
 #modal[data-layout="about"] { width: min(620px, calc(100% - 28px)); }
-#modal:is([data-layout="about"], [data-layout="scenario-options"]) #modal-content {
+#modal:is([data-layout="about"], [data-layout="scenario-options"], [data-layout="battle-settings"]) #modal-content {
   overflow: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
@@ -566,16 +567,16 @@ button:focus-visible,
   color: transparent;
   text-shadow: none;
   aspect-ratio: 1;
-  width: clamp(44px, 8vh, 62px);
+  width: var(--back-size);
   padding: 0;
 }
-:is(.front-back, .modal-back)::after {
+:is(.front-back, .back-arrow, .story-back)::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 18px;
-  height: 17px;
+  width: 36px;
+  height: 34px;
   transform: translate(-50%, -50%);
   background: #e9ce96;
   clip-path: polygon(0 50%, 100% 0, 100% 100%);
@@ -639,7 +640,6 @@ button:focus-visible,
 #front[data-screen="missions"] .front-back {
   right:12px;
   bottom:12px;
-  width:80px;
 }
 .briefing-text {
   background: #1a1613ab;
@@ -722,7 +722,6 @@ button:focus-visible,
   align-self: end;
   margin-top: clamp(11px, 1.8dvh, 18px);
   min-height: 0;
-  width: clamp(44px, 7.2dvh, 58px);
 }
 .accent { color: var(--paper); }
 .quick-details {
@@ -769,6 +768,7 @@ button:focus-visible,
 #front[data-screen="scenarios"] .front-footer > .war-button:not(.front-back) {
   width: min(170px, 45%);
   min-height: var(--scenario-action-height);
+  align-self: start;
 }
 .scenario-filters { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 5px; }
 .scenario-filter {
@@ -869,18 +869,20 @@ button:focus-visible,
   #front[data-screen="scenarios"] .front-content { --scenario-filter-height: clamp(36px, 10.8vh, 52px); }
   #front[data-screen="main"] .front-content .war-button { min-height: clamp(45px, 13vh, 60px); }
   .mission-list { max-height: 47vh; }
-  #front[data-screen="missions"] .front-panel { padding-bottom:76px; }
+  #front[data-screen="missions"] .front-panel { padding-bottom:calc(var(--back-size) + 18px); }
   #front[data-screen="missions"] .mission-list { height:min(64vh,390px); }
   #front[data-screen="missions"] .mission-list .war-button { min-height:clamp(45px,14vh,60px); }
-  #front[data-screen="missions"] .front-back { width:58px; min-height:58px; bottom:8px; }
+  #front[data-screen="missions"] .front-back { bottom:8px; }
   #front[data-screen="briefing"] .front-panel { width: min(950px, 100%); }
   #front[data-screen="briefing"] .front-content {
-    grid-template-columns: minmax(0, 1fr) clamp(44px, 7.2dvh, 58px);
+    grid-template-columns: minmax(0, 1fr) var(--back-size);
     column-gap: 16px;
   }
   .briefing-layout { grid-column: 1 / -1; grid-template: minmax(0, 1fr) / 1fr 1fr; }
   .briefing-scene { min-height: 0; }
   #front[data-screen="briefing"] .front-content > .war-button { grid-column: 1; }
+  #front[data-screen="briefing"] .front-content { grid-template-rows: minmax(0, 1fr) var(--back-size); }
+  #front[data-screen="briefing"] .front-content > .war-button { align-self: end; }
   #front[data-screen="briefing"] .front-back { position:absolute; bottom: 0; right: 0; }
   #front[data-screen="quick"] { grid-template-rows:minmax(0,1fr); }
   #front[data-screen="quick"] .front-logo { display:none; }

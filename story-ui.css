@@ -15,7 +15,7 @@
   z-index: 2;
   right: max(10px, env(safe-area-inset-right));
   bottom: max(10px, env(safe-area-inset-bottom));
-  width: clamp(48px, 11vmin, 66px);
+  width: var(--back-size);
   aspect-ratio: 1;
   padding: 0;
   border: 0;

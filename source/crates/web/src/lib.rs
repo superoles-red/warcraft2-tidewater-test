@@ -307,7 +307,6 @@ struct ScoreRow {
 #[derive(Serialize)]
 struct DemoView {
     id: u8,
-    finished: bool,
 }
 
 const GROUND_MARKER: u8 = 0x1c;
@@ -476,7 +475,10 @@ impl Engine {
                 full = true;
             }
             Request::Hash => hash = true,
-            Request::Step { cycles, sound_elapsed_ms } => {
+            Request::Step {
+                cycles,
+                sound_elapsed_ms,
+            } => {
                 if !(1..=600).contains(&cycles) {
                     bail!("cycles must be between 1 and 600");
                 }
@@ -655,7 +657,6 @@ impl Engine {
         use tidewater_sim::{
             cheats::Flags,
             setup::{Setup, Start},
-            victory::Victory,
         };
 
         if !(1..=4).contains(&id) {
@@ -670,21 +671,45 @@ impl Engine {
         };
         let start = Start::choose(&map, &setup, seed)?;
         let (mut world, _) = tidewater_replay::start::build_world(&mut self.install, &map, &start)?;
-        world.victory = Victory::for_demo();
+        world.rules.disable_victory = true;
+        // The custom battle setup allies all computers. On the original attract
+        // maps slots 0 and 1 oppose each other, while slot 2 watches.
+        world.players[0].allies &= !(1 << 1);
+        world.players[1].allies &= !1;
         world.sounds.demo = true;
         world.start_cheats(Flags::default().for_demo());
         world.start_up();
+        // The PUDs supply the original armies and passive AI scripts. Bring
+        // the two armies into contact with ordinary game orders.
+        let attacks = world
+            .units
+            .iter()
+            .filter_map(|unit| {
+                let fighter = !unit.building
+                    && unit.owner < 2
+                    && world.stats.0[usize::from(unit.kind)].flags & flags::CAN_ATTACK != 0;
+                if !fighter {
+                    return None;
+                }
+                let target = world
+                    .units
+                    .iter()
+                    .filter(|target| target.owner == 1 - unit.owner && !target.building && target.layer == unit.layer)
+                    .min_by_key(|target| (unit.tile.0 - target.tile.0).abs() + (unit.tile.1 - target.tile.1).abs())?;
+                Some(Command::Attack {
+                    player: unit.owner,
+                    units: vec![unit.id],
+                    target: target.id,
+                })
+            })
+            .collect::<Vec<_>>();
+        world.step(&attacks);
         let mission = Mission::demo(path, world.start.view, start.era, fnv_extend(FNV_BASIS, &data));
         self.activate((world, start.local, mission), seed);
         self.sound.settings.demo = true;
         self.scenario = None;
         self.demo = Some(id);
         Ok(())
-    }
-
-    fn demo_finished(&self) -> bool {
-        // Two start-up cycles run before the displayed tick counter starts.
-        self.demo.is_some() && self.world.tick >= tidewater_sim::victory::DEMO_COUNTDOWN - 1
     }
 
     fn fresh_current(&mut self) -> Result<(World, u8, Mission)> {
@@ -744,7 +769,7 @@ impl Engine {
 
     fn step(&mut self, n: u32) {
         for _ in 0..n {
-            if self.demo_finished() || self.world.players[self.player as usize].result.is_some() {
+            if self.demo.is_none() && self.world.players[self.player as usize].result.is_some() {
                 break;
             }
             self.world.step(&[]);
@@ -829,7 +854,8 @@ impl Engine {
             units: self.world.slots_of(&selected),
         });
         let selection = self.selection();
-        if !silent && (self.world.rules.enhanced || selection.len() == 1)
+        if !silent
+            && (self.world.rules.enhanced || selection.len() == 1)
             && let Some(&id) = selection.first()
         {
             self.world.select_sound(id);
@@ -911,10 +937,7 @@ impl Engine {
             || Scheduler::new(self.pacing(), self.world.speed, 0).cycle_ms(),
             Scheduler::cycle_ms,
         );
-        let demo = self.demo.map(|id| DemoView {
-            id,
-            finished: self.demo_finished(),
-        });
+        let demo = self.demo.map(|id| DemoView { id });
         let actions = if demo.is_some() {
             Vec::new()
         } else {
