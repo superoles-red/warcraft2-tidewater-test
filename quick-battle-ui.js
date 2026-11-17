@@ -61,9 +61,9 @@ export async function openQuickBattle({
               options = {...options, [key]:next};
               dismiss();
               settings();
-            }, options[key] === next ? 'current-choice' : '', true]),
-            ['Back', dismiss, 'negative', true],
-          ]);
+            }, options[key] === next ? 'current-choice' : '']),
+            ['Back', dismiss, 'negative'],
+          ], {layout:'scenario-options'});
         }, {raw:true, dropdown:true}));
         fields.append(field);
       }

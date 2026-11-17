@@ -5,6 +5,7 @@ import {checkpointKey, createCheckpointStore} from './checkpoint-store.js';
 import {commandLabel, commandReason, currentLanguage, missionLabel, setLanguage, translate as t, unitLabel} from './localization.js';
 import {commandDescription} from './command-descriptions.js';
 import {createMusicLoop} from './music-loop.js';
+import {createMusicFade} from './music-fade.js';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');
@@ -365,6 +366,7 @@ function makeAudio() {
   let files = {};
   let languageFiles = {};
   let music;
+  let musicFade;
   let musicLoop;
   let musicKey = 'music-menu';
   let trackIndex = 0;
@@ -448,6 +450,7 @@ function makeAudio() {
   }
 
   function trackEnded() {
+    if (!music.ended || nextTrack !== undefined) return;
     const tracks = files[musicKey];
     if (loopPoint) {
       music.currentTime = loopPoint;
@@ -479,12 +482,19 @@ function makeAudio() {
     if (!music) {
       music = new Audio();
       music.preload = 'auto';
-      routeMedia(music, 'music');
+      let input;
+      try { input = audioContext?.createMediaElementSource(music); } catch {}
+      const stage = input && audioContext.createGain();
+      if (stage) input.connect(stage).connect(channels.music);
+      musicFade = createMusicFade(music, stage, () => volumes.music);
       music.addEventListener('ended', trackEnded);
     }
     music.loop = tracks.length === 1 && !loopPoint;
-    if (music.getAttribute('src') !== source) music.src = source;
-    if (music.paused) music.play().catch(() => {});
+    if (music.getAttribute('src') !== source) {
+      music.src = source;
+      musicFade.chain(tracks.length > 1);
+    }
+    if (music.paused && (tracks.length === 1 || !music.ended)) music.play().catch(() => {});
   }
   function activate() {
     const Context = window.AudioContext || window.webkitAudioContext;
@@ -582,7 +592,10 @@ function makeAudio() {
     try { localStorage.setItem('tidewater-pilot-' + key, value); } catch {}
     if (channels) channels[key].gain.value = value;
     for (const update of nativePlayers[key]) update();
-    if (key === 'music') sync();
+    if (key === 'music') {
+      sync();
+      musicFade?.update();
+    }
     else if (previous && !value) stopEffects();
   }
   function stopBriefing() {
@@ -1030,17 +1043,29 @@ async function start() {
     byId('modal-title').textContent = t(title);
     const modalContent = byId('modal-content');
     modalContent.replaceChildren(...content);
-    byId('modal-actions').replaceChildren(...actions.map(([label, activate, tone, wide]) => {
+    const buttons = actions.map(([label, activate, tone, wide]) => {
       const caption = t(label);
       const control = button(caption, () => { audio.play('button'); activate(); }, tone);
       control.classList.toggle('wide', Boolean(wide));
-      control.classList.toggle('modal-back', caption === t('Back'));
+      if (caption === t('Back')) {
+        control.classList.add('modal-back');
+        control.setAttribute('aria-label', caption);
+        control.textContent = '';
+      }
       control.classList.toggle('modal-ok', caption === t('OK'));
       if (tone === 'current-choice') control.setAttribute('aria-current', 'true');
       return control;
-    }));
+    });
+    const actionRow = byId('modal-actions');
+    if (layout === 'scenario-options') {
+      const back = buttons.pop();
+      modalContent.append(...buttons);
+      actionRow.replaceChildren(back);
+    } else {
+      actionRow.replaceChildren(...buttons);
+    }
     if (!modal.open) modal.showModal();
-    if (layout === 'about') modalContent.scrollTop = 0;
+    if (layout === 'about' || layout === 'scenario-options') modalContent.scrollTop = 0;
   }
 
   function text(value) {
@@ -1149,7 +1174,7 @@ async function start() {
       speed.append(choice);
     }
     showModal('Settings', [...volumeControls(), fog, text(t('Game speed')), speed],
-      [['OK', closeModal, 'positive']], {layout:'battle-settings'});
+      [['Back', showMenu, 'negative']], {layout:'battle-settings'});
   }
 
   function showRestart() {

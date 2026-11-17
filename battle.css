@@ -370,34 +370,51 @@ button:focus-visible,
 #modal-actions { display: flex; flex-wrap: wrap; gap: var(--modal-row-gap); }
 #modal-actions .war-button { flex: 1 1 40%; min-height: var(--modal-action-height); }
 #modal-actions .wide { flex-basis: 100%; }
+#modal-actions .modal-back {
+  flex: 0 0 var(--modal-action-height);
+  width: var(--modal-action-height);
+  height: var(--modal-action-height);
+  margin-inline-start: auto;
+  padding: 0;
+}
 #modal-actions .modal-back:not(.wide):not(:first-child) {
   margin-inline-start: calc(var(--modal-action-spacing) - var(--modal-row-gap));
+}
+#modal-actions .modal-back.wide {
+  /* Reserve the row while keeping the arrow square at its right edge. */
+  margin-inline-start: calc(100% - var(--modal-action-height));
 }
 #modal-actions .modal-back.wide:not(:first-child) {
   margin-block-start: calc(var(--modal-action-spacing) - var(--modal-row-gap));
 }
-#modal-actions :is(.modal-back.wide, .modal-back:only-child, .modal-ok:only-child) {
+#modal-actions .modal-ok:only-child {
   flex: 0 0 50%;
-  margin-inline-start: auto;
+  margin-inline: auto;
 }
-#modal-actions .modal-ok:only-child { margin-inline-end: auto; }
 #modal:has(#modal-actions :is(.modal-ok, .modal-back:only-child)) #modal-content,
 #modal:has(#modal-actions :is(.modal-ok, .modal-back:only-child)):has(#modal-content:empty) #modal-title {
   margin-block-end: var(--modal-action-spacing);
 }
-#modal[data-layout="about"][open] {
+#modal:is([data-layout="about"], [data-layout="scenario-options"])[open] {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  width: min(620px, calc(100% - 28px));
   overflow: hidden;
 }
-#modal[data-layout="about"] #modal-content {
+#modal[data-layout="about"] { width: min(620px, calc(100% - 28px)); }
+#modal:is([data-layout="about"], [data-layout="scenario-options"]) #modal-content {
   overflow: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
   scrollbar-width: thin;
   scrollbar-color: #b7a063 #35210d;
-  text-align: start;
+}
+#modal[data-layout="about"] #modal-content { text-align: start; }
+#modal[data-layout="scenario-options"] #modal-content {
+  display: grid;
+  gap: var(--modal-row-gap);
+}
+#modal[data-layout="scenario-options"] #modal-content .war-button {
+  min-height: var(--modal-action-height);
 }
 #modal[data-layout="game-menu"] #modal-actions .war-button { min-width: 0; overflow-wrap: anywhere; }
 .purchase-preview { display: flex; justify-content: center; align-items: center; gap: 10px; color: var(--paper); }
@@ -552,7 +569,7 @@ button:focus-visible,
   width: clamp(44px, 8vh, 62px);
   padding: 0;
 }
-.front-back::after {
+:is(.front-back, .modal-back)::after {
   content: '';
   position: absolute;
   top: 50%;

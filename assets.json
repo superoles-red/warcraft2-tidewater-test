@@ -1,5 +1,5 @@
 {
-  "release": "0e8307c6926aaadd",
+  "release": "519e51158225ebcd",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,13 +3919,13 @@
     },
     {
       "path": "battle.css",
-      "bytes": 29141,
-      "integrity": "sha256-tkex7NvIRYXUveE4MxhAT2o/eUWQzNM+6UrwSvYrKjg="
+      "bytes": 29773,
+      "integrity": "sha256-aJYN0BmjHvKgPvxoFuSOrMstZaKMOEr4HH2RUQniOK0="
     },
     {
       "path": "battle.js",
-      "bytes": 68674,
-      "integrity": "sha256-/UyyTvmFUjCnfRRiiiY4xWgMqVKro7phY53Yvog0QxQ="
+      "bytes": 69560,
+      "integrity": "sha256-XselGmNXy1Y3cIVqvS6hy3jgoffyRquHSCQk4WhlAms="
     },
     {
       "path": "campaign-ui.js",
@@ -4018,6 +4018,11 @@
       "integrity": "sha256-b6P1GKdxHmky9Jt0BQL2Rk+gMGF1VXNO9njqZpE1zdg="
     },
     {
+      "path": "music-fade.js",
+      "bytes": 2588,
+      "integrity": "sha256-aoHWVGFY+5DM4eEQsBgColOO9532ZEa4052o5d0vBdQ="
+    },
+    {
       "path": "music-loop.js",
       "bytes": 1996,
       "integrity": "sha256-WQwTXS5w490dsK5Nh2heyoEfocXFSRmJUj/BiPDYNEs="
@@ -4039,8 +4044,8 @@
     },
     {
       "path": "quick-battle-ui.js",
-      "bytes": 9218,
-      "integrity": "sha256-cguttDSiW7o1JDkKGvNeARN10vQzH2r+22ZXfWmZfjY="
+      "bytes": 9235,
+      "integrity": "sha256-3E5G9pCXHALx4G3CikIjNuxnoE4gAzUQMgBohh7OWwo="
     },
     {
       "path": "results-ui.css",
