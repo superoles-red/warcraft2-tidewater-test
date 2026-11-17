@@ -368,6 +368,11 @@ button:focus-visible,
 #modal-actions .wide { flex-basis: 100%; }
 #modal-actions .modal-back:not(.wide):not(:first-child) { margin-inline-start: 12px; }
 #modal-actions .modal-back.wide:not(:first-child) { margin-block-start: 12px; }
+#modal-actions .modal-back.wide,
+#modal-actions .modal-back:only-child {
+  flex: 0 0 50%;
+  margin-inline-start: auto;
+}
 #modal[data-layout="game-menu"] #modal-actions .war-button { min-width: 0; overflow-wrap: anywhere; }
 #modal[data-layout="compact-ok"] #modal-actions { justify-content: center; }
 #modal[data-layout="compact-ok"] #modal-actions .war-button { flex: 0 1 50%; }
