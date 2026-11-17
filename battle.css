@@ -378,11 +378,26 @@ button:focus-visible,
 }
 #modal-actions :is(.modal-back.wide, .modal-back:only-child, .modal-ok:only-child) {
   flex: 0 0 50%;
-  margin-inline: auto;
+  margin-inline-start: auto;
 }
+#modal-actions .modal-ok:only-child { margin-inline-end: auto; }
 #modal:has(#modal-actions :is(.modal-ok, .modal-back:only-child)) #modal-content,
 #modal:has(#modal-actions :is(.modal-ok, .modal-back:only-child)):has(#modal-content:empty) #modal-title {
   margin-block-end: var(--modal-action-spacing);
+}
+#modal[data-layout="about"][open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(620px, calc(100% - 28px));
+  overflow: hidden;
+}
+#modal[data-layout="about"] #modal-content {
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: #b7a063 #35210d;
+  text-align: start;
 }
 #modal[data-layout="game-menu"] #modal-actions .war-button { min-width: 0; overflow-wrap: anywhere; }
 .purchase-preview { display: flex; justify-content: center; align-items: center; gap: 10px; color: var(--paper); }
@@ -493,7 +508,7 @@ button:focus-visible,
   display: flex;
   flex-direction: column;
 }
-#front:is([data-screen="settings"], [data-screen="story"], [data-screen="about"],
+#front:is([data-screen="settings"], [data-screen="story"],
   [data-screen="missions"], [data-screen="quick"], [data-screen="scenarios"]) .front-panel {
   padding: 14px;
   border: 1px solid var(--theme-panel-rim);
@@ -501,7 +516,7 @@ button:focus-visible,
   box-shadow: var(--theme-panel-shadow), 0 4px 20px #080604a0;
   background: var(--theme-panel);
 }
-#front:is([data-screen="settings"], [data-screen="story"], [data-screen="about"]) .front-content {
+#front:is([data-screen="settings"], [data-screen="story"]) .front-content {
   overflow: auto;
   padding: 2px;
   overscroll-behavior: contain;
@@ -609,7 +624,7 @@ button:focus-visible,
   bottom:12px;
   width:80px;
 }
-.briefing-text, #front[data-screen="about"] .front-content > p {
+.briefing-text {
   background: #1a1613ab;
   padding: 12px;
   border: 1px solid var(--rim);

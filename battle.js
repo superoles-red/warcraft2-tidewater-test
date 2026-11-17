@@ -1028,7 +1028,8 @@ async function start() {
     tickTimer = undefined;
     modal.dataset.layout = layout;
     byId('modal-title').textContent = t(title);
-    byId('modal-content').replaceChildren(...content);
+    const modalContent = byId('modal-content');
+    modalContent.replaceChildren(...content);
     byId('modal-actions').replaceChildren(...actions.map(([label, activate, tone, wide]) => {
       const caption = t(label);
       const control = button(caption, () => { audio.play('button'); activate(); }, tone);
@@ -1039,6 +1040,7 @@ async function start() {
       return control;
     }));
     if (!modal.open) modal.showModal();
+    if (layout === 'about') modalContent.scrollTop = 0;
   }
 
   function text(value) {

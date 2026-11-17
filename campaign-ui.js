@@ -291,10 +291,12 @@ export function createCampaignUi(root, campaigns, actions) {
   }
 
   function about() {
-    show('about', 'About the game', [
-      node('p', t('The original Warcraft II rules and artwork, adapted for touch screens.')),
-      node('p', t('Thanks to the Tidewater contributors and everyone supporting community adaptations and an open internet.')),
-    ], settings);
+    actions.confirm('About the game', [
+      node('p', t('An unofficial web adaptation of Warcraft II: Battle.net Edition. It keeps the classic rules, campaigns and artwork, with controls, camera and menus adapted for phones. You can play offline after downloading the game.')),
+      node('p', t('Thanks to Blizzard Entertainment for Warcraft II, to the Tidewater team for the game engine, and to Vladimir Grichina and the Wine-Assembly contributors for the runtime used in the previous web version.')),
+      node('p', t('Thanks to the StormLib contributors and J. C. Fields for their work on MPQ archives and to the FFmpeg team for its media tools.')),
+      node('p', t('Thanks to everyone who creates and supports noncommercial projects and fan adaptations, shares knowledge, and helps keep the internet open and free.')),
+    ], [['Back', actions.dismiss, 'negative']], {layout:'about'});
   }
 
   const progressAccess = {

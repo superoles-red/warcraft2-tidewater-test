@@ -44,6 +44,14 @@ const russian = {
     'Для языкового пакета потребуется {size} свободного места.',
   'Download':'Скачать', 'Downloading language…':'Загрузка языка…', 'Delete':'Удалить',
   'Language unavailable':'Язык недоступен', 'Files':'Файлы', 'About the game':'Об игре', 'Update':'Обновить',
+  'An unofficial web adaptation of Warcraft II: Battle.net Edition. It keeps the classic rules, campaigns and artwork, with controls, camera and menus adapted for phones. You can play offline after downloading the game.':
+    'Неофициальная веб-адаптация Warcraft II: Battle.net Edition. Мы сохранили классические правила, кампании и графику, а управление, камеру и меню адаптировали для телефонов. После загрузки можно играть без интернета.',
+  'Thanks to Blizzard Entertainment for Warcraft II, to the Tidewater team for the game engine, and to Vladimir Grichina and the Wine-Assembly contributors for the runtime used in the previous web version.':
+    'Спасибо Blizzard Entertainment за Warcraft II, команде Tidewater за движок, Владимиру Гричине и участникам Wine-Assembly за среду запуска предыдущей веб-версии.',
+  'Thanks to the StormLib contributors and J. C. Fields for their work on MPQ archives and to the FFmpeg team for its media tools.':
+    'Спасибо разработчикам StormLib и J. C. Fields за работу с архивами MPQ, а команде FFmpeg — за инструменты обработки видео и звука.',
+  'Thanks to everyone who creates and supports noncommercial projects and fan adaptations, shares knowledge, and helps keep the internet open and free.':
+    'Спасибо всем энтузиастам, которые создают и поддерживают некоммерческие проекты и народные адаптации, делятся знаниями и помогают сохранять интернет открытым и свободным.',
   'Feedback':'Отзыв', 'No scenarios match these filters.':'Нет сценариев с такими параметрами.',
   'Checking for updates…':'Проверяем обновления…', 'Loading mission…':'Загрузка миссии…',
   'You have the latest version.':'Установлена последняя версия.',
