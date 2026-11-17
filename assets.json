@@ -1,5 +1,5 @@
 {
-  "release": "b061da08e1a004d0",
+  "release": "304f125f856ff7f0",
   "updateProtocol": 1,
   "files": [
     {
@@ -3599,8 +3599,8 @@
     },
     {
       "path": "battle.js",
-      "bytes": 60768,
-      "integrity": "sha256-C+ZiPDRADsmnhMU1dT1zOm+s5HxrwTnyGIQDE/c66Pg="
+      "bytes": 61329,
+      "integrity": "sha256-iCzrg3bF4kfwfoVQHACBFQ9OSRr3QDs+SBwt1VReUxw="
     },
     {
       "path": "campaign-ui.js",
@@ -3644,8 +3644,8 @@
     },
     {
       "path": "lib/dune-controls.js",
-      "bytes": 37760,
-      "integrity": "sha256-CVKC+c4PLiQVBgIFpV/DsT4WoD6NdIo7Q136rC+O25c="
+      "bytes": 37792,
+      "integrity": "sha256-uDw1foynS51NkOFZ/zX/zVhBgX670byYehU48s5PrJc="
     },
     {
       "path": "lib/independent-camera-pilot.js",
@@ -3739,8 +3739,8 @@
     },
     {
       "path": "tidewater_web.wasm",
-      "bytes": 1727507,
-      "integrity": "sha256-ghS7oiqogywEv/ccyXEq0sIhkOElF7cla063tdTiLy8="
+      "bytes": 1727712,
+      "integrity": "sha256-n7kAx+aTTtjF3aAXvMq12r4hzUA0HW1UXfkM/EkPbeA="
     },
     {
       "path": "typography.css",

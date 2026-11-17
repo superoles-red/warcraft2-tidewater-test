@@ -13,13 +13,14 @@ use tidewater_formats::{
     identity::{FNV_BASIS, data_hash, fnv_extend},
     install::{Files, Install},
     mpq::ReadSeek,
+    udta::flags,
 };
 use tidewater_sim::economy::{Event, JobKind};
 use tidewater_sim::sound::{CRITTER, Cue, Pick, Place, Sound};
 use tidewater_sim::timing::{Pacing, Scheduler};
 use tidewater_sim::victory::Outcome;
 use tidewater_sim::vision::Map;
-use tidewater_sim::{Command, Order, Unit, UnitId, World};
+use tidewater_sim::{Command, Layer, Order, Unit, UnitId, World};
 
 const TILE: i32 = tidewater_sim::TILE_PX;
 const PEASANT: u8 = 2;
@@ -186,6 +187,10 @@ struct UnitView<'a> {
     hp: u16,
     max_hp: u16,
     building: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    transport: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    can_board_transport: bool,
     rect_selectable: bool,
     construction: bool,
     progress: Option<u8>,
@@ -1060,6 +1065,12 @@ fn unit_view<'a>(
         hp: unit.hp,
         max_hp: stats.hit_points,
         building: unit.building,
+        transport: unit.owner == player && stats.flags & flags::TRANSPORT != 0,
+        can_board_transport: unit.owner == player
+            && unit.layer == Layer::Land
+            && !unit.building
+            && unit.kind <= CRITTER
+            && world.is_mobile(unit),
         rect_selectable: stats.rect_selectable,
         construction,
         progress: (construction || unit.job.is_some()).then_some(unit.mana),

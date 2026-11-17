@@ -152,10 +152,19 @@ function createInterface({
     return found?.id;
   }
 
-  function selectTouchGroup(id, point) {
+  function handleSameUnitDoubleTap(id, point, restoreSelection) {
     if (id == null || touchTapSubject(point) !== id) return false;
     const leader = world.units.find(unit => unit.id === id);
     if (!leader) return false;
+    const priorSelection = restoreSelection ? remembered : world.selection;
+    if (leader.transport && world.units.some(unit =>
+      priorSelection.includes(unit.id) && unit.canBoardTransport && selectable(unit))) {
+      // Use the transport's footprint even if the tap landed in its touch margin.
+      const x = leader.x + leader.width / 2, y = leader.y + leader.height / 2;
+      if (restoreSelection) orderWithTouchSelection(x, y);
+      else send({op:'smart', x, y});
+      return true;
+    }
     if (leader.kind === 0x39) {
       // A second tap on the same critter is a selection click. A smart order
       // would reset the original game's click count via acknowledgement.
@@ -178,6 +187,11 @@ function createInterface({
       .sort((a, b) => a.ring - b.ring || a.step - b.step);
     send({op:'selectIds', ids:[id, ...neighbors.slice(0, 8).map(unit => unit.id)]});
     return true;
+  }
+
+  function orderWithTouchSelection(x, y) {
+    send({op:'selectIds', ids: remembered});
+    send({op:'smart', x, y});
   }
 
   function nativeButton(down, id, x, y) {
@@ -222,7 +236,7 @@ function createInterface({
     nativeMove,
     nativeButton,
     touchTapSubject,
-    selectTouchGroup,
+    handleSameUnitDoubleTap,
     panTiles(dx, dy) { camera.move(dx * 32, dy * 32, performance.now()); onFrame(); },
     beginPan: (...args) => camera.begin(...args),
     panPixels(...args) { camera.move(...args); onFrame(); },
@@ -231,10 +245,7 @@ function createInterface({
     clearSelection: () => send({op: 'selectIds', ids: []}),
     retainsTouchSelection: () => true,
     rememberTouchSelection() { remembered = [...world.selection]; },
-    orderWithTouchSelection(x, y) {
-      send({op: 'selectIds', ids: remembered});
-      send({op: 'smart', x, y});
-    },
+    orderWithTouchSelection,
     buildingWorldPoint: (x, y) => ({x, y}),
     getBuildingContext: () => action.placement()?.key,
     previewBuilding: point => action.preview(point),
