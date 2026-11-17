@@ -214,21 +214,48 @@ export function createCampaignUi(root, campaigns, actions) {
     ], home);
   }
 
-  async function languages() {
+  function languages() {
     const language = window.TidewaterOffline;
-    const pack = await language?.languagePack('ru').catch(() => null);
     async function use(value) {
-      try {
-        await setLanguage(value);
-        actions.language();
-        languages();
-      } catch (error) {
-        actions.confirm('Language unavailable', [node('p', error.message)], [['OK', actions.dismiss, 'positive']]);
-      }
+      await setLanguage(value);
+      actions.language();
+      languages();
     }
-    const english = control('English', () => use('en'), {raw:true});
-    const russian = control('Русский', () => {
-      if (pack?.installed || !language || !pack) return use('ru');
+    function showError(error) {
+      actions.confirm('Language unavailable', [node('p', error.message)], [['OK', actions.dismiss, 'positive']]);
+    }
+    const english = control('English', () => {
+      if (currentLanguage() !== 'en') use('en').catch(showError);
+    }, {raw:true});
+    const russian = control('Русский', async () => {
+      const pack = await language?.languagePack('ru').catch(() => null);
+      if (!russian.isConnected || root.hidden) return;
+      if (!pack) return use('ru').catch(showError);
+      if (pack.installed) {
+        const isRussian = currentLanguage() === 'ru';
+        const buttons = [];
+        if (!isRussian) {
+          buttons.push(['Use Russian', async () => {
+            try {
+              await use('ru');
+              actions.dismiss();
+            } catch (error) {
+              showError(error);
+            }
+          }, 'positive']);
+        }
+        buttons.push(['Delete', async () => {
+          try {
+            await language.deleteLanguage('ru');
+            if (currentLanguage() === 'ru') await use('en');
+            actions.dismiss();
+          } catch (error) {
+            showError(error);
+          }
+        }, 'negative'], ['Back', actions.dismiss]);
+        actions.confirm(isRussian ? 'Delete Russian?' : 'Russian language', [], buttons);
+        return;
+      }
       const size = new Intl.NumberFormat(currentLanguage(), {maximumFractionDigits:1}).format(pack.bytes / 1000000);
       actions.confirm('Download language?', [node('p', `${size} ${t('MB of storage required')}`)], [
         ['Download', async () => {
@@ -239,24 +266,21 @@ export function createCampaignUi(root, campaigns, actions) {
             await use('ru');
           } catch (error) {
             languages();
-            actions.confirm('Language unavailable', [node('p', error.message)], [['OK', actions.dismiss, 'positive']]);
+            showError(error);
           }
         }, 'positive'],
         ['Back', actions.dismiss, 'negative'],
       ]);
     }, {raw:true});
-    (currentLanguage() === 'ru' ? russian : english).classList.add('recent');
+    english.lang = 'en';
+    russian.lang = 'ru';
     const rows = [english, russian];
-    if (pack?.installed) rows.push(control('Delete Russian', () => {
-      actions.confirm('Delete Russian?', [], [
-        ['Delete', async () => {
-          actions.dismiss();
-          await language.deleteLanguage('ru');
-          await use('en');
-        }, 'negative'],
-        ['Back', actions.dismiss],
-      ]);
-    }));
+    for (const row of rows) row.classList.add('language-option');
+    const current = currentLanguage() === 'ru' ? russian : english;
+    current.setAttribute('aria-current', 'true');
+    const check = node('span', null, 'language-check');
+    check.setAttribute('aria-hidden', 'true');
+    current.append(check);
     show('settings', 'Language', rows, settings);
   }
 

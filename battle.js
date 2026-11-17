@@ -4,6 +4,7 @@ import {createCampaignUi} from './campaign-ui.js';
 import {checkpointKey, createCheckpointStore} from './checkpoint-store.js';
 import {commandLabel, commandReason, currentLanguage, missionLabel, setLanguage, translate as t, unitLabel} from './localization.js';
 import {commandDescription} from './command-descriptions.js';
+import {createMusicLoop} from './music-loop.js';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');
@@ -14,8 +15,9 @@ const detail = byId('command-detail');
 const modal = byId('modal');
 const cancelGlyph = 91;
 const tickMs = 40;
+const maxPartySize = 9;
 const checkpointUpdates = new Set([
-  'smart','move','target','build','train','upgrade','research','cancel','returnGoods','cast','unload','unloadOne',
+  'smart','move','target','build','train','upgrade','research','cancel','returnGoods','cast','unload','unloadOne','fog','speed',
 ]);
 const unitNames = {0: 'Footman', 1: 'Grunt', 2: 'Peasant', 3: 'Peon', 58: 'Farm', 59: 'Pig Farm',
   60: 'Barracks', 61: 'Barracks', 74: 'Town Hall', 75: 'Great Hall', 92: 'Gold Mine'};
@@ -194,6 +196,13 @@ function createInterface({
       return true;
     }
     if (!groupSelectable(leader)) return false;
+    if (!priorSelection.includes(id)) {
+      const party = priorSelection.filter(selectedId => world.units.some(unit =>
+        unit.id === selectedId && selectable(unit) && groupSelectable(unit)));
+      if (party.length < maxPartySize) party.push(id);
+      send({op:'selectIds', ids:party, silent:restoreSelection});
+      return true;
+    }
     const {x, y} = view.visibleGlobal;
     const radius = Math.max(14, Math.ceil(view.width / world.tileSize)) - 1;
     const neighbors = world.units.filter(unit => unit.id !== id && unit.kind === leader.kind &&
@@ -207,7 +216,8 @@ function createInterface({
       return {id:unit.id, ring, step};
     }).filter(unit => unit.ring <= radius)
       .sort((a, b) => a.ring - b.ring || a.step - b.step);
-    send({op:'selectIds', ids:[id, ...neighbors.slice(0, 8).map(unit => unit.id)]});
+    send({op:'selectIds', ids:[id, ...neighbors.slice(0, maxPartySize - 1).map(unit => unit.id)],
+      silent:restoreSelection});
     return true;
   }
 
@@ -236,7 +246,7 @@ function createInterface({
       const left = Math.min(start.x, x), right = Math.max(start.x, x);
       const top = Math.min(start.y, y), bottom = Math.max(start.y, y);
       const candidates = world.units.filter(unit => selectable(unit) && overlaps(unit, left, top, right, bottom));
-      const group = candidates.filter(groupSelectable).slice(0, 9);
+      const group = candidates.filter(groupSelectable).slice(0, maxPartySize);
       if (group.length || candidates.length) {
         const ids = (group.length ? group : [candidates.at(-1)]).map(unit => unit.id);
         send({op: 'selectIds', ids});
@@ -356,6 +366,7 @@ function makeAudio() {
   let files = {};
   let languageFiles = {};
   let music;
+  let musicLoop;
   let musicKey = 'music-menu';
   let trackIndex = 0;
   let skipFirstTrack = false;
@@ -421,6 +432,7 @@ function makeAudio() {
   function clearMusic() {
     clearTimeout(nextTrack);
     nextTrack = undefined;
+    musicLoop?.clear();
     if (!music?.hasAttribute('src')) return;
     music.pause();
     music.removeAttribute('src');
@@ -454,7 +466,14 @@ function makeAudio() {
     const tracks = files[musicKey];
     const path = tracks?.[trackIndex];
     if (!unlocked || !path || nextTrack !== undefined) return;
-    if (!volumes.music || document.hidden || mediaActive) {
+    const playing = volumes.music > 0 && !document.hidden && !mediaActive;
+    const source = audioPath(path);
+    if (tracks.length === 1 && audioContext) {
+      musicLoop ??= createMusicLoop(audioContext, channels.music, sync);
+      const loop = {loopStart:loopPoint, loopEnd:files.musicLoopEnds?.[path]};
+      if (musicLoop.sync(source, loop, playing)) return;
+    }
+    if (!playing) {
       music?.pause();
       return;
     }
@@ -464,7 +483,6 @@ function makeAudio() {
       routeMedia(music, 'music');
       music.addEventListener('ended', trackEnded);
     }
-    const source = audioPath(path);
     music.loop = tracks.length === 1 && !loopPoint;
     if (music.getAttribute('src') !== source) music.src = source;
     if (music.paused) music.play().catch(() => {});
@@ -1066,7 +1084,7 @@ async function start() {
       list.append(line);
     }
     showModal('Mission Objectives', [list, checkControl('Show every time', setting('objectives', true),
-      value => setSetting('objectives', value))], [['OK', back, 'positive']]);
+      value => setSetting('objectives', value))], [['OK', back, 'positive']], {layout:'compact-ok'});
   }
 
   function volumeControls() {
@@ -1105,16 +1123,20 @@ async function start() {
   }
 
   function showBattleSettings() {
-    let fogEnabled = adapter.world.fog;
     let gameSpeed = adapter.world.speed;
-    const fog = checkControl('Fog of war', fogEnabled, enabled => { fogEnabled = enabled; });
+    const fog = checkControl('Fog of war', adapter.world.fog, enabled => {
+      setSetting('fog', enabled);
+      adapter.send({op:'fog', enabled});
+    });
     const speed = document.createElement('div');
     speed.className = 'speed-controls';
     const choices = [['Slow', 4], ['Medium', 7], ['Fast', 8]];
     for (const [label, value] of choices) {
       const choice = button(t(label), () => {
         audio.play('button');
+        if (value === gameSpeed) return;
         gameSpeed = value;
+        adapter.send({op:'speed', speed:value});
         for (const other of speed.children) {
           other.classList.toggle('active', other === choice);
           other.setAttribute('aria-pressed', String(other === choice));
@@ -1125,17 +1147,7 @@ async function start() {
       speed.append(choice);
     }
     showModal('Settings', [...volumeControls(), fog, text(t('Game speed')), speed],
-      [
-        ['OK', () => {
-          if (adapter.world.fog !== fogEnabled) {
-            setSetting('fog', fogEnabled);
-            adapter.send({op:'fog', enabled:fogEnabled});
-          }
-          if (adapter.world.speed !== gameSpeed) adapter.send({op:'speed', speed:gameSpeed});
-          closeModal();
-        }, 'positive'],
-        ['Back', showMenu, 'negative'],
-      ]);
+      [['OK', closeModal, 'positive']], {layout:'compact-ok'});
   }
 
   function showRestart() {

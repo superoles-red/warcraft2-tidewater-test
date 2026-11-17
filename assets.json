@@ -1,5 +1,5 @@
 {
-  "release": "b698bcc3d892b451",
+  "release": "715e22ad82fe1ca6",
   "updateProtocol": 1,
   "files": [
     {
@@ -2454,8 +2454,8 @@
     },
     {
       "path": "art/audio.json",
-      "bytes": 49352,
-      "integrity": "sha256-R1e+0hOUzvUtQCKNGQQ4Nd39fDkb0NEmWAcQ4QeYPMY="
+      "bytes": 49467,
+      "integrity": "sha256-q0O678BaphumC8wwKUF1wjNJSQIdTAvb3CADKqHckyo="
     },
     {
       "path": "art/briefing/human-0.webp",
@@ -3919,18 +3919,18 @@
     },
     {
       "path": "battle.css",
-      "bytes": 27779,
-      "integrity": "sha256-DI+dN1dM7kHByI85sA03OaN/JJkvExkJrJs31iDsKHo="
+      "bytes": 27804,
+      "integrity": "sha256-ub1p5mw0zgJE4/4dYm5mSkFTfe+kZjMJ03u1Q7An7nA="
     },
     {
       "path": "battle.js",
-      "bytes": 68178,
-      "integrity": "sha256-SLo5qbR/x5GikZHklKWWMhbqjzYZHjUiG96skYXs+sI="
+      "bytes": 68821,
+      "integrity": "sha256-WbbBD704SoKydFCGXu2/L3xXwHzI+LyiEja0H5/HCvw="
     },
     {
       "path": "campaign-ui.js",
-      "bytes": 13568,
-      "integrity": "sha256-duMKz73/DxTrPINbzhf+iMvlq6u7xOzy+vTncYjCZ8A="
+      "bytes": 14349,
+      "integrity": "sha256-w+/sNb+TCTRgzG4Sa7MFG1KrPibqbZtRZeM1xGSz1N4="
     },
     {
       "path": "checkpoint-store.js",
@@ -4009,13 +4009,18 @@
     },
     {
       "path": "localization.js",
-      "bytes": 7768,
-      "integrity": "sha256-aiEWhaeiqXS+2DhFbWdtdRZwv1sWANrIWrPbsMyghpI="
+      "bytes": 7815,
+      "integrity": "sha256-7Et1rDWlPm2496D2zuDsD/iSwRpqr0dlAFvS+2idxIU="
     },
     {
       "path": "map-renderer.js",
       "bytes": 23255,
       "integrity": "sha256-b6P1GKdxHmky9Jt0BQL2Rk+gMGF1VXNO9njqZpE1zdg="
+    },
+    {
+      "path": "music-loop.js",
+      "bytes": 1996,
+      "integrity": "sha256-WQwTXS5w490dsK5Nh2heyoEfocXFSRmJUj/BiPDYNEs="
     },
     {
       "path": "native-video.js",
