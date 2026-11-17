@@ -185,7 +185,7 @@ export async function openQuickBattle({
     function offerStart(continuing) {
       const warning = !continuing && active() ? 'The previous battle will be replaced.' : '';
       confirm(continuing ? 'Continue the game?' : 'Start a new game?', [
-        element('p', t('Custom Scenario'), 'accent'), element('p', selected.title),
+        element('p', t('Custom Scenario')), element('p', selected.title, 'accent'),
         ...(warning ? [element('p', t(warning), 'warning')] : []),
       ], [
         [continuing ? 'Continue' : 'Start', async () => {

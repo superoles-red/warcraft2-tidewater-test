@@ -249,11 +249,11 @@ export function createCampaignUi(root, campaigns, actions) {
         function offerRemoval() {
           actions.confirm('Delete Russian?', content, [
             ['Delete', confirmRemoval, 'negative'], ['Back', actions.dismiss, 'negative'],
-          ]);
+          ], {layout:'battle-confirmation'});
         }
         function confirmRemoval() {
           actions.confirm('Are you sure you want to delete Russian?', content, [
-            ['Yes', remove, 'negative'], ['No', offerRemoval], ['Back', actions.dismiss, 'negative'],
+            ['Yes', remove, 'negative'], ['No', offerRemoval],
           ]);
         }
         offerRemoval();
@@ -273,7 +273,7 @@ export function createCampaignUi(root, campaigns, actions) {
           }
         }, 'positive'],
         ['Back', actions.dismiss, 'negative'],
-      ]);
+      ], {layout:'battle-confirmation'});
     }, {raw:true});
     english.lang = 'en';
     russian.lang = 'ru';
