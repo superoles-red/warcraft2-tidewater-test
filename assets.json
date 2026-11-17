@@ -1,5 +1,5 @@
 {
-  "release": "76e0eb265cb0ba70",
+  "release": "177dcbf3c5e861b9",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,8 +3919,8 @@
     },
     {
       "path": "battle.css",
-      "bytes": 30650,
-      "integrity": "sha256-4EJZ36AdSWxGjJWDkbrHpvA688bDFwA+gAkIBmH7xdM="
+      "bytes": 30978,
+      "integrity": "sha256-4aMbqLIYv+it9dE9RbxRRME37L5d1X8n7lYiEHlMpAc="
     },
     {
       "path": "battle.js",
@@ -4089,8 +4089,8 @@
     },
     {
       "path": "typography.css",
-      "bytes": 1819,
-      "integrity": "sha256-aUDt2AJlBENmECcgICKb/JUlavuDW4bv1jg6e9JmqJc="
+      "bytes": 1853,
+      "integrity": "sha256-MG74tN2IIPyTmKvR/qRz0mQwrJp1mlqMiAKhvmpAVqk="
     }
   ],
   "optional": [

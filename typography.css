@@ -58,7 +58,7 @@
 .result-meter-number { font-variant-numeric: lining-nums tabular-nums; }
 
 #resources {
-  font-size: clamp(15px, 4.1vmin, 20px);
+  font-size: clamp(16px, min(6.15vmin, var(--resource-width) / 13), 30px);
   font-weight: 700;
   line-height: 1;
 }

@@ -195,21 +195,22 @@ button:focus-visible,
 }
 
 #resources {
+  --resource-width: calc(100vw - var(--safe-x) - var(--safe-right) - var(--menu-height) - 24px);
+  --resource-icon: clamp(1em, 5.5vw, 1.3em);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(4px, 1vw, 14px);
+  gap: clamp(6px, 1.8vmin, 16px);
   min-height: var(--menu-height);
   flex: 1;
   margin-inline-end: 8px;
   padding: 0 5px;
   color: var(--paper);
-  font-size: clamp(13px, 4vw, 20px);
   font-variant-numeric: tabular-nums;
   text-shadow: 1px 2px #000, -1px -1px #000;
 }
-.resource { display: flex; gap: 3px; align-items: center; white-space: nowrap; }
-.resource canvas { width: clamp(14px, 4vw, 21px); height: clamp(14px, 4vw, 21px); }
+.resource { display: flex; gap: 4px; align-items: center; white-space: nowrap; }
+.resource canvas { width: var(--resource-icon); height: var(--resource-icon); }
 
 #minimap {
   position: absolute;
@@ -881,9 +882,11 @@ button:focus-visible,
   }
   #selection { top: var(--hud-top); width: min(245px, 32vw); }
   #resources {
+    --resource-right: calc(var(--safe-right) + var(--mini) + var(--menu-height) + 16px);
+    --resource-width: calc(100vw - var(--resource-right) - var(--safe-x));
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    right: var(--resource-right);
+    transform: translateX(min(0px, var(--resource-right) - 50vw + 50%));
     width: max-content;
     margin-inline-end: 0;
   }
