@@ -1068,27 +1068,28 @@ async function start() {
     byId('modal-title').textContent = t(title);
     const modalContent = byId('modal-content');
     modalContent.replaceChildren(...content);
-    const buttons = actions.map(([label, activate, tone, wide]) => {
+    const closeButtons = [];
+    const buttons = actions.flatMap(([label, activate, tone, wide]) => {
       const caption = t(label);
       const control = button(caption, () => { audio.play('button'); activate(); }, tone);
       control.classList.toggle('wide', Boolean(wide));
-      if (caption === t('Back')) {
-        control.classList.add('modal-back');
-        if (layout !== 'battle-confirmation') {
-          control.classList.add('back-arrow');
-          control.setAttribute('aria-label', caption);
-          control.textContent = '';
-        }
+      if (caption === t('Back') && layout !== 'battle-confirmation') {
+        control.id = 'modal-close';
+        control.setAttribute('aria-label', t('Close'));
+        control.textContent = '×';
+        closeButtons.push(control);
+        return [];
       }
+      control.classList.toggle('modal-back', caption === t('Back'));
       control.classList.toggle('modal-ok', caption === t('OK'));
       if (tone === 'current-choice') control.setAttribute('aria-current', 'true');
-      return control;
+      return [control];
     });
+    byId('modal-chrome').replaceChildren(...closeButtons);
     const actionRow = byId('modal-actions');
     if (layout === 'scenario-options') {
-      const back = buttons.pop();
       modalContent.append(...buttons);
-      actionRow.replaceChildren(back);
+      actionRow.replaceChildren();
     } else {
       actionRow.replaceChildren(...buttons);
     }

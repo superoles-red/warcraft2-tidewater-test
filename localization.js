@@ -6,7 +6,7 @@ let data;
 const russian = {
   'Human Campaign':'Кампания людей', 'Orc Campaign':'Кампания орков',
   'Tides of Darkness':'Приливы Тьмы', 'Beyond the Dark Portal':'За Тёмным Порталом',
-  'Campaign':'Кампания', 'Settings':'Настройки', 'Continue':'Продолжить', 'Back':'Назад',
+  'Campaign':'Кампания', 'Settings':'Настройки', 'Continue':'Продолжить', 'Back':'Назад', 'Close':'Закрыть',
   'Play':'Играть', 'Start':'Начать', 'Menu':'Меню', 'Game Menu':'Игровое меню',
   'Main Menu':'Главное меню', 'Restart':'Начать заново',
   'Level':'Уровень', 'Mana':'Мана', 'Unload {unit}':'Высадить: {unit}',
