@@ -2,7 +2,8 @@ import {createTidewater} from './engine.js';
 import {createMapRenderer, readImage, readJson, eraDirectory} from './map-renderer.js';
 import {createCampaignUi} from './campaign-ui.js';
 import {checkpointKey, createCheckpointStore} from './checkpoint-store.js';
-import {commandLabel, currentLanguage, missionLabel, setLanguage, translate as t, unitLabel} from './localization.js';
+import {commandLabel, commandReason, currentLanguage, missionLabel, setLanguage, translate as t, unitLabel} from './localization.js';
+import {commandDescription} from './command-descriptions.js';
 
 const byId = id => document.getElementById(id);
 const game = byId('game');
@@ -14,7 +15,6 @@ const modal = byId('modal');
 const cancelGlyph = 91;
 const tickMs = 40;
 const checkpointUpdates = new Set(['smart','move','target','build','train','upgrade','research','cancel','returnGoods','cast']);
-const costNames = ['Gold', 'Lumber', 'Oil'];
 const unitNames = {0: 'Footman', 1: 'Grunt', 2: 'Peasant', 3: 'Peon', 58: 'Farm', 59: 'Pig Farm',
   60: 'Barracks', 61: 'Barracks', 74: 'Town Hall', 75: 'Great Hall', 92: 'Gold Mine'};
 const targetIcons = {move: 83, attack: 116, repair: 85, harvest: 86, patrol: 184};
@@ -35,7 +35,8 @@ function button(label, activate, tone = '') {
 }
 
 function description(command) {
-  return (command.cost ?? []).flatMap((cost, index) => cost ? [`${cost} ${t(costNames[index])}`] : []).join(' · ');
+  return (command.cost ?? []).flatMap((cost, index) =>
+    cost && resourceFields[index] ? [`${cost} ${t(resourceFields[index][1])}`] : []).join(' · ');
 }
 
 function priceLabel(command) {
@@ -121,6 +122,52 @@ function createInterface({
     if (start && !action.target()) onBox({x1: start.x, y1: start.y, x2: x, y2: y});
   }
 
+  const touchRadius = () => Math.min(12, Math.ceil(7 * view.width / getRect().width));
+  const selectable = unit => unit.hp > 0 && !unit.dying;
+  const groupSelectable = unit => unit.owner === world.player && unit.rectSelectable;
+  const overlaps = (unit, left, top, right, bottom) => unit.x < right && unit.x + unit.width > left &&
+    unit.y < bottom && unit.y + unit.height > top;
+
+  function touchTapSubject({x, y}) {
+    if (!view) return undefined;
+    let found;
+    let nearest = touchRadius();
+    let nearestCentre = Infinity;
+    for (const unit of world.units) {
+      if (!selectable(unit)) continue;
+      const dx = x - Math.max(unit.x, Math.min(unit.x + unit.width, x));
+      const dy = y - Math.max(unit.y, Math.min(unit.y + unit.height, y));
+      const distance = Math.hypot(dx, dy);
+      const centre = Math.hypot(x - unit.x - unit.width / 2, y - unit.y - unit.height / 2);
+      if (distance > nearest || (distance === nearest && centre >= nearestCentre)) continue;
+      found = unit;
+      nearest = distance;
+      nearestCentre = centre;
+    }
+    return found?.id;
+  }
+
+  function selectTouchGroup(id, point) {
+    if (id == null || touchTapSubject(point) !== id) return false;
+    const leader = world.units.find(unit => unit.id === id);
+    if (!leader || !groupSelectable(leader)) return false;
+    const {x, y} = view.visibleGlobal;
+    const radius = Math.max(14, Math.ceil(view.width / world.tileSize)) - 1;
+    const neighbors = world.units.filter(unit => unit.id !== id && unit.kind === leader.kind &&
+      selectable(unit) && groupSelectable(unit) &&
+      overlaps(unit, x, y, x + view.width, y + view.height)).map(unit => {
+      const dx = unit.tileX - leader.tileX, dy = unit.tileY - leader.tileY;
+      const ring = Math.max(Math.abs(dx), Math.abs(dy));
+      // Original BNE scans each square ring east, south, west, then north.
+      const step = dy === -ring ? dx + ring : dx === ring ? 3 * ring + dy :
+        dy === ring ? 5 * ring - dx : 7 * ring - dy;
+      return {id:unit.id, ring, step};
+    }).filter(unit => unit.ring <= radius)
+      .sort((a, b) => a.ring - b.ring || a.step - b.step);
+    send({op:'selectIds', ids:[id, ...neighbors.slice(0, 8).map(unit => unit.id)]});
+    return true;
+  }
+
   function nativeButton(down, id, x, y) {
     if (down) {
       pressed.set(id, {x, y});
@@ -136,14 +183,16 @@ function createInterface({
     } else if (action.target()) {
       action.finishTarget(x, y);
     } else if (Math.hypot(start.x - x, start.y - y) <= 5) {
-      send({op: 'select', x, y, radius: Math.min(12, Math.ceil(7 * view.width / getRect().width))});
+      send({op: 'select', x, y, radius: touchRadius()});
     } else {
       const left = Math.min(start.x, x), right = Math.max(start.x, x);
       const top = Math.min(start.y, y), bottom = Math.max(start.y, y);
-      const ids = world.units.filter(unit => unit.owner === world.player && unit.hp > 0 &&
-        unit.x < right && unit.x + unit.width > left && unit.y < bottom && unit.y + unit.height > top)
-        .slice(0, 9).map(unit => unit.id);
-      send({op: 'selectIds', ids});
+      const candidates = world.units.filter(unit => selectable(unit) && overlaps(unit, left, top, right, bottom));
+      const group = candidates.filter(groupSelectable).slice(0, 9);
+      if (group.length || candidates.length) {
+        const ids = (group.length ? group : [candidates.at(-1)]).map(unit => unit.id);
+        send({op: 'selectIds', ids});
+      }
     }
   }
 
@@ -160,6 +209,8 @@ function createInterface({
     clientToNativePoint,
     nativeMove,
     nativeButton,
+    touchTapSubject,
+    selectTouchGroup,
     panTiles(dx, dy) { camera.move(dx * 32, dy * 32, performance.now()); onFrame(); },
     beginPan: (...args) => camera.begin(...args),
     panPixels(...args) { camera.move(...args); onFrame(); },
@@ -188,8 +239,13 @@ function createInterface({
   };
 }
 
+function localPlayerColour(world) {
+  return world.playerColour ?? world.units.find(unit => unit.owner === world.player)?.colour ?? world.player;
+}
+
 function artwork(meta, atlas) {
-  const make = (source, label) => {
+  const colouredIcons = new Map();
+  const make = (source, label, picture = atlas) => {
     const canvas = document.createElement('canvas');
     canvas.setAttribute('aria-hidden', 'true');
     if (!source) return canvas;
@@ -198,14 +254,35 @@ function artwork(meta, atlas) {
     canvas.height = h;
     const context = canvas.getContext('2d');
     context.imageSmoothingEnabled = false;
-    context.drawImage(atlas, x, y, w, h, 0, 0, w, h);
-    if (label) canvas.dataset.art = label;
+    context.drawImage(picture, x, y, w, h, 0, 0, w, h);
+    if (label != null) canvas.dataset.art = label;
     return canvas;
   };
+  function icon(id, colour, label = id) {
+    const source = meta.icons[id];
+    if (!source || !meta.teamIcons?.[id]) return make(source, label);
+    const shades = meta.teamColours[colour] ?? meta.teamColours[0];
+    const key = `${id}:${colour ?? 0}`;
+    if (!colouredIcons.has(key)) {
+      const raster = make(source);
+      const context = raster.getContext('2d');
+      const image = context.getImageData(0, 0, raster.width, raster.height);
+      const rgba = image.data;
+      for (let offset = 0; offset < rgba.length; offset += 4) {
+        const shade = rgba[offset + 2];
+        if (rgba[offset] === 1 && rgba[offset + 1] === 255 && shade < 4 && rgba[offset + 3])
+          rgba.set(shades[shade], offset);
+      }
+      context.putImageData(image, 0, 0);
+      colouredIcons.set(key, raster);
+    }
+    const raster = colouredIcons.get(key);
+    return make([0, 0, raster.width, raster.height], label, raster);
+  }
   return {
     resource(name) { return make(meta.resources[name], name); },
-    icon(id) { return make(meta.icons[id], id); },
-    portrait(kind) { return make(meta.icons[meta.portraits[kind] ?? kind], kind); },
+    icon,
+    portrait(kind, colour) { return icon(meta.portraits[kind] ?? kind, colour, kind); },
     portraitId(kind) { return meta.portraits[kind] ?? kind; },
   };
 }
@@ -339,6 +416,7 @@ async function start() {
   let checkpointEpoch = 0;
   let checkpointWork = Promise.resolve();
   let savingCheckpoint;
+  let restoredBattle;
   let checkpointTime = 0;
   let checkpointSoon = false;
   let savedCamera;
@@ -368,7 +446,9 @@ async function start() {
   let lastPortrait = null;
   let notice = null;
   let infoKey = '';
+  let progressBar;
   let panelKey = '';
+  let detailKey = '';
   const showHud = visible => {
     for (const id of ['hud-top', 'selection', 'minimap', 'command-area']) byId(id).hidden = !visible;
   };
@@ -607,12 +687,13 @@ async function start() {
         ? 'orc' : 'human';
       byId('battle').dataset.race = race;
       audio.race(race);
-      if (!restored && !mission.demo) discardCheckpoint();
+      restoredBattle = restored;
       return {world:adapter.world, restored};
     } finally { loadingMission = false; }
   }
 
   function playMission(showObjectivesAtStart = true) {
+    if (!restoredBattle && !demoReturn) discardCheckpoint();
     battleActive = true;
     outcomeShown = false;
     showHud(!demoReturn);
@@ -691,10 +772,11 @@ async function start() {
     if (visual || command.op !== 'step') scheduleFrame();
   }
 
-  function showModal(title, content, actions) {
+  function showModal(title, content, actions, {layout = ''} = {}) {
     controls.cancel();
     clearTimeout(tickTimer);
     tickTimer = undefined;
+    modal.dataset.layout = layout;
     byId('modal-title').textContent = t(title);
     byId('modal-content').replaceChildren(...content);
     byId('modal-actions').replaceChildren(...actions.map(([label, activate, tone, wide]) =>
@@ -719,10 +801,10 @@ async function start() {
     showModal('Game Menu', [], [
       ['Objectives', showObjectives, '', true],
       ['Settings', showBattleSettings, '', true],
-      ['Restart', showRestart, '', true],
-      ['Exit to Main Menu', showExit, '', true],
+      ['Restart', showRestart],
+      ['Exit to Main Menu', showExit],
       ['Back', closeModal, 'negative', true],
-    ]);
+    ], {layout:'game-menu'});
   }
 
   function checkControl(label, enabled, onChange) {
@@ -769,24 +851,33 @@ async function start() {
   }
 
   function showBattleSettings() {
-    const fog = checkControl('Fog of war', adapter.world.fog, enabled => {
-      setSetting('fog', enabled);
-      adapter.send({op:'fog', enabled});
-    });
+    let fogEnabled = adapter.world.fog;
+    let gameSpeed = adapter.world.speed;
+    const fog = checkControl('Fog of war', fogEnabled, enabled => { fogEnabled = enabled; });
     const speed = document.createElement('div');
     speed.className = 'speed-controls';
     const choices = [['Slow', 4], ['Medium', 7], ['Fast', 8]];
     for (const [label, value] of choices) {
       const choice = button(t(label), () => {
         audio.play('button');
-        adapter.send({op:'speed', speed:value});
+        gameSpeed = value;
         for (const other of speed.children) other.classList.toggle('active', other === choice);
       });
       choice.classList.toggle('active', adapter.world.speed === value);
       speed.append(choice);
     }
     showModal('Settings', [...volumeControls(), fog, text(t('Game speed')), speed],
-      [['Back', showMenu, 'negative']]);
+      [
+        ['OK', () => {
+          if (adapter.world.fog !== fogEnabled) {
+            setSetting('fog', fogEnabled);
+            adapter.send({op:'fog', enabled:fogEnabled});
+          }
+          if (adapter.world.speed !== gameSpeed) adapter.send({op:'speed', speed:gameSpeed});
+          closeModal();
+        }, 'positive'],
+        ['Back', showMenu, 'negative'],
+      ]);
   }
 
   function showRestart() {
@@ -828,15 +919,69 @@ async function start() {
     }
   }
 
+  function costTokens(command) {
+    if (!command?.cost?.some(Boolean)) return null;
+    const costs = document.createElement('span');
+    costs.className = 'resource-costs';
+    for (const [index, amount] of command.cost.entries()) {
+      const resource = resourceFields[index];
+      if (!amount || !resource) continue;
+      const [name, label] = resource;
+      const entry = document.createElement('span');
+      entry.className = 'resource-cost';
+      entry.setAttribute('role', 'img');
+      entry.setAttribute('aria-label', `${amount} ${t(label)}`);
+      entry.append(art.resource(name), String(amount));
+      costs.append(entry);
+    }
+    return costs;
+  }
+
+  function workSubjectKey(subject) {
+    return subject ? [subject.unit, subject.op, subject.kind, subject.icon, subject.colour].join(':') : '';
+  }
+
+  function workSubjectLabel(subject) {
+    if (subject.op !== 'research') return unitLabel(subject.kind, subject.label);
+    const name = commandLabel(subject);
+    if (!subject.level) return name;
+    const title = name.replace(/\s+\(?[\p{L}]+\s+\+\d+\)?$/u, '');
+    return `${title} ${subject.level === 1 ? 'I' : 'II'}`;
+  }
+
+  function workSubjectIcon(subject) {
+    return art.icon(subject.icon ?? art.portraitId(subject.kind), subject.colour);
+  }
+
   function purchase(command) {
     const cancellation = command.op === 'cancel';
+    const subject = command.subject;
     const preview = document.createElement('div');
     preview.className = 'purchase-preview';
-    preview.append(art.icon(commandIcon(command)), text(description(command) || commandLabel(command)));
-    showModal(`${commandLabel(command)}?`, [preview], [
+    if (cancellation) {
+      if (subject) preview.append(workSubjectIcon(subject), text(workSubjectLabel(subject)));
+    } else {
+      preview.append(art.icon(commandIcon(command), localPlayerColour(adapter.world)),
+        costTokens(command) ?? text(commandLabel(command)));
+    }
+    const title = cancellation ? ({
+      build: 'Cancel construction?', train: 'Cancel training?',
+      research: 'Cancel research?', upgrade: 'Cancel upgrade?',
+    }[subject?.op] ?? 'Cancel?') : `${commandLabel(command)}?`;
+    const content = preview.childElementCount ? [preview] : [];
+    const summary = !cancellation && commandDescription(command, currentLanguage());
+    if (summary) {
+      const description = text(summary);
+      description.className = 'purchase-description';
+      content.push(description);
+    }
+    showModal(title, content, [
       [cancellation ? 'OK' : 'Buy', () => {
         const current = adapter.world.actions.find(entry => commandKey(entry) === commandKey(command));
-        if (!current?.enabled) return;
+        if (!current?.enabled || (cancellation && workSubjectKey(current.subject) !== workSubjectKey(subject))) {
+          if (cancellation) closeModal();
+          return;
+        }
         closeModal();
         adapter.send({op: command.op, kind: command.kind, action: command.action});
       }, 'positive'],
@@ -907,12 +1052,27 @@ async function start() {
     updateHud(adapter.world);
   }
 
+  function updateProgress(value) {
+    if (!progressBar || value == null) return;
+    const progress = Math.floor(value * 100 / 255);
+    if (progressBar.getAttribute('aria-valuenow') === String(progress)) return;
+    progressBar.style.setProperty('--progress', progress + '%');
+    progressBar.setAttribute('aria-valuenow', progress);
+    progressBar.textContent = progress + '% ' + t('complete');
+  }
+
   function paintSelection(world) {
     const units = world.selection.map(id => world.units.find(unit => unit.id === id)).filter(Boolean);
-    const key = units.map(unit => [unit.id, unit.kind, unit.hp, unit.progress, unit.construction,
-      unit.production, unit.level, unit.resourcesAmount].join(':')).join(',');
-    if (infoKey === key) return;
+    const selected = units.length === 1 ? units[0] : null;
+    const subject = selected && world.actions.find(action => action.op === 'cancel' && action.subject?.unit === selected.id)?.subject;
+    const key = units.map(unit => [unit.id, unit.kind, unit.colour, unit.hp, unit.progress != null, unit.construction,
+      unit.level, unit.resourcesAmount].join(':')).join(',') + ':' + workSubjectKey(subject);
+    if (infoKey === key) {
+      updateProgress(selected?.progress);
+      return;
+    }
     infoKey = key;
+    progressBar = null;
     selection.replaceChildren();
     if (!units.length) return;
     const grid = document.createElement('div');
@@ -927,7 +1087,7 @@ async function start() {
       const bar = document.createElement('span');
       bar.style.width = `${clamp(unit.hp / Math.max(1, unit.maxHp), 1) * 100}%`;
       meter.append(bar);
-      portrait.append(art.portrait(unit.kind), meter);
+      portrait.append(art.portrait(unit.kind, unit.colour), meter);
       portrait.addEventListener('click', () => {
         const live = adapter.world.units.find(entry => entry.id === unit.id);
         if (!live) return;
@@ -959,12 +1119,16 @@ async function start() {
         stats.append(row);
       }
       if (typeof unit.progress === 'number' && unit.progress >= 0) {
-        const progress = unit.progress * 100 / 255;
-        const bar = document.createElement('div');
-        bar.className = 'progress-track';
-        bar.style.setProperty('--progress', progress + '%');
-        bar.textContent = Math.floor(progress) + '% ' + t('complete');
-        stats.append(bar);
+        const row = document.createElement('div');
+        row.className = 'production-progress';
+        if (subject && !unit.construction) row.append(workSubjectIcon(subject));
+        progressBar = document.createElement('div');
+        progressBar.className = 'progress-track';
+        progressBar.setAttribute('role', 'progressbar');
+        progressBar.setAttribute('aria-label', subject ? workSubjectLabel(subject) : t('Progress'));
+        row.append(progressBar);
+        stats.append(row);
+        updateProgress(unit.progress);
       }
       selection.append(grid, stats);
     } else selection.append(grid);
@@ -990,7 +1154,8 @@ async function start() {
 
   function showCommands(world) {
     const actions = shownActions(world);
-    const key = JSON.stringify([actions, armed, Boolean(placement)]);
+    const colour = localPlayerColour(world);
+    const key = JSON.stringify([actions, armed, Boolean(placement), colour]);
     if (panelKey !== key) {
       panelKey = key;
       commands.replaceChildren();
@@ -1016,7 +1181,7 @@ async function start() {
           el.style.gridColumn = slot % 3 + 1;
           el.style.gridRow = 3 - Math.floor(slot / 3);
         }
-        el.append(art.icon(commandIcon(command)));
+        el.append(art.icon(commandIcon(command), colour));
         el.addEventListener('click', () => activateCommand(command));
         commands.append(el);
       });
@@ -1025,10 +1190,28 @@ async function start() {
     byId('placement').hidden = !placement;
     byId('command-area').classList.toggle('placing', Boolean(placement));
     const armedCommand = actions.find(cmd => commandKey(cmd) === armed);
-    const message = notice?.until > performance.now() ? notice.message : placement ?
-      t(placementTile && !placementTile.valid ? 'Choose another site' : 'Choose a site, then tap Place') :
-      aim ? commandLabel(aim) + ' — ' + t('Tap a target') : armedCommand ? priceLabel(armedCommand) : '';
-    if (detail.textContent !== message) detail.textContent = message;
+    const hint = notice?.until > performance.now() ? notice.message : placement ?
+      (placementTile && !placementTile.valid ? commandReason(placementTile) || t('Choose another site') :
+        t('Choose a site, then tap Place')) :
+      aim ? commandLabel(aim) + ' — ' + t('Tap a target') : '';
+    const message = hint || (armedCommand ? commandLabel(armedCommand) : '');
+    const price = hint ? null : armedCommand;
+    const summary = commandDescription(price, currentLanguage());
+    const reason = price?.enabled === false ? commandReason(price) : '';
+    const nextDetailKey = JSON.stringify([message, price?.cost, summary, reason]);
+    if (detailKey !== nextDetailKey) {
+      detailKey = nextDetailKey;
+      detail.replaceChildren(message);
+      const costs = costTokens(price);
+      if (costs) detail.append(costs);
+      for (const [caption, className] of [[summary, 'command-description'], [reason, 'warning command-reason']]) {
+        if (!caption) continue;
+        const line = document.createElement('span');
+        line.className = className;
+        line.textContent = caption;
+        detail.append(line);
+      }
+    }
     detail.hidden = !message;
   }
 
@@ -1088,7 +1271,7 @@ async function start() {
     frameRequested = false;
     if (!battleActive || stopped || document.hidden || !renderer) return;
     const view = adapter.frame(time);
-    renderer.draw(view, canvasRect, placementTile, selectBox);
+    renderer.draw(view, canvasRect, placementTile, selectBox, Boolean(placement));
     if (adapter.cameraMoving) scheduleFrame();
   }
 

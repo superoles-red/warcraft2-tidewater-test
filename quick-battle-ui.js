@@ -2,7 +2,7 @@ import {readJson} from './map-renderer.js';
 import {translate as t} from './localization.js';
 
 const baseOptions = {
-  race:'mapDefault', opponents:null, resources:'mapDefault', terrain:'mapDefault',
+  race:'random', opponents:null, resources:'mapDefault', terrain:'mapDefault',
   oneWorker:false, fixedStarts:false, fog:true,
 };
 const choices = [
@@ -81,7 +81,7 @@ export async function openQuickBattle({
         control('Select Scenario', scenarios),
         control('Start Game', () => offerStart(false), {tone:'positive'}),
       );
-      show('quick', 'Quick Battle', [details, actions], close);
+      show('quick', 'Custom Scenario', [details, actions], close);
     }
 
     function filter(label, values, current, set) {
@@ -108,21 +108,35 @@ export async function openQuickBattle({
           category, value => { category = value; }),
         filter('Any size', [['','Any size'], ...sizes.map(value => [value,value])], size, value => { size = value; }),
       );
+      for (const dropdown of filters.children) {
+        dropdown.querySelector('summary').addEventListener('click', () => {
+          for (const other of filters.children) if (other !== dropdown) other.open = false;
+        });
+      }
       list = element('div', null, 'scenario-list');
-      const maps = catalog.maps.filter(map => (!category || map.category === category) && (!size || sizeOf(map) === size));
+      const maps = matchingMaps();
       if (!maps.some(map => map.id === selected.id) && maps.length) selected = maps[0];
-      show('scenarios', 'Select Scenario', [filters, list, control('OK', settings, {tone:'positive'})], settings);
+      show('scenarios', 'Select Scenario', [filters, list,
+        control('OK', settings, {tone:'positive', disabled: !maps.length})], settings);
       orientation.addEventListener('change', fillMaps);
       fillMaps();
     }
 
+    function matchingMaps() {
+      return catalog.maps.filter(map => (!category || map.category === category) &&
+        (!size || `${map.width}×${map.height}` === size));
+    }
+
     function fillMaps() {
+      const maps = matchingMaps();
+      if (!maps.length) {
+        list.replaceChildren(element('p', t('No scenarios match these filters.'), 'scenario-empty'));
+        return;
+      }
       const landscape = orientation.matches;
       const colCount = landscape ? 2 : 1;
       const columns = Array.from({length:colCount}, () => element('div', null, 'scenario-column'));
       list.replaceChildren(...columns);
-      const maps = catalog.maps.filter(map => (!category || map.category === category) &&
-        (!size || `${map.width}×${map.height}` === size));
       for (const [index, map] of maps.entries()) {
         const card = element('div', null, 'scenario-card');
         const details = element('div', null, 'scenario-details');
@@ -163,7 +177,7 @@ export async function openQuickBattle({
     function offerStart(continuing) {
       const warning = !continuing && active() ? 'The previous battle will be replaced.' : '';
       confirm(continuing ? 'Continue the game?' : 'Start a new game?', [
-        element('p', t('Quick Battle'), 'accent'), element('p', selected.title),
+        element('p', t('Custom Scenario'), 'accent'), element('p', selected.title),
         ...(warning ? [element('p', t(warning), 'warning')] : []),
       ], [
         [continuing ? 'Continue' : 'Start', async () => {

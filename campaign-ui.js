@@ -37,6 +37,7 @@ export function createCampaignUi(root, campaigns, actions) {
   const title = root.querySelector('.front-heading');
   const back = root.querySelector('.front-back');
   const update = root.querySelector('.front-update');
+  const feedback = root.querySelector('.front-feedback');
   const progress = loadProgress();
   const ordered = campaignOrder.map(id => campaigns.find(campaign => campaign.id === id)).filter(Boolean);
   let backAction;
@@ -69,6 +70,8 @@ export function createCampaignUi(root, campaigns, actions) {
     back.setAttribute('aria-label', t('Back'));
     update.hidden = kind !== 'main';
     update.textContent = t('Update');
+    feedback.hidden = kind !== 'settings';
+    feedback.textContent = t('Feedback');
   }
 
   back.addEventListener('click', () => {
@@ -87,7 +90,7 @@ export function createCampaignUi(root, campaigns, actions) {
       ...(progress.lastQuick && actions.fast ? [control('Continue', () =>
         actions.fast(home, show, control, progressAccess, progress.lastQuick), {tone:'positive'})] : []),
       control('Campaign', chooseCampaign),
-      ...(actions.fast ? [control('Quick Battle', () => actions.fast(home, show, control, progressAccess))] : []),
+      ...(actions.fast ? [control('Custom Scenario', () => actions.fast(home, show, control, progressAccess))] : []),
       control('Settings', settings),
     ];
     controls[0]?.classList.add('recent');
@@ -96,6 +99,7 @@ export function createCampaignUi(root, campaigns, actions) {
 
   function chooseCampaign() {
     const content = [];
+    const recent = progress.recent ?? findMission(progress.last)?.campaign ?? ordered[0]?.id;
     for (const campaign of ordered) {
       if (!campaign.race || campaign.id === 'orc' || campaign.id === 'xorc') {
         const label = episodes[campaign.id];
@@ -106,7 +110,7 @@ export function createCampaignUi(root, campaigns, actions) {
         }
       }
       const option = control(names[campaign.id], () => chapters(campaign), {campaign: campaign.id});
-      if (progress.recent === campaign.id) option.classList.add('recent');
+      if (recent === campaign.id) option.classList.add('recent');
       content.push(option);
     }
     show('campaigns', 'Campaign', content, home);
@@ -141,10 +145,6 @@ export function createCampaignUi(root, campaigns, actions) {
         show('loading', 'Loading mission…', []);
         try {
           const {world, restored} = await actions.load(mission.id, resume);
-          progress.last = mission.id;
-          progress.lastQuick = null;
-          progress.recent = mission.campaign;
-          saveProgress(progress);
           if (!restored) await actions.act?.(world.mission);
           briefing(world.mission, restored);
         } catch (error) {
@@ -182,6 +182,12 @@ export function createCampaignUi(root, campaigns, actions) {
   }
 
   function launch(mission) {
+    if (campaignOrder.includes(mission.campaign)) {
+      progress.last = mission.id;
+      progress.lastQuick = null;
+      progress.recent = mission.campaign;
+      saveProgress(progress);
+    }
     root.hidden = true;
     actions.stopBriefing();
     actions.play(mission);

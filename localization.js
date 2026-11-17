@@ -19,6 +19,9 @@ const russian = {
   'Sound':'Звук', 'Music':'Музыка', 'Sound effects':'Эффекты', 'Fog of war':'Туман войны',
   'Game speed':'Скорость игры', 'Slow':'Медленно', 'Medium':'Средне', 'Fast':'Быстро',
   'OK':'ОК', 'Cancel':'Отмена', 'Place':'Поставить', 'Buy':'Купить',
+  'Cancel?':'Отменить?', 'Cancel construction?':'Отменить строительство?',
+  'Cancel training?':'Отменить обучение?', 'Cancel research?':'Отменить исследование?',
+  'Cancel upgrade?':'Отменить улучшение?', 'Progress':'Прогресс',
   'Gold':'Золото', 'Lumber':'Дерево', 'Oil':'Нефть', 'Food':'Еда', 'Gold left':'Осталось золота',
   'Armor':'Броня', 'Damage':'Урон', 'Range':'Дальность', 'Sight':'Зрение', 'Speed':'Скорость', 'complete':'завершено',
   'Move':'Двигаться', 'Attack':'Атаковать', 'Stop':'Стоп', 'Repair':'Починить', 'Harvest':'Добывать',
@@ -34,11 +37,12 @@ const russian = {
   'Download language?':'Скачать язык?', 'MB of storage required':'МБ свободного места',
   'Download':'Скачать', 'Downloading language…':'Загрузка языка…', 'Delete':'Удалить',
   'Language unavailable':'Язык недоступен', 'Files':'Файлы', 'About the game':'Об игре', 'Update':'Обновить',
+  'Feedback':'Отзыв', 'No scenarios match these filters.':'Нет сценариев с такими параметрами.',
   'Checking for updates…':'Проверяем обновления…', 'Loading mission…':'Загрузка миссии…',
   'You have the latest version.':'Установлена последняя версия.',
   'The update is ready.':'Обновление готово.', 'Updates are unavailable right now.':'Не удалось проверить обновления.',
   'Humans':'Люди', 'Orcs':'Орки',
-  'Unable to load the mission':'Не удалось открыть миссию', 'Quick Battle':'Быстрый бой',
+  'Unable to load the mission':'Не удалось открыть миссию', 'Custom Scenario':'Сценарии',
   'Select Scenario':'Выбор сценария', 'All categories':'Все категории', 'Any size':'Любой размер',
   'Built-in':'Встроенные', 'Classic':'Классические', 'Expansion':'Дополнение',
   'Classic scenarios':'Сценарии оригинала', 'Expansion scenarios':'Сценарии дополнения',
@@ -59,12 +63,18 @@ function preferred() {
 export const currentLanguage = () => language;
 export const translate = value => language === 'ru' ? russian[value] ?? data?.strings?.[value] ?? value : value;
 export const unitLabel = (kind, fallback) => data?.units?.[kind] ?? translate(fallback);
+export function commandReason(command) {
+  if (!command?.reason) return '';
+  const original = language === 'ru' ? data?.stats?.[command.reasonEntry ?? command.message] : null;
+  return typeof original === 'string' && /[А-ЯЁ]/i.test(original)
+    ? original.replace(/\p{Cc}/gu, '').trim() : translate(command.reason);
+}
 export function commandLabel(command) {
-  const value = language === 'ru' ? data?.stats?.[command.string] : null;
-  if (typeof value === 'string' && /[А-ЯЁ]/i.test(value) && value.length > 2) {
-    return value.replace(/^[a-z]/, '').replace(/\s*\([A-ZА-ЯЁ]?[0-9]*\)$/i, '').trim();
-  }
-  return translate(command.label);
+  if (command.op === 'cancel') return translate('Cancel');
+  const entry = language === 'ru' ? data?.stats?.[command.string] : null;
+  const label = typeof entry === 'string' && /[А-ЯЁ]/i.test(entry) && entry.length > 2
+    ? entry.replace(/^[a-z]/, '') : translate(command.label);
+  return label?.replace(/\s*\((?:[A-ZА-ЯЁ]|F(?:[1-9]|1[0-2])|Esc|Enter|Tab)\)(?=\s|$)/gi, '').trim();
 }
 
 export function missionLabel(mission) {

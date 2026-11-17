@@ -157,6 +157,7 @@ struct Placement {
     height: u16,
     valid: bool,
     message: Option<u16>,
+    reason: Option<String>,
     blocked: Vec<bool>,
 }
 
@@ -179,6 +180,7 @@ struct UnitView<'a> {
     hp: u16,
     max_hp: u16,
     building: bool,
+    rect_selectable: bool,
     construction: bool,
     progress: Option<u8>,
     job: Option<JobKind>,
@@ -252,6 +254,7 @@ struct DemoView {
 struct Snapshot<'a> {
     tick: u32,
     player: u8,
+    player_colour: u8,
     race: u8,
     width: u16,
     height: u16,
@@ -696,6 +699,7 @@ impl Engine {
             height,
             valid: message.is_none(),
             message,
+            reason: message.map(|entry| self.text.message(entry)),
             blocked: self.world.bad_site_tiles(kind, site, unit),
         })
     }
@@ -767,6 +771,7 @@ impl Engine {
         let snapshot = Snapshot {
             tick: world.tick,
             player: self.player,
+            player_colour: player.colour,
             race: player.race,
             width: world.terrain.width,
             height: world.terrain.height,
@@ -858,6 +863,7 @@ fn unit_view<'a>(world: &World, unit: &Unit, text: &'a Text, speeds: &[u8]) -> U
         hp: unit.hp,
         max_hp: stats.hit_points,
         building: unit.building,
+        rect_selectable: stats.rect_selectable,
         construction,
         progress: (construction || unit.job.is_some()).then_some(unit.mana),
         job: unit.job.map(|job| job.kind),

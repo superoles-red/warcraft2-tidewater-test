@@ -20,6 +20,17 @@ function surface(width, height) {
   return {canvas, ctx};
 }
 
+function placementStamp(size, color) {
+  const {canvas, ctx} = surface(size, size);
+  const checker = surface(2, 2);
+  checker.ctx.fillStyle = color;
+  checker.ctx.fillRect(1, 0, 1, 1);
+  checker.ctx.fillRect(0, 1, 1, 1);
+  ctx.fillStyle = ctx.createPattern(checker.canvas, 'repeat');
+  ctx.fillRect(0, 0, size, size);
+  return canvas;
+}
+
 export function eraDirectory(world) {
   const era = String(world.mission?.era || world.era || 'winter').toLowerCase();
   return './art/eras/' + (era === 'summer' ? 'forest' : era);
@@ -67,6 +78,12 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   const chunkColumns = Math.ceil(mapWidth / chunkTiles);
   const chunkRows = Math.ceil(mapHeight / chunkTiles);
   const chunks = new Map();
+  const mapColour = key => 'rgb(' + atlas.mapColours[key].join(',') + ')';
+  const ownSelection = mapColour('ownSelection');
+  const otherSelection = mapColour('otherSelection');
+  const placingBuilding = mapColour('placingBuilding');
+  const buildableTile = placementStamp(tile, mapColour('buildableTile'));
+  const blockedTile = placementStamp(tile, mapColour('blockedTile'));
   const spritePages = new Map();
   const teamFrames = new Map();
   const pageNames = atlas.pages || [atlas.image || 'sprites.webp'];
@@ -324,13 +341,13 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
       Math.round(view.width * mapScale / width) - 1, Math.round(view.height * mapScale / height) - 1);
   }
 
-  function draw(view, rect, placement, selectBox) {
+  function draw(view, rect, placement, selectBox, placing) {
     if (!view || rect.width < 1 || rect.height < 1) return;
     const ratio = Math.min(1.5, window.devicePixelRatio || 1);
     const pixelWidth = Math.round(rect.width * ratio), pixelHeight = Math.round(rect.height * ratio);
     const left = view.visibleGlobal.x, top = view.visibleGlobal.y;
     const right = left + view.width, bottom = top + view.height;
-    const key = [paintRevision, left, top, right, bottom, pixelWidth, pixelHeight,
+    const key = [paintRevision, left, top, right, bottom, pixelWidth, pixelHeight, placing,
       placement?.x, placement?.y, placement?.valid, placement?.kind, placement?.width, placement?.height,
       placement?.blocked, selectBox?.x1, selectBox?.y1, selectBox?.x2, selectBox?.y2].join(':');
     if (painted !== key) {
@@ -369,10 +386,15 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
           if (unit.x + unit.width < left - 64 || unit.x > right + 64 ||
               unit.y + unit.height < top - 64 || unit.y > bottom + 64) continue;
           drawUnit(unit);
-          if (selected.has(unit.id)) {
+          const owned = unit.owner === world.player;
+          if (selected.has(unit.id) || (placing && owned && unit.building && unit.hp > 0 && !unit.dying)) {
             ctx.lineWidth = 1 / scale;
-            ctx.strokeStyle = '#4dfc00';
-            ctx.strokeRect(unit.x, unit.y, unit.width, unit.height);
+            ctx.strokeStyle = selected.has(unit.id) ? (owned ? ownSelection :
+              (unit.kind === 92 ? '#ffff00' : otherSelection)) : placingBuilding;
+            const x = deviceX(unit.x), y = deviceY(unit.y);
+            ctx.strokeRect(left + (x + .5) / scale, top + (y + .5) / scale,
+              (deviceX(unit.x + unit.width) - x) / scale,
+              (deviceY(unit.y + unit.height) - y) / scale);
           }
         }
         ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -388,27 +410,28 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
         ctx.setTransform(scale, 0, 0, scale, -left * scale, -top * scale);
       }
       if (placement) {
+        const actorColour = world.playerColour ?? unitOrder.find(unit => unit.owner === world.player)?.colour ?? world.player;
+        const x = placement.x * tile, y = placement.y * tile;
+        const width = placement.width * tile, height = placement.height * tile;
         ctx.save();
-        ctx.globalAlpha = .6;
+        ctx.beginPath();
+        ctx.rect(x, y, width, height);
+        ctx.clip();
         drawUnit({
-          picture: placement.kind, frame: 0, colour: unitOrder.find(unit => unit.owner === world.player)?.colour,
-          x: placement.x * tile, y: placement.y * tile, width: placement.width * tile, height: placement.height * tile,
+          picture: placement.kind, frame: 0, colour: actorColour,
+          x, y, width, height,
         });
         ctx.restore();
-        ctx.lineWidth = 1 / scale;
         for (let j = 0; j < placement.height; ++j) {
           for (let i = 0; i < placement.width; ++i) {
-            const green = !(placement.blocked?.[j * placement.width + i] ?? !placement.valid);
+            const blocked = placement.blocked?.[j * placement.width + i] ?? !placement.valid;
             const cx = (placement.x + i) * tile, cy = (placement.y + j) * tile;
-            ctx.fillStyle = green ? '#35fc1170' : '#fa152a85';
-            ctx.strokeStyle = green ? '#57ff29' : '#ff293e';
-            ctx.fillRect(cx, cy, tile, tile);
-            ctx.strokeRect(cx, cy, tile, tile);
+            ctx.drawImage(blocked ? blockedTile : buildableTile, cx, cy);
           }
         }
       }
       if (selectBox) {
-        ctx.strokeStyle = '#9afa3d';
+        ctx.strokeStyle = ownSelection;
         ctx.lineWidth = 1 / scale;
         ctx.strokeRect(selectBox.x1, selectBox.y1, selectBox.x2 - selectBox.x1, selectBox.y2 - selectBox.y1);
       }

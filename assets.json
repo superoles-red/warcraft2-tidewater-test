@@ -1,5 +1,5 @@
 {
-  "release": "1837dbc2ba670926",
+  "release": "78209a4418914b50",
   "files": [
     {
       "path": "act-interlude.css",
@@ -1933,8 +1933,8 @@
     },
     {
       "path": "art/eras/forest/sprites.json",
-      "bytes": 72271,
-      "integrity": "sha256-uyiIuNJejs2o5ApGpWh/LosUpEKXEuIcvJUoGe3iZiI="
+      "bytes": 72423,
+      "integrity": "sha256-/wc7d0BhxoDhz+J05Ikb7asHRqHNCKvHlwYEexyYo6E="
     },
     {
       "path": "art/eras/forest/tiles.webp",
@@ -1943,13 +1943,13 @@
     },
     {
       "path": "art/eras/forest/ui.json",
-      "bytes": 3483,
-      "integrity": "sha256-BgoW/oMiHkXvpS0mhKl80kbAoi4o3AmUXgNOAkrDYdo="
+      "bytes": 5047,
+      "integrity": "sha256-fE1w7jzxjs9mFj7EtPuOLLGcobxgAxvfR7so7/+WykE="
     },
     {
       "path": "art/eras/forest/ui.webp",
-      "bytes": 132640,
-      "integrity": "sha256-XJLKmO5IF0UssFUrTgN4JY1ILxS6lz087rBiglPSKQw="
+      "bytes": 132802,
+      "integrity": "sha256-d/tlRdhHkkfuxoascOjmN3Xh8BHn5K1nibmH5sBpGs8="
     },
     {
       "path": "art/eras/swamp/button.webp",
@@ -1993,8 +1993,8 @@
     },
     {
       "path": "art/eras/swamp/sprites.json",
-      "bytes": 72293,
-      "integrity": "sha256-RaW69sN0GqNyxORdAVmvL6gllJhDnsA4ud3lPl0kkQI="
+      "bytes": 72445,
+      "integrity": "sha256-loFCZURl5tW+3taaqjuxJh5ZpdA0u2lSaw5t4zB3SBg="
     },
     {
       "path": "art/eras/swamp/tiles.webp",
@@ -2003,13 +2003,13 @@
     },
     {
       "path": "art/eras/swamp/ui.json",
-      "bytes": 3483,
-      "integrity": "sha256-BgoW/oMiHkXvpS0mhKl80kbAoi4o3AmUXgNOAkrDYdo="
+      "bytes": 5046,
+      "integrity": "sha256-8nFUrwej8kKZuiph6cTmYrieNEokoH15VYFLXPdXIsU="
     },
     {
       "path": "art/eras/swamp/ui.webp",
-      "bytes": 136510,
-      "integrity": "sha256-wZWKJuiW/Aw1cmhuAjfQZQE+ImJQdY/UpFi25ccZDkU="
+      "bytes": 136644,
+      "integrity": "sha256-pzk8z2RV5oleS0c2B7lcmoOcoca/29+31OEBHIYk+eY="
     },
     {
       "path": "art/eras/wasteland/button.webp",
@@ -2053,8 +2053,8 @@
     },
     {
       "path": "art/eras/wasteland/sprites.json",
-      "bytes": 72270,
-      "integrity": "sha256-L3rccaRzltvrLiPiKDWyqT7iR7LIAZoTeKOOfUXlCig="
+      "bytes": 72422,
+      "integrity": "sha256-4XgHkrEHWR6f4LWJoYEQMAu4CHRKvHAuWbXntk7o9PU="
     },
     {
       "path": "art/eras/wasteland/tiles.webp",
@@ -2063,13 +2063,13 @@
     },
     {
       "path": "art/eras/wasteland/ui.json",
-      "bytes": 3483,
-      "integrity": "sha256-BgoW/oMiHkXvpS0mhKl80kbAoi4o3AmUXgNOAkrDYdo="
+      "bytes": 5046,
+      "integrity": "sha256-DoG92bvb332Gx9iOe6t/ntDRUnQpkUBFa9gnel3C9Jw="
     },
     {
       "path": "art/eras/wasteland/ui.webp",
-      "bytes": 133440,
-      "integrity": "sha256-2yf5NwLnl0bxW0l+SdiG4LbGMSLh/W39SJ03nk0VPFA="
+      "bytes": 133168,
+      "integrity": "sha256-LXc21iBUAMK8SVta6OXFYMfD5SpsGAKmZcVYx+Jmbuk="
     },
     {
       "path": "art/eras/winter/button.webp",
@@ -2113,8 +2113,8 @@
     },
     {
       "path": "art/eras/winter/sprites.json",
-      "bytes": 72266,
-      "integrity": "sha256-jxj0/CKMXtU8Gr6IJboyEZAi65sHyvbmOBBH5jXQEsY="
+      "bytes": 72418,
+      "integrity": "sha256-Q3XSXDvYs60zsfzY6e/njaswuZMYJmHeaqkASfAGnjE="
     },
     {
       "path": "art/eras/winter/tiles.webp",
@@ -2123,13 +2123,13 @@
     },
     {
       "path": "art/eras/winter/ui.json",
-      "bytes": 3483,
-      "integrity": "sha256-BgoW/oMiHkXvpS0mhKl80kbAoi4o3AmUXgNOAkrDYdo="
+      "bytes": 5049,
+      "integrity": "sha256-M1YCEUK+6DxLpp5QDlzc32ewyJtZ4cAyp/8db/dCUIA="
     },
     {
       "path": "art/eras/winter/ui.webp",
-      "bytes": 135014,
-      "integrity": "sha256-jOC9eK75A1SE0uhUALE5szutuLtIR807Z7YwiGr1gRY="
+      "bytes": 134874,
+      "integrity": "sha256-6ftoYtkaYt793+RgwWpKd+/k8jrYhIoB41kBuhbMxfk="
     },
     {
       "path": "art/fog-codes.json",
@@ -2383,8 +2383,8 @@
     },
     {
       "path": "art/sprites.json",
-      "bytes": 8165,
-      "integrity": "sha256-11Qo37vaRAM47awRU3X4q6/HecWA/x57TdSJ+OiPkbY="
+      "bytes": 8317,
+      "integrity": "sha256-WCXkIAhA0wv3ZrV3kZ+dXy0wQVwFaw3CLS0RXdVxpxU="
     },
     {
       "path": "art/sprites.webp",
@@ -2448,13 +2448,13 @@
     },
     {
       "path": "art/ui.json",
-      "bytes": 3483,
-      "integrity": "sha256-BgoW/oMiHkXvpS0mhKl80kbAoi4o3AmUXgNOAkrDYdo="
+      "bytes": 5049,
+      "integrity": "sha256-M1YCEUK+6DxLpp5QDlzc32ewyJtZ4cAyp/8db/dCUIA="
     },
     {
       "path": "art/ui.webp",
-      "bytes": 135014,
-      "integrity": "sha256-jOC9eK75A1SE0uhUALE5szutuLtIR807Z7YwiGr1gRY="
+      "bytes": 134874,
+      "integrity": "sha256-6ftoYtkaYt793+RgwWpKd+/k8jrYhIoB41kBuhbMxfk="
     },
     {
       "path": "art/voice/0-1.m4a",
@@ -2948,23 +2948,28 @@
     },
     {
       "path": "battle.css",
-      "bytes": 21506,
-      "integrity": "sha256-XfGkHqcUoWcRuu8C5ySoQeFUbJHXvqNlBTXORgchVFw="
+      "bytes": 22736,
+      "integrity": "sha256-MRQd5ba0lRmgFHgpTQ40NMimXY9J3NxICjID2TEXL1M="
     },
     {
       "path": "battle.js",
-      "bytes": 45904,
-      "integrity": "sha256-lsWZ9zKL9g3qUqhcOKKLuEkRpkAaH/8+x6K6fY+2558="
+      "bytes": 53878,
+      "integrity": "sha256-ke2tVfL08fFFF8yqvIuEwllfdMUOLSa/e7PczQqtQJI="
     },
     {
       "path": "campaign-ui.js",
-      "bytes": 12740,
-      "integrity": "sha256-L0xmUn/Wxg6S90eZjIoYKpL9c1RhnOxPtKFmMA3nxUU="
+      "bytes": 13013,
+      "integrity": "sha256-fF5+Q5PTcngKpXB2VnNWW6zlVT2CS7+m3BVveBDHXVI="
     },
     {
       "path": "checkpoint-store.js",
       "bytes": 2036,
       "integrity": "sha256-vg4eC2V8k8Pkzvux87Tos8DTHd6uxFybudeBhMhFyCQ="
+    },
+    {
+      "path": "command-descriptions.js",
+      "bytes": 16347,
+      "integrity": "sha256-w/PTFh19y2hhYq2YqO2fw8XCzGEL4sw4d6uDe/bJ5R8="
     },
     {
       "path": "engine.js",
@@ -2988,13 +2993,13 @@
     },
     {
       "path": "index.html",
-      "bytes": 2915,
-      "integrity": "sha256-n/Oss1kS9D2ikj9W55AMf6dOk+xbT9/U54A6rVn/6RI="
+      "bytes": 3011,
+      "integrity": "sha256-9o7QadyBYLv2SCHGOP8SIGuUxaXMGkN4qXsRHZXcjjA="
     },
     {
       "path": "lib/dune-controls.js",
-      "bytes": 37543,
-      "integrity": "sha256-HT47peIt5JaR+MilH/EU5Q9SoNARW3rsNjhxgTk6YZk="
+      "bytes": 37760,
+      "integrity": "sha256-CVKC+c4PLiQVBgIFpV/DsT4WoD6NdIo7Q136rC+O25c="
     },
     {
       "path": "lib/independent-camera-pilot.js",
@@ -3023,13 +3028,13 @@
     },
     {
       "path": "localization.js",
-      "bytes": 6580,
-      "integrity": "sha256-8E95rf3yqCJhTTsJwDtxHptAaCYSWZM07Q/CiXaJ7Ns="
+      "bytes": 7455,
+      "integrity": "sha256-4rQuqFK/MdzBArRQXb6AvBQcTbU8bES9X9tj984tCpA="
     },
     {
       "path": "map-renderer.js",
-      "bytes": 17596,
-      "integrity": "sha256-Nwm3IqR737p604fLIdch20jLHM2wNearBz6qQx0Nmww="
+      "bytes": 18767,
+      "integrity": "sha256-wvzowWI2wab9068QnF3ThudAwPZAk3v+aGcvVKRkYS4="
     },
     {
       "path": "native-video.js",
@@ -3048,8 +3053,8 @@
     },
     {
       "path": "quick-battle-ui.js",
-      "bytes": 8749,
-      "integrity": "sha256-qZVlddW5+BJ17aNas5Mp3qpC0ff9v+7NyWBB6R3F20A="
+      "bytes": 9149,
+      "integrity": "sha256-8y04nwi6WZr2Z2plUt+m2zjbiOkUxYWKYLd/FI66Sqg="
     },
     {
       "path": "results-ui.css",
@@ -3088,8 +3093,8 @@
     },
     {
       "path": "tidewater_web.wasm",
-      "bytes": 1704351,
-      "integrity": "sha256-Rn7x45lG3lEep58hkgj24owVzSx6RyNHm8GZ0NuD02c="
+      "bytes": 1708935,
+      "integrity": "sha256-IRBOZo0vwoajWF62ziUEMLdBAogiZd3g7HGY543OWmA="
     },
     {
       "path": "typography.css",
