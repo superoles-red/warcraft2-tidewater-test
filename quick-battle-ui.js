@@ -198,9 +198,9 @@ export async function openQuickBattle({
           } catch (error) {
             show('loading', 'Unable to load the mission', [element('p',error.message)], settings);
           }
-        }, 'positive', true],
-        ['Back', dismiss, 'negative', true],
-      ]);
+        }, 'positive'],
+        ['Back', dismiss, 'negative'],
+      ], {layout:'battle-confirmation'});
     }
     if (resume && selected.id === resume.id) offerStart(true);
     else settings();

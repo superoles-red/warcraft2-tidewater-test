@@ -400,6 +400,7 @@ button:focus-visible,
   flex: 0 0 50%;
   margin-inline: auto;
 }
+#modal[data-layout="battle-confirmation"] #modal-content,
 #modal:has(#modal-actions .modal-ok) #modal-content,
 #modal:has(#modal-actions .modal-ok):has(#modal-content:empty) #modal-title {
   margin-block-end: var(--modal-action-spacing);

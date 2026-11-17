@@ -151,9 +151,9 @@ export function createCampaignUi(root, campaigns, actions) {
         } catch (error) {
           show('loading', 'Unable to load the mission', [node('p', error.message)], () => chapters(campaign));
         }
-      }, 'positive', true],
-      ['Back', actions.dismiss, 'negative', true],
-    ]);
+      }, 'positive'],
+      ['Back', actions.dismiss, 'negative'],
+    ], {layout:'battle-confirmation'});
   }
 
   function briefing(mission, resume = false) {
