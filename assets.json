@@ -1,5 +1,5 @@
 {
-  "release": "57fb357f19d4987d",
+  "release": "76e0eb265cb0ba70",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,8 +3919,8 @@
     },
     {
       "path": "battle.css",
-      "bytes": 30608,
-      "integrity": "sha256-Z0d0fplKj89m3Y/SUxLFZ4Bj0/z6s8xLs62pS2ZzB9k="
+      "bytes": 30650,
+      "integrity": "sha256-4EJZ36AdSWxGjJWDkbrHpvA688bDFwA+gAkIBmH7xdM="
     },
     {
       "path": "battle.js",

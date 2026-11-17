@@ -183,8 +183,9 @@ button:focus-visible,
   margin-inline-start: auto;
   padding: 0;
   z-index: 1;
-  background: linear-gradient(hsl(var(--theme-hue) 41% 30% / .65), hsl(var(--theme-hue) 49% 16% / .65));
+  background: linear-gradient(hsl(var(--theme-hue) 41% 30% / .325), hsl(var(--theme-hue) 49% 16% / .325));
 }
+#menu-button::before { opacity: .09; }
 #menu-button::after {
   content: '';
   width: 46%;
@@ -196,11 +197,11 @@ button:focus-visible,
 #resources {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: clamp(4px, 1vw, 14px);
   min-height: var(--menu-height);
-  max-width: 390px;
   flex: 1;
+  margin-inline-end: 8px;
   padding: 0 5px;
   color: var(--paper);
   font-size: clamp(13px, 4vw, 20px);
@@ -869,15 +870,14 @@ button:focus-visible,
 @media (orientation: landscape) {
   :root {
     --command: clamp(46px, 14vh, 68px);
-    --hud-top: var(--safe-top);
+    --hud-top: calc(var(--safe-top) + 7px);
     --mini: clamp(110px, min(38vh, 24vw), 176px);
     --safe-bottom: max(13px, calc(env(safe-area-inset-bottom) + 10px));
   }
   #hud-top { left: 0; right: 0; }
   #minimap { top: var(--hud-top); }
   #menu-button {
-    margin-top: 4px;
-    margin-inline-end: calc(var(--safe-right) + 4px);
+    margin-inline-end: calc(var(--safe-right) + var(--mini) + 8px);
   }
   #selection { top: var(--hud-top); width: min(245px, 32vw); }
   #resources {
@@ -885,7 +885,7 @@ button:focus-visible,
     left: 50%;
     transform: translateX(-50%);
     width: max-content;
-    justify-content: center;
+    margin-inline-end: 0;
   }
   #modal { --modal-action-height: 40px; }
   #modal-panel { padding-block: 12px; }
