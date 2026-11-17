@@ -34,6 +34,7 @@ function node(tag, text, className) {
 
 export function createCampaignUi(root, campaigns, actions) {
   const stage = root.querySelector('.front-content');
+  const footer = root.querySelector('.front-footer');
   const title = root.querySelector('.front-heading');
   const back = root.querySelector('.front-back');
   const update = root.querySelector('.front-update');
@@ -58,12 +59,14 @@ export function createCampaignUi(root, campaigns, actions) {
     return element;
   }
 
-  function show(kind, heading, content, prev = null) {
+  function show(kind, heading, content, prev = null, primary = null) {
     root.hidden = false;
     root.dataset.screen = kind;
     title.textContent = t(heading);
     title.hidden = !heading;
     stage.replaceChildren(...content);
+    if (footer.firstElementChild !== back) footer.firstElementChild.remove();
+    if (primary) footer.prepend(primary);
     backAction = prev;
     back.hidden = !prev;
     back.setAttribute('aria-label', t('Back'));

@@ -20,7 +20,7 @@ function node(tag, className, label) {
   return element;
 }
 
-export async function playCampaignFinale(id, {language, music, effects, onClick}) {
+export async function playCampaignFinale(id, {language, music, effects, routeMedia, onClick}) {
   const english = await read(core);
   const russian = language === 'ru' ? await read(translated).catch(() => null) : null;
   const ending = english.endings[id];
@@ -84,7 +84,8 @@ export async function playCampaignFinale(id, {language, music, effects, onClick}
       content.append(next);
 
       const theme = new Audio();
-      theme.volume = music;
+      if (routeMedia) routeMedia(theme, 'music', {signal});
+      else theme.volume = music;
       followMediaVisibility(theme, signal);
       let orcTrack = !isCredits && ending.race === 'orc';
       function startTheme() {
@@ -147,7 +148,8 @@ export async function playCampaignFinale(id, {language, music, effects, onClick}
       }
 
       const narrator = new Audio();
-      narrator.volume = effects;
+      if (routeMedia) routeMedia(narrator, 'effects', {signal});
+      else narrator.volume = effects;
       followMediaVisibility(narrator, signal);
       let part = 0;
       let waitingForPage = false;
@@ -204,7 +206,7 @@ export async function playCampaignFinale(id, {language, music, effects, onClick}
     const advance = () => { if (!signal.aborted) textStage(false); };
     next.addEventListener('click', () => { onClick?.(); advance(); }, {signal});
     playNativeVideo(content, {
-      src: film.href, volume: effects, signal, playLabel: t('Play'), onEnd: advance, onError: advance,
+      src: film.href, volume: effects, routeMedia, signal, playLabel: t('Play'), onEnd: advance, onError: advance,
     });
     content.append(next);
   });

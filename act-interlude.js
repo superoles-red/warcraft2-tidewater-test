@@ -71,13 +71,14 @@ function waitForDismiss(dialog, signal, closing, begin) {
   });
 }
 
-function playCard(dialog, stage, sound, volume, signal, language) {
+function playCard(dialog, stage, sound, {volume, routeMedia}, signal, language) {
   showStage(dialog, stage, language, 'card');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   return waitForDismiss(dialog, signal, reduced ? 0 : 400, finish => {
     const playback = new AbortController();
     const audio = new Audio(new URL(sound + '.m4a', assets));
-    audio.volume = volume;
+    if (routeMedia) routeMedia(audio, 'effects', {signal:playback.signal});
+    else audio.volume = volume;
     audio.muted = volume === 0;
     audio.preload = volume ? 'auto' : 'none';
     const showMap = setTimeout(() => dialog.classList.add('act-visible'), reduced ? 0 : 1000);
@@ -95,7 +96,7 @@ function playCard(dialog, stage, sound, volume, signal, language) {
   });
 }
 
-function playMovie(dialog, source, volume, signal, language, clip) {
+function playMovie(dialog, source, {volume, routeMedia}, signal, language, clip) {
   const stage = node('div', 'act-film');
   dialog.classList.remove('act-closing');
   dialog.dataset.clip = clip;
@@ -104,6 +105,7 @@ function playMovie(dialog, source, volume, signal, language, clip) {
     const playback = new AbortController();
     const video = playNativeVideo(stage, {
       src: source, signal: playback.signal, volume,
+      routeMedia,
       playLabel: language === 'ru' ? 'Воспроизвести' : 'Play', onEnd: finish, onError: finish,
     });
     const fail = setTimeout(() => { if (video.readyState < 2) finish(); }, 8000);
@@ -119,7 +121,7 @@ export function createActInterlude() {
   let lastMovie;
   let playing;
 
-  async function play(id, {language = 'en', volume = 1} = {}) {
+  async function play(id, {language = 'en', volume = 1, routeMedia} = {}) {
     if (!ACT_STARTS.has(id) || lastAct === id || playing) return false;
     const controller = new AbortController();
     playing = controller;
@@ -144,24 +146,24 @@ export function createActInterlude() {
       dialog.dataset.actMission = String(id);
       document.body.append(dialog);
       dialog.showModal();
-      const loudness = Math.min(1, Math.max(0, Number(volume) || 0));
+      const audio = {volume:Math.min(1, Math.max(0, Number(volume) || 0)), routeMedia};
       if ((id === 28 || id === 29) && lastMovie !== 'introx_m.mp4') {
         lastMovie = 'introx_m.mp4';
         dialog.setAttribute('aria-label', language === 'ru' ? 'За Тёмным Порталом' : 'Beyond the Dark Portal');
         await playMovie(dialog, new URL(lastMovie, language === 'ru' ? russianAssets : assets),
-          loudness, controller.signal, language, 'portal-intro');
+          audio, controller.signal, language, 'portal-intro');
       }
       if (controller.signal.aborted) return false;
       lastAct = id;
       delete dialog.dataset.clip;
       dialog.removeAttribute('aria-label');
       dialog.setAttribute('aria-labelledby', heading.id);
-      await playCard(dialog, frame, act.sound, loudness, controller.signal, language);
+      await playCard(dialog, frame, act.sound, audio, controller.signal, language);
       if (act.movie && act.movie !== lastMovie && !controller.signal.aborted) {
         lastMovie = act.movie;
         dialog.removeAttribute('aria-labelledby');
         dialog.setAttribute('aria-label', label.title);
-        await playMovie(dialog, new URL(act.movie, assets), loudness, controller.signal, language, 'act-film');
+        await playMovie(dialog, new URL(act.movie, assets), audio, controller.signal, language, 'act-film');
       }
       return true;
     } catch {

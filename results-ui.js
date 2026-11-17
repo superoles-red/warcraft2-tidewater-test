@@ -75,7 +75,7 @@ function statField(label, color) {
 
 export function showResults({
   world, won, language = 'en', onAdvance, onMenu, musicVolume = 0,
-  onClick, onSound, onMediaChange,
+  routeMedia, onClick, onSound, onMediaChange,
 }) {
   const locale = language === 'ru' ? 'ru' : 'en';
   const copy = COPY[locale];
@@ -99,6 +99,7 @@ export function showResults({
   dialog.dataset.stage = 'outcome';
   dialog.setAttribute('aria-label', copy[result]);
   let music;
+  let releaseMusic;
   let primary;
   let timer;
   let closed = false;
@@ -113,6 +114,7 @@ export function showResults({
     closed = true;
     clearTimeout(timer);
     music?.pause();
+    releaseMusic?.();
     document.removeEventListener('visibilitychange', audioVisibility);
     dialog.close();
     dialog.remove();
@@ -126,7 +128,8 @@ export function showResults({
     onMediaChange?.('statistics');
     if (musicVolume > 0) {
       music = new Audio(art + '.m4a');
-      music.volume = Math.min(1, musicVolume);
+      if (routeMedia) releaseMusic = routeMedia(music, 'music');
+      else music.volume = Math.min(1, musicVolume);
       music.play().catch(() => {});
       document.addEventListener('visibilitychange', audioVisibility);
     }

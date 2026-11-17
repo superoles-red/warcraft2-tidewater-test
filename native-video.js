@@ -16,7 +16,7 @@ export function followMediaVisibility(player, signal) {
 }
 
 export function playNativeVideo(content, {
-  src, signal, volume = 1, poster, playLabel = 'Play', onEnd, onError, skipOnTap = false,
+  src, signal, volume = 1, routeMedia, poster, playLabel = 'Play', onEnd, onError, skipOnTap = false,
 }) {
   const video = document.createElement('video');
   const start = document.createElement('button');
@@ -24,7 +24,8 @@ export function playNativeVideo(content, {
   video.disablePictureInPicture = true;
   video.className = 'story-video';
   if (poster) video.poster = poster;
-  video.volume = volume;
+  if (routeMedia) routeMedia(video, 'effects', {signal});
+  else video.volume = volume;
   video.muted = volume === 0;
   start.type = 'button';
   start.className = 'war-button story-start';

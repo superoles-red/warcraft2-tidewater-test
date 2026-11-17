@@ -61,7 +61,7 @@ export async function openQuickBattle({
               options = {...options, [key]:next};
               dismiss();
               settings();
-            }, options[key] === next ? 'positive' : '', true]),
+            }, options[key] === next ? 'current-choice' : '', true]),
             ['Back', dismiss, 'negative', true],
           ]);
         }, {raw:true, dropdown:true}));
@@ -90,10 +90,12 @@ export async function openQuickBattle({
       const popup = element('div', null, 'scenario-filter-menu');
       summary.setAttribute('aria-label', t(label));
       for (const [value, name] of values) {
-        popup.append(control(name, () => {
+        const option = control(name, () => {
           set(value);
           scenarios();
-        }, {tone:value === current ? 'positive' : ''}));
+        });
+        if (value === current) option.setAttribute('aria-current', 'true');
+        popup.append(option);
       }
       box.append(summary, popup);
       return box;
@@ -116,8 +118,8 @@ export async function openQuickBattle({
       list = element('div', null, 'scenario-list');
       const maps = matchingMaps();
       if (!maps.some(map => map.id === selected.id) && maps.length) selected = maps[0];
-      show('scenarios', 'Select Scenario', [filters, list,
-        control('OK', settings, {tone:'positive', disabled: !maps.length})], settings);
+      show('scenarios', 'Select Scenario', [filters, list], settings,
+        control('OK', settings, {tone:'positive', disabled: !maps.length}));
       orientation.addEventListener('change', fillMaps);
       fillMaps();
     }

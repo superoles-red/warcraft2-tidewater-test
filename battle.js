@@ -68,6 +68,7 @@ function createInterface({
   const viewport = window.WarcraftIndependentCameraPilot.viewport;
   let world = initialWorld;
   let view;
+  let manualVerticalPan = false;
   let queued = Promise.resolve();
   let remembered = [];
   const pressed = new Map();
@@ -82,6 +83,7 @@ function createInterface({
     geometry.height = Math.max(viewport.height, geometry.world.bottom);
     camera.reset();
     view = undefined;
+    manualVerticalPan = false;
     pressed.clear();
     remembered = [];
   }
@@ -104,9 +106,22 @@ function createInterface({
     return operation;
   }
 
+  const extendsBelowMap = projection =>
+    projection.visibleGlobal.y + projection.height > geometry.world.bottom + .01;
+  const bottomCenter = projection => geometry.world.bottom - projection.height / 2;
+
   function frame(time) {
     const {width, height} = getRect();
-    if (width > 0 && height > 0) view = camera.frame(geometry, width, height, time, null, mapEdgeRoom);
+    if (width <= 0 || height <= 0) return view;
+    const previous = view;
+    view = camera.frame(geometry, width, height, time, null, mapEdgeRoom);
+    const resized = previous && view && (previous.width !== view.width || previous.height !== view.height);
+    if (resized && extendsBelowMap(view) &&
+        (!extendsBelowMap(previous) || (height > width && !manualVerticalPan))) {
+      const x = view.visibleGlobal.x + view.width / 2;
+      camera.centerOn(x, bottomCenter(view), {useEdgeRoom:true});
+      view = camera.frame(geometry, width, height, time, null, mapEdgeRoom);
+    }
     return view;
   }
 
@@ -229,6 +244,12 @@ function createInterface({
     }
   }
 
+  function panPixels(dx, dy, time) {
+    if (dy) manualVerticalPan = true;
+    camera.move(dx, dy, time);
+    onFrame();
+  }
+
   const input = {
     commandSelectionV15: true,
     explicitBuildingPlacement: true,
@@ -244,9 +265,9 @@ function createInterface({
     nativeButton,
     touchTapSubject,
     handleSameUnitDoubleTap,
-    panTiles(dx, dy) { camera.move(dx * 32, dy * 32, performance.now()); onFrame(); },
+    panTiles(dx, dy) { panPixels(dx * 32, dy * 32, performance.now()); },
     beginPan: (...args) => camera.begin(...args),
-    panPixels(...args) { camera.move(...args); onFrame(); },
+    panPixels,
     endPan(...args) { camera.end(...args); onFrame(); },
     stopPan() { camera.stop(); onFrame(); },
     clearSelection: () => send({op: 'selectIds', ids: []}),
@@ -262,9 +283,17 @@ function createInterface({
   };
   return {
     frame, run, input, send, checkpoint,
-    centerOn(x, y, options = {useEdgeRoom:true}) { camera.centerOn(x, y, options); onFrame(); },
+    centerOn(x, y, {useEdgeRoom = true, clampBottom = false, manualBottomOverflow = false} = {}) {
+      manualVerticalPan = manualBottomOverflow;
+      if (view && (clampBottom || (view.height > view.width && !manualBottomOverflow))) {
+        y = Math.min(y, bottomCenter(view));
+      }
+      camera.centerOn(x, y, {useEdgeRoom});
+      onFrame();
+    },
     get world() { return world; },
     get view() { return view; },
+    get manualBottomOverflow() { return Boolean(view && manualVerticalPan && extendsBelowMap(view)); },
     get cameraMoving() { return camera.active; },
   };
 }
@@ -333,12 +362,15 @@ function makeAudio() {
   let loopPoint = 0;
   let nextTrack;
   let narration;
+  let releaseNarration;
   let audioContext;
+  let channels;
   let unlocked = false;
   let mediaActive = false;
   let effectEpoch = 0;
   let constructionPlaying = false;
   const effects = new Set();
+  const nativePlayers = {music: new Set(), effects: new Set()};
   const cache = new Map();
   readJson('./art/audio.json').then(source => { files = source; sync(); }).catch(() => {});
   const audioPath = path => './art/' + path;
@@ -354,6 +386,37 @@ function makeAudio() {
     } catch { return fallback; }
   };
   const volumes = {music: getVolume('music', .6), effects: getVolume('effects', .8)};
+
+  function connectAudio(source, key, level = 1) {
+    if (level === 1) {
+      source.connect(channels[key]);
+      return () => source.disconnect();
+    }
+    const gain = audioContext.createGain();
+    gain.gain.value = level;
+    source.connect(gain).connect(channels[key]);
+    return () => { source.disconnect(); gain.disconnect(); };
+  }
+
+  function routeMedia(player, key, {signal, level = 1} = {}) {
+    if (signal?.aborted) return;
+    let source;
+    try { source = audioContext?.createMediaElementSource(player); } catch {}
+    let release;
+    if (source) {
+      release = connectAudio(source, key, level);
+    } else {
+      const update = () => {
+        player.volume = volumes[key] * level;
+        player.muted = volumes[key] * level === 0;
+      };
+      update();
+      nativePlayers[key].add(update);
+      release = () => nativePlayers[key].delete(update);
+    }
+    signal?.addEventListener('abort', release, {once:true});
+    return release;
+  }
 
   function clearMusic() {
     clearTimeout(nextTrack);
@@ -390,26 +453,38 @@ function makeAudio() {
   function sync() {
     const tracks = files[musicKey];
     const path = tracks?.[trackIndex];
-    if (!unlocked || !path || !volumes.music || nextTrack !== undefined) return;
-    if (document.hidden || mediaActive) {
+    if (!unlocked || !path || nextTrack !== undefined) return;
+    if (!volumes.music || document.hidden || mediaActive) {
       music?.pause();
       return;
     }
     if (!music) {
       music = new Audio();
       music.preload = 'auto';
+      routeMedia(music, 'music');
       music.addEventListener('ended', trackEnded);
     }
     const source = audioPath(path);
     music.loop = tracks.length === 1 && !loopPoint;
     if (music.getAttribute('src') !== source) music.src = source;
-    music.volume = volumes.music;
     if (music.paused) music.play().catch(() => {});
   }
   function activate() {
     const Context = window.AudioContext || window.webkitAudioContext;
     unlocked = true;
-    if (!audioContext && Context) audioContext = new Context();
+    if (!audioContext && Context) {
+      try {
+        const context = new Context();
+        const music = context.createGain();
+        const effects = context.createGain();
+        music.gain.value = volumes.music;
+        effects.gain.value = volumes.effects;
+        music.connect(context.destination);
+        effects.connect(context.destination);
+        channels = {music, effects};
+        audioContext = context;
+      } catch {}
+    }
     if (audioContext?.state !== 'running') audioContext?.resume().catch(() => {});
     sync();
   }
@@ -426,47 +501,51 @@ function makeAudio() {
   }
 
   async function playFile(file, level, construction) {
-    if (!unlocked || !audioContext || !volumes.effects || document.hidden) return;
+    if (!unlocked || !volumes.effects || document.hidden) return;
     if (construction && constructionPlaying) return;
     if (construction) constructionPlaying = true;
     const epoch = effectEpoch;
     let stop;
+    let release;
     function ended() {
+      release?.();
       effects.delete(stop);
       if (construction && epoch === effectEpoch) constructionPlaying = false;
     }
     try {
-      if (!cache.has(file))
-        cache.set(file, bytes(file).then(buffer =>
-          audioContext.decodeAudioData(buffer.buffer).catch(() => null)));
-      const data = await cache.get(file);
-      if (epoch !== effectEpoch || document.hidden || audioContext.state !== 'running' || !volumes.effects) return;
+      let data;
+      if (audioContext) {
+        if (!cache.has(file))
+          cache.set(file, bytes(file).then(buffer => audioContext.decodeAudioData(buffer.buffer).catch(() => null)));
+        data = await cache.get(file);
+      }
+      if (epoch !== effectEpoch || document.hidden || !volumes.effects ||
+          (audioContext && audioContext.state !== 'running')) return;
       if (data) {
         const source = audioContext.createBufferSource();
-        const gain = audioContext.createGain();
-        gain.gain.value = volumes.effects * level;
         source.buffer = data;
-        source.connect(gain).connect(audioContext.destination);
+        release = connectAudio(source, 'effects', level);
         source.addEventListener('ended', ended, {once: true});
         source.start();
-        stop = () => source.stop();
+        stop = () => { source.stop(); release(); };
         effects.add(stop);
       } else {
         // Some WebKit builds accept AAC as media but cannot decode it into an AudioBuffer.
         const media = new Audio(file);
-        media.volume = volumes.effects * level;
+        release = routeMedia(media, 'effects', {level});
         media.addEventListener('ended', ended, {once:true});
         stop = () => {
           media.pause();
           media.removeAttribute('src');
           media.load();
+          release();
         };
         effects.add(stop);
         await media.play();
       }
     } catch {
-      if (!stop) cache.delete(file);
-      stop?.();
+      if (stop) stop();
+      else { release?.(); cache.delete(file); }
       effects.delete(stop);
     } finally {
       if (construction && epoch === effectEpoch && !effects.has(stop)) constructionPlaying = false;
@@ -484,17 +563,16 @@ function makeAudio() {
     const previous = volumes[key];
     volumes[key] = value;
     try { localStorage.setItem('tidewater-pilot-' + key, value); } catch {}
-    if (key === 'music') {
-      if (value) sync();
-      else clearMusic();
-    } else if (previous && !value) {
-      stopEffects();
-    }
-    if (key === 'effects' && narration) narration.volume = value;
+    if (channels) channels[key].gain.value = value;
+    for (const update of nativePlayers[key]) update();
+    if (key === 'music') sync();
+    else if (previous && !value) stopEffects();
   }
   function stopBriefing() {
     narration?.pause();
+    releaseNarration?.();
     narration = undefined;
+    releaseNarration = undefined;
   }
   function briefing(id) {
     stopBriefing();
@@ -503,7 +581,7 @@ function makeAudio() {
     const path = clip('briefing-' + id)[0];
     if (!path || !unlocked) return;
     narration = new Audio(path);
-    narration.volume = volumes.effects;
+    releaseNarration = routeMedia(narration, 'effects');
     narration.play().catch(() => {});
   }
   window.addEventListener('pointerdown', activate, {passive: true, capture: true});
@@ -518,7 +596,7 @@ function makeAudio() {
     else narration?.play().catch(() => {});
   });
   return {
-    play, playBattleSound, change, volumes, briefing, stopBriefing,
+    play, playBattleSound, change, volumes, routeMedia, briefing, stopBriefing,
     media(active) { mediaActive = active; sync(); },
     quiet() {
       stopBriefing();
@@ -660,7 +738,7 @@ async function start() {
       audio.media(true);
       try {
         await acts.play(mission.id, {
-          language: currentLanguage(), volume: audio.volumes.effects,
+          language: currentLanguage(), volume: audio.volumes.effects, routeMedia: audio.routeMedia,
         });
       } finally { audio.media(false); }
     },
@@ -670,6 +748,7 @@ async function start() {
         createStoryUi({
           ...view, onDemo: startDemo,
           gain: kind => audio.volumes[kind],
+          routeMedia: audio.routeMedia,
           onMediaChange: active => audio.media(active),
         }).open();
       } catch {
@@ -783,7 +862,11 @@ async function start() {
     checkpointSoon = false;
     const epoch = checkpointEpoch;
     const view = adapter.view;
-    const camera = view && {x:view.visibleGlobal.x + view.width / 2, y:view.visibleGlobal.y + view.height / 2};
+    const camera = view && {
+      x:view.visibleGlobal.x + view.width / 2,
+      y:view.visibleGlobal.y + view.height / 2,
+      manualBottomOverflow:adapter.manualBottomOverflow,
+    };
     savingCheckpoint = adapter.checkpoint().then(bytes => {
       if (epoch !== checkpointEpoch) return;
       checkpointWork = checkpointWork.then(() => checkpoints.write(key, bytes, camera)).catch(() => {});
@@ -857,7 +940,7 @@ async function start() {
       world.units.find(unit => unit.owner === world.player);
     if (demoReturn) centerDemo(world);
     else if (Number.isFinite(savedCamera?.x) && Number.isFinite(savedCamera?.y))
-      adapter.centerOn(savedCamera.x, savedCamera.y);
+      adapter.centerOn(savedCamera.x, savedCamera.y, {manualBottomOverflow:savedCamera.manualBottomOverflow === true});
     else if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2, {useEdgeRoom:false});
     if (!demoReturn) updateHud(world);
     nextTick = 0;
@@ -929,8 +1012,14 @@ async function start() {
     modal.dataset.layout = layout;
     byId('modal-title').textContent = t(title);
     byId('modal-content').replaceChildren(...content);
-    byId('modal-actions').replaceChildren(...actions.map(([label, activate, tone, wide]) =>
-      button(t(label), () => { audio.play('button'); activate(); }, (tone ?? '') + (wide ? ' wide' : ''))));
+    byId('modal-actions').replaceChildren(...actions.map(([label, activate, tone, wide]) => {
+      const caption = t(label);
+      const control = button(caption, () => { audio.play('button'); activate(); }, tone);
+      control.classList.toggle('wide', Boolean(wide));
+      control.classList.toggle('modal-back', caption === t('Back'));
+      if (tone === 'current-choice') control.setAttribute('aria-current', 'true');
+      return control;
+    }));
     if (!modal.open) modal.showModal();
   }
 
@@ -990,7 +1079,22 @@ async function start() {
       slider.min = '0'; slider.max = '100';
       slider.value = String(Math.round(audio.volumes[key] * 100));
       slider.setAttribute('aria-label', t(name));
-      slider.addEventListener('input', () => audio.change(key, Number(slider.value) / 100));
+      let changed = false;
+      slider.addEventListener('input', () => {
+        audio.change(key, Number(slider.value) / 100);
+        changed = true;
+      });
+      if (key === 'effects') {
+        const preview = () => {
+          if (!changed) return;
+          changed = false;
+          if (modal.open && slider.isConnected) audio.play('button');
+        };
+        const release = () => setTimeout(preview, 0);
+        slider.addEventListener('change', preview);
+        slider.addEventListener('pointerup', release);
+        slider.addEventListener('touchend', release, {passive:true});
+      }
       label.append(slider);
       return label;
     });
@@ -1011,9 +1115,13 @@ async function start() {
       const choice = button(t(label), () => {
         audio.play('button');
         gameSpeed = value;
-        for (const other of speed.children) other.classList.toggle('active', other === choice);
+        for (const other of speed.children) {
+          other.classList.toggle('active', other === choice);
+          other.setAttribute('aria-pressed', String(other === choice));
+        }
       });
       choice.classList.toggle('active', adapter.world.speed === value);
+      choice.setAttribute('aria-pressed', String(adapter.world.speed === value));
       speed.append(choice);
     }
     showModal('Settings', [...volumeControls(), fog, text(t('Game speed')), speed],
@@ -1056,7 +1164,7 @@ async function start() {
     try {
       const {playCampaignFinale} = await import('./finale-ui.js');
       await playCampaignFinale(mission, {
-        language:currentLanguage(), ...audio.volumes, onClick:() => audio.play('button'),
+        language:currentLanguage(), ...audio.volumes, routeMedia:audio.routeMedia, onClick:() => audio.play('button'),
       });
     } finally {
       toFront();
@@ -1077,6 +1185,7 @@ async function start() {
       await showResults({
         world:{...world, score:{...world.score, totalScore}}, won, language:currentLanguage(),
         onAdvance:advance, onMenu:toFront, musicVolume:audio.volumes.music,
+        routeMedia:audio.routeMedia,
         onClick:() => audio.play('button'), onSound:key => audio.play(key),
         onMediaChange:stage => audio.media(stage === 'statistics'),
       });
@@ -1491,12 +1600,6 @@ async function start() {
     };
   }
 
-  function centerAboveBottom(x, y) {
-    if (!adapter.view) return;
-    const ceiling = adapter.world.height * adapter.world.tileSize - adapter.view.height / 2;
-    adapter.centerOn(x, Math.min(y, ceiling));
-  }
-
   let minimapPan;
   minimap.addEventListener('pointerdown', event => {
     if (!event.isPrimary || ![0, 2].includes(event.button) || !adapter.input.state().inputAllowed || modal.open) return;
@@ -1508,12 +1611,12 @@ async function start() {
       minimapPan = event.pointerId;
       minimap.setPointerCapture(event.pointerId);
     }
-    centerAboveBottom(x, y);
+    adapter.centerOn(x, y, {clampBottom:true});
   });
   minimap.addEventListener('pointermove', event => {
     if (minimapPan !== event.pointerId || !minimap.hasPointerCapture(event.pointerId)) return;
     const {x, y} = minimapPoint(event);
-    centerAboveBottom(x, y);
+    adapter.centerOn(x, y, {clampBottom:true});
   });
   minimap.addEventListener('lostpointercapture', event => {
     if (minimapPan === event.pointerId) minimapPan = undefined;
@@ -1527,26 +1630,32 @@ async function start() {
     if (!outcomeShown) closeModal();
   });
   function syncProjection() {
+    const viewport = window.visualViewport;
+    // Safari can keep fixed and dynamic-CSS bounds at the old portrait
+    // height even after exposing more usable space to the page.
+    const visibleHeight = viewport?.scale === 1 && window.innerHeight > window.innerWidth
+      ? `${Math.min(window.innerHeight, viewport.height + viewport.offsetTop)}px` : '';
+    const root = document.documentElement.style;
+    if (root.getPropertyValue('--battle-visible-height') !== visibleHeight) {
+      root.setProperty('--battle-visible-height', visibleHeight);
+    }
     const next = game.getBoundingClientRect();
     if (next.width !== canvasRect.width || next.height !== canvasRect.height ||
         next.left !== canvasRect.left || next.top !== canvasRect.top) {
       controls.cancel();
       canvasRect = next;
-      const previous = adapter.view;
-      const current = adapter.frame(performance.now());
+      adapter.frame(performance.now());
       if (battleActive && demoReturn) centerDemo(adapter.world);
-      else if (battleActive && previous && current) {
-        const bottom = adapter.world.height * adapter.world.tileSize;
-        if (previous.visibleGlobal.y + previous.height <= bottom + .01 &&
-            current.visibleGlobal.y + current.height > bottom + .01)
-          centerAboveBottom(current.visibleGlobal.x + current.width / 2, current.visibleGlobal.y + current.height / 2);
-      }
       scheduleFrame();
     }
   }
   const resize = new ResizeObserver(syncProjection);
   resize.observe(game);
+  // Safari can update the small viewport even when fixed bounds and resize events lag.
+  resize.observe(byId('viewport-size'));
   window.addEventListener('resize', syncProjection);
+  window.visualViewport?.addEventListener('resize', syncProjection);
+  syncProjection();
 
   function draw(time) {
     frameRequested = false;
@@ -1600,6 +1709,7 @@ async function start() {
     clearTimeout(tickTimer);
     resize.disconnect();
     window.removeEventListener('resize', syncProjection);
+    window.visualViewport?.removeEventListener('resize', syncProjection);
     controls.destroy();
   });
 

@@ -1,5 +1,5 @@
 {
-  "release": "2a82b6981b5ada11",
+  "release": "b698bcc3d892b451",
   "updateProtocol": 1,
   "files": [
     {
@@ -9,8 +9,8 @@
     },
     {
       "path": "act-interlude.js",
-      "bytes": 6502,
-      "integrity": "sha256-bdC0f4gEwCbIXNuabcRD95XjCuibVt3SsS4tdA3H1zI="
+      "bytes": 6650,
+      "integrity": "sha256-KBKhsEkirrSd5842V7KrERu5KIlnAaXWyccAEyxMs58="
     },
     {
       "path": "art/acts/0-text.webp",
@@ -3919,18 +3919,18 @@
     },
     {
       "path": "battle.css",
-      "bytes": 25795,
-      "integrity": "sha256-a+JLaWKJfEB2y5VMxy4QQ7cRU82ngCEqH4IKN11tom8="
+      "bytes": 27779,
+      "integrity": "sha256-DI+dN1dM7kHByI85sA03OaN/JJkvExkJrJs31iDsKHo="
     },
     {
       "path": "battle.js",
-      "bytes": 63970,
-      "integrity": "sha256-yk1kkOF9dEy9Pt0FYycCjhqvl3aoI4LZmSiPpqXOxXg="
+      "bytes": 68178,
+      "integrity": "sha256-SLo5qbR/x5GikZHklKWWMhbqjzYZHjUiG96skYXs+sI="
     },
     {
       "path": "campaign-ui.js",
-      "bytes": 13378,
-      "integrity": "sha256-hRftPSx8YWmx9oLn70TuRFpW0cAQIxknCnc8INpJ4h4="
+      "bytes": 13568,
+      "integrity": "sha256-duMKz73/DxTrPINbzhf+iMvlq6u7xOzy+vTncYjCZ8A="
     },
     {
       "path": "checkpoint-store.js",
@@ -3949,8 +3949,8 @@
     },
     {
       "path": "files-ui.js",
-      "bytes": 5285,
-      "integrity": "sha256-Tl4RaNenGXaO4gRQoouhJW96trKd9pHfDsCWd1LuqSU="
+      "bytes": 5289,
+      "integrity": "sha256-DPP0Se6Hw3Fec+GujHCazFgNJ7DzzMKOME7btnpbsLM="
     },
     {
       "path": "finale-ui.css",
@@ -3959,8 +3959,8 @@
     },
     {
       "path": "finale-ui.js",
-      "bytes": 7900,
-      "integrity": "sha256-S1Pig/T1xryAz5lOP3LKyS1c+WHv6J9i8VhuvT06Pls="
+      "bytes": 8059,
+      "integrity": "sha256-jezi8W3PpntZ+jN/j08CX1/FWSmrzpxP2rHMEe2vwqY="
     },
     {
       "path": "game/War2Dat.mpq",
@@ -3974,8 +3974,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 3119,
-      "integrity": "sha256-Mzn5D/WdNGM1vJLn7YJWoPLrGnhSznhOKdpIA7GylaU="
+      "bytes": 3237,
+      "integrity": "sha256-KDQXOOgnnXR6tlXSNXBkfWypJ0A/0RZroh9GIFloxTs="
     },
     {
       "path": "lib/dune-controls.js",
@@ -4019,8 +4019,8 @@
     },
     {
       "path": "native-video.js",
-      "bytes": 1777,
-      "integrity": "sha256-XBnbLDvBe4xh1YjAf1yLrzRzX00nikZXF0AUxJs83zg="
+      "bytes": 1852,
+      "integrity": "sha256-nyHwik0UU5Eo+Pq6dryjdd0+oi0fKc3xgxfVLv/2h9Q="
     },
     {
       "path": "offline.js",
@@ -4029,13 +4029,13 @@
     },
     {
       "path": "pilot.webmanifest",
-      "bytes": 482,
-      "integrity": "sha256-hgpsLwe+tSJpV4v4q6AFiSibnH+sdPEBpv2LDiIY17A="
+      "bytes": 484,
+      "integrity": "sha256-kEj7IRMaxKJ1rCkPS8LhYLVU5wGk6wc392YP/VMkrHg="
     },
     {
       "path": "quick-battle-ui.js",
-      "bytes": 9149,
-      "integrity": "sha256-8y04nwi6WZr2Z2plUt+m2zjbiOkUxYWKYLd/FI66Sqg="
+      "bytes": 9218,
+      "integrity": "sha256-cguttDSiW7o1JDkKGvNeARN10vQzH2r+22ZXfWmZfjY="
     },
     {
       "path": "results-ui.css",
@@ -4044,8 +4044,8 @@
     },
     {
       "path": "results-ui.js",
-      "bytes": 9390,
-      "integrity": "sha256-UvcFCW4XhJRmtulpRZrkScBxBHN/Igp6qql8xtwVln4="
+      "bytes": 9514,
+      "integrity": "sha256-IJzmt0RdbE6QowOY+7KUvauBMuM/i2iABZO0iRjT4YU="
     },
     {
       "path": "scenarios/catalog.json",
@@ -4069,8 +4069,8 @@
     },
     {
       "path": "story-ui.js",
-      "bytes": 7379,
-      "integrity": "sha256-1A3K0b+nCJHRLJfeGnbp5o/IZAIGeEHz0zj0Q/HmeLw="
+      "bytes": 7469,
+      "integrity": "sha256-qDZqTcrIrjAgAOYoiJQ2InfPMdsLQnqvQDupkXiAfLM="
     },
     {
       "path": "tidewater_web.wasm",

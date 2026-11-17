@@ -24,7 +24,7 @@ export function createStoryBack(close) {
   return button;
 }
 
-export function createStoryUi({show, control, back, onDemo, gain = () => 1, onMediaChange = () => {}}) {
+export function createStoryUi({show, control, back, onDemo, gain = () => 1, routeMedia, onMediaChange = () => {}}) {
   function media(kind, title, fill) {
     const opener = document.activeElement;
     const layer = document.createElement('dialog');
@@ -62,7 +62,7 @@ export function createStoryUi({show, control, back, onDemo, gain = () => 1, onMe
       feedback.hidden = true;
       content.append(feedback);
       playNativeVideo(content, {
-        src: asset(folder), signal, volume: gain('effects'), poster: asset('story/intro-poster.webp'),
+        src: asset(folder), signal, volume: gain('effects'), routeMedia, poster: asset('story/intro-poster.webp'),
         playLabel: localized().play, onEnd: close,
         onError() {
           feedback.textContent = localized().unavailable;
@@ -82,12 +82,13 @@ export function createStoryUi({show, control, back, onDemo, gain = () => 1, onMe
       const roll = document.createElement('div');
       roll.className = 'story-credits-roll';
       const audio = new Audio();
-      audio.volume = gain('music');
+      if (routeMedia) routeMedia(audio, 'music', {signal});
+      else audio.volume = gain('music');
       followMediaVisibility(audio, signal);
       let track = 1;
       const playTrack = () => {
         audio.src = asset('story/credits-' + track + '.m4a');
-        if (audio.volume) audio.play().catch(() => {});
+        if (gain('music')) audio.play().catch(() => {});
       };
       audio.addEventListener('ended', () => {
         track = track === 1 ? 2 : 1;
