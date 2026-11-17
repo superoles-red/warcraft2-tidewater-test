@@ -1,4 +1,4 @@
-const BUILD = '8a0b519c7fcfeae6';
+const BUILD = '021ff016f199fadb';
 const SCOPE = new URL(self.registration.scope);
 const PREFIX = 'tidewater-pilot:' + SCOPE.pathname + ':';
 const CACHE = PREFIX + BUILD;

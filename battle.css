@@ -507,7 +507,7 @@ button:focus-visible,
   inset: 0;
   overflow: hidden;
   display: grid;
-  grid-template-rows: minmax(60px, 1fr) minmax(0, 4fr) minmax(54px, .7fr);
+  grid-template-rows: minmax(60px, 1fr) minmax(0, 4fr) minmax(var(--front-nav-room, 54px), .7fr);
   justify-items: center;
   align-items: center;
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-x);
@@ -567,7 +567,10 @@ button:focus-visible,
   text-align: center;
 }
 .front-content h2 { margin: 1px 0; font-size: clamp(15px, 3.7vw, 20px); font-weight: 400; }
-.front-footer { display: contents; }
+.front-footer:empty { display: none; }
+#front:is([data-screen="quick"], [data-screen="campaigns"]) {
+  --front-nav-room: calc(var(--back-size) + 8px);
+}
 .front-content .war-button {
   min-height: clamp(44px, 8.2vh, 71px);
   font-size: clamp(18px, 5.6vw, 25px);
@@ -625,17 +628,17 @@ button:focus-visible,
   background:#0009;
 }
 #front[data-screen="missions"] .front-panel {
+  --mission-bottom: calc(var(--safe-bottom) + var(--back-size) + 8px);
   position:absolute;
+  inset:var(--safe-top) 0 var(--mission-bottom);
+  margin:auto;
   width:min(calc(100% - var(--safe-x) - var(--safe-right)), 380px);
-  max-height: calc(100% - var(--safe-top) - var(--safe-bottom));
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%);
-  padding:11px 12px 106px;
+  height:fit-content;
+  max-height:calc(100% - var(--safe-top) - var(--mission-bottom));
 }
 #front[data-screen="missions"] .front-heading { font-size:20px; }
 #front[data-screen="missions"] .mission-list {
-  height:min(54vh, 476px);
+  height:min(70vh, 620px);
   max-height:none;
   scrollbar-color:#e4bd65 #402709;
 }
@@ -648,10 +651,6 @@ button:focus-visible,
 }
 #front[data-screen="missions"] .mission-list .war-button:disabled {
   color: #c0b9ad;
-}
-#front[data-screen="missions"] .front-back {
-  right:12px;
-  bottom:12px;
 }
 .briefing-text {
   background: #1a1613ab;
@@ -728,12 +727,8 @@ button:focus-visible,
   justify-self: center;
   min-height: clamp(44px, 8dvh, 62px);
 }
-#front[data-screen="briefing"] .front-back {
-  position: relative;
-  inset: auto;
-  align-self: end;
-  margin-top: clamp(11px, 1.8dvh, 18px);
-  min-height: 0;
+@media (orientation: portrait) {
+  #front[data-screen="briefing"] { padding-bottom: calc(var(--safe-bottom) + var(--back-size) + 8px); }
 }
 .accent { color: var(--paper); }
 .quick-details {
@@ -766,21 +761,15 @@ button:focus-visible,
   flex: 1 1 auto;
   container-type: size;
 }
-#front:is([data-screen="quick"], [data-screen="scenarios"]) .front-footer {
-  display: flex;
+#front[data-screen="scenarios"] .front-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   flex: none;
-  align-items: end;
-  justify-content: space-between;
-  gap: 20px;
-  margin-block-start: 17px;
+  gap: 12px;
+  margin-block-start: calc(var(--scenario-action-height) / 2);
 }
-#front[data-screen="quick"] .front-footer { justify-content: end; }
-#front[data-screen="scenarios"] .front-footer { margin-block-start: calc(var(--scenario-action-height) / 2); }
-#front:is([data-screen="quick"], [data-screen="scenarios"]) .front-back { position: relative; inset: auto; }
-#front[data-screen="scenarios"] .front-footer > .war-button:not(.front-back) {
-  width: min(170px, 45%);
+#front[data-screen="scenarios"] .front-footer > .war-button {
   min-height: var(--scenario-action-height);
-  align-self: start;
 }
 .scenario-filters { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 5px; }
 .scenario-filter {
@@ -874,7 +863,7 @@ button:focus-visible,
   #modal[data-layout="battle-settings"] #modal-panel { padding-block: 8px; }
   #modal h1 { margin-bottom: 8px; }
   .sound-control { padding-block: 3px; }
-  #front { grid-template-rows: minmax(55px, 1fr) minmax(0, 4fr) minmax(14px, .35fr); }
+  #front { grid-template-rows: minmax(55px, 1fr) minmax(0, 4fr) minmax(var(--front-nav-room, 14px), .35fr); }
   .front-art { background-image: url('./art/menu/title-art.webp'); }
   .front-logo { width: clamp(169px, 44vh, 350px); max-height: 25vh; }
   .front-panel { width: min(420px, 66%); }
@@ -882,10 +871,8 @@ button:focus-visible,
   #front[data-screen="scenarios"] .front-content { --scenario-filter-height: clamp(36px, 10.8vh, 52px); }
   #front[data-screen="main"] .front-content .war-button { min-height: clamp(45px, 13vh, 60px); }
   .mission-list { max-height: 47vh; }
-  #front[data-screen="missions"] .front-panel { padding-bottom:calc(var(--back-size) + 18px); }
   #front[data-screen="missions"] .mission-list { height:min(64vh,390px); }
   #front[data-screen="missions"] .mission-list .war-button { min-height:clamp(45px,14vh,60px); }
-  #front[data-screen="missions"] .front-back { bottom:8px; }
   #front[data-screen="briefing"] .front-panel { width: min(950px, 100%); }
   #front[data-screen="briefing"] .front-content {
     grid-template-columns: minmax(0, 1fr) var(--back-size);
@@ -896,10 +883,12 @@ button:focus-visible,
   #front[data-screen="briefing"] .front-content > .war-button { grid-column: 1; }
   #front[data-screen="briefing"] .front-content { grid-template-rows: minmax(0, 1fr) var(--back-size); }
   #front[data-screen="briefing"] .front-content > .war-button { align-self: end; }
-  #front[data-screen="briefing"] .front-back { position:absolute; bottom: 0; right: 0; }
   #front[data-screen="quick"] { grid-template-rows:minmax(0,1fr); }
   #front[data-screen="quick"] .front-logo { display:none; }
-  #front[data-screen="quick"] .front-panel { align-self:center; width:min(580px, 80%); }
+  #front[data-screen="quick"] .front-panel {
+    align-self: center;
+    width: min(580px, 80%, calc(100% - 2 * (var(--back-size) + 8px)));
+  }
   .quick-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 

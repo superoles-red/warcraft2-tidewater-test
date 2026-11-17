@@ -40,7 +40,7 @@ export async function openQuickBattle({
     let options = resume ? {...baseOptions, ...resume.options} : {...baseOptions, fog: fog()};
     let category = '';
     let size = '';
-    const expanded = new Set();
+    let expanded = new Set();
     const orientation = matchMedia('(orientation: landscape)');
     let list;
 
@@ -78,7 +78,7 @@ export async function openQuickBattle({
       details.append(fields, element('p', selected.title, 'quick-map-title'));
       const actions = element('div', null, 'quick-actions');
       actions.append(
-        control('Select Scenario', scenarios),
+        control('Select Scenario', chooseScenario),
         control('Start Game', () => offerStart(false), {tone:'positive'}),
       );
       show('quick', 'Custom Scenario', [details, actions], close);
@@ -90,10 +90,7 @@ export async function openQuickBattle({
       const popup = element('div', null, 'scenario-filter-menu');
       summary.setAttribute('aria-label', t(label));
       for (const [value, name] of values) {
-        const option = control(name, () => {
-          set(value);
-          scenarios();
-        });
+        const option = control(name, () => set(value));
         if (value === current) option.setAttribute('aria-current', 'true');
         popup.append(option);
       }
@@ -101,14 +98,22 @@ export async function openQuickBattle({
       return box;
     }
 
-    function scenarios() {
+    function chooseScenario() {
+      const previous = {selected, category, size, expanded:new Set(expanded)};
+      scenarios(() => {
+        ({selected, category, size, expanded} = previous);
+        settings();
+      });
+    }
+
+    function scenarios(cancel) {
       const filters = element('div', null, 'scenario-filters');
       const sizeOf = map => `${map.width}×${map.height}`;
       const sizes = [...new Set(catalog.maps.map(sizeOf))].sort((a,b) => Number(a.split('×')[0]) - Number(b.split('×')[0]));
       filters.append(
         filter('All categories', [['','All categories'], ...catalog.categories.map(group => [group.id,group.title])],
-          category, value => { category = value; }),
-        filter('Any size', [['','Any size'], ...sizes.map(value => [value,value])], size, value => { size = value; }),
+          category, value => { category = value; scenarios(cancel); }),
+        filter('Any size', [['','Any size'], ...sizes.map(value => [value,value])], size, value => { size = value; scenarios(cancel); }),
       );
       for (const dropdown of filters.children) {
         dropdown.querySelector('summary').addEventListener('click', () => {
@@ -118,8 +123,9 @@ export async function openQuickBattle({
       list = element('div', null, 'scenario-list');
       const maps = matchingMaps();
       if (!maps.some(map => map.id === selected.id) && maps.length) selected = maps[0];
-      show('scenarios', 'Select Scenario', [filters, list], settings,
-        control('OK', settings, {tone:'positive', disabled: !maps.length}));
+      show('scenarios', 'Select Scenario', [filters, list], null,
+        control('OK', settings, {tone:'positive', disabled: !maps.length}),
+        control('Cancel', cancel, {tone:'negative'}));
       orientation.addEventListener('change', fillMaps);
       fillMaps();
     }

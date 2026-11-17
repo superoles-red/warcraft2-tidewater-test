@@ -1,5 +1,5 @@
 {
-  "release": "8a0b519c7fcfeae6",
+  "release": "021ff016f199fadb",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,8 +3919,8 @@
     },
     {
       "path": "battle.css",
-      "bytes": 30293,
-      "integrity": "sha256-Jn+YHkAJ2nI1JiH6BHIw1PX+rnMzRa1ZNKiC9/C167w="
+      "bytes": 29893,
+      "integrity": "sha256-WCY32FwjWB1koA4aPR7ztTLNHpEZk3hHaWH940JKcUc="
     },
     {
       "path": "battle.js",
@@ -3929,8 +3929,8 @@
     },
     {
       "path": "campaign-ui.js",
-      "bytes": 15319,
-      "integrity": "sha256-aW7wVd0Y/DaYXLHNQHrO8j305nZxcLw5TZh8OPIz8qo="
+      "bytes": 15247,
+      "integrity": "sha256-EWy6mWEqMKnYMqaddlvEBrImZAEGd71PtQYZH1mBfaM="
     },
     {
       "path": "checkpoint-store.js",
@@ -3974,8 +3974,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 3275,
-      "integrity": "sha256-VxgHDtrq0VtqDL+IZh/IPhIMm3XfWlhP3hDb32rcZ0Q="
+      "bytes": 3262,
+      "integrity": "sha256-ZoaDrzj6NTFv3gEVFShSyu3vmnemPWG9ESWAGVIhLZ0="
     },
     {
       "path": "lib/dune-controls.js",
@@ -4044,8 +4044,8 @@
     },
     {
       "path": "quick-battle-ui.js",
-      "bytes": 9235,
-      "integrity": "sha256-3E5G9pCXHALx4G3CikIjNuxnoE4gAzUQMgBohh7OWwo="
+      "bytes": 9517,
+      "integrity": "sha256-ZDk5FGahVm+uamu5biWUvMgQxniaAjApiB29rxCd4Qg="
     },
     {
       "path": "results-ui.css",

@@ -59,14 +59,13 @@ export function createCampaignUi(root, campaigns, actions) {
     return element;
   }
 
-  function show(kind, heading, content, prev = null, primary = null) {
+  function show(kind, heading, content, prev = null, ...footerActions) {
     root.hidden = false;
     root.dataset.screen = kind;
     title.textContent = t(heading);
     title.hidden = !heading;
     stage.replaceChildren(...content);
-    if (footer.firstElementChild !== back) footer.firstElementChild.remove();
-    if (primary) footer.prepend(primary);
+    footer.replaceChildren(...footerActions);
     backAction = prev;
     back.hidden = !prev;
     back.setAttribute('aria-label', t('Back'));
