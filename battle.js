@@ -888,7 +888,8 @@ async function start() {
 
   function updateLanguage() {
     audio.language();
-    for (const [id, label] of [['menu-button', 'Menu'], ['place-button', 'Place'], ['cancel-placement', 'Cancel']]) {
+    byId('menu-button').setAttribute('aria-label', t('Menu'));
+    for (const [id, label] of [['place-button', 'Place'], ['cancel-placement', 'Cancel']]) {
       byId(id).textContent = t(label);
     }
     for (const [field, label] of resourceFields) resourceValues[field].parentElement.title = t(label);

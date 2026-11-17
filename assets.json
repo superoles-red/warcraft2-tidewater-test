@@ -1,5 +1,5 @@
 {
-  "release": "6a5607cc191889de",
+  "release": "57fb357f19d4987d",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,13 +3919,13 @@
     },
     {
       "path": "battle.css",
-      "bytes": 30179,
-      "integrity": "sha256-cKPHVyWdeGRLOnrFtPR4DfyTx58zn9Hb8ZO3xBFIOZk="
+      "bytes": 30608,
+      "integrity": "sha256-Z0d0fplKj89m3Y/SUxLFZ4Bj0/z6s8xLs62pS2ZzB9k="
     },
     {
       "path": "battle.js",
-      "bytes": 72175,
-      "integrity": "sha256-dWu3auGK5EckaEo4SpzOH7HQhcqDDhi5oBJ/nTL6ix8="
+      "bytes": 72213,
+      "integrity": "sha256-zVLW23fqKVYXiwr7ZTKFm8wNrSkzeJBodL7FuXiIado="
     },
     {
       "path": "campaign-ui.js",
@@ -3974,8 +3974,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 3262,
-      "integrity": "sha256-6OKA/piOsWsYq6CjFgC4iNC2wcR0l6e4rV4nMcWDlcw="
+      "bytes": 3276,
+      "integrity": "sha256-erA7VSu6z0ry01aUtfFLdq5OslNjWOi9W15HdCAomhk="
     },
     {
       "path": "lib/dune-controls.js",

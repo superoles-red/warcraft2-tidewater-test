@@ -175,9 +175,22 @@ button:focus-visible,
   pointer-events: none;
 }
 #menu-button {
-  min-height: var(--menu-height);
-  min-width: clamp(58px, 23vw, 126px);
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--menu-height);
+  width: var(--menu-height);
+  height: var(--menu-height);
   margin-inline-start: auto;
+  padding: 0;
+  z-index: 1;
+  background: linear-gradient(hsl(var(--theme-hue) 41% 30% / .65), hsl(var(--theme-hue) 49% 16% / .65));
+}
+#menu-button::after {
+  content: '';
+  width: 46%;
+  height: 2px;
+  background: var(--paper);
+  box-shadow: 0 -6px var(--paper), 0 6px var(--paper);
 }
 
 #resources {
@@ -857,11 +870,15 @@ button:focus-visible,
   :root {
     --command: clamp(46px, 14vh, 68px);
     --hud-top: var(--safe-top);
-    --mini: clamp(86px, 26vh, 142px);
+    --mini: clamp(110px, min(38vh, 24vw), 176px);
     --safe-bottom: max(13px, calc(env(safe-area-inset-bottom) + 10px));
   }
   #hud-top { left: 0; right: 0; }
-  #menu-button { margin-inline-end: var(--safe-right); }
+  #minimap { top: var(--hud-top); }
+  #menu-button {
+    margin-top: 4px;
+    margin-inline-end: calc(var(--safe-right) + 4px);
+  }
   #selection { top: var(--hud-top); width: min(245px, 32vw); }
   #resources {
     position: absolute;
