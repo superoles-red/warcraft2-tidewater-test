@@ -95,6 +95,7 @@ export function createCampaignUi(root, campaigns, actions) {
     ];
     controls[0]?.classList.add('recent');
     show('main', '', controls);
+    window.dispatchEvent(new Event('tidewater:home'));
   }
 
   function chooseCampaign() {
@@ -175,7 +176,7 @@ export function createCampaignUi(root, campaigns, actions) {
     if (localized.story) article.append(node('p', localized.story));
     if (goals.children.length) article.append(node('h2', t('Objectives')), goals);
     show('briefing', localized.title, [article, control('Play', () => launch(mission), {tone:'positive'})], () => {
-      actions.stopBriefing();
+      actions.stopBriefing(true);
       chapters(campaigns.find(campaign => campaign.id === selected.campaign));
     });
     actions.briefing(mission.id);

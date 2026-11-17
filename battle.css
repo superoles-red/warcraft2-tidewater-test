@@ -175,6 +175,8 @@ button:focus-visible,
 }
 .portraits { display: grid; grid-template-columns: repeat(3, var(--command)); gap: 3px; }
 .one-selected { display: flex; align-items: center; gap: 7px; }
+.unit-name { font-weight: 700; min-width: 0; }
+.unit-level { display: block; font-weight: 600; }
 .portrait, .command {
   padding: 2px;
   overflow: hidden;
@@ -189,6 +191,24 @@ button:focus-visible,
 .health { width: 100%; height: 3px; background: #16110d; }
 .health span { display: block; height: 100%; background: #4e8d24; }
 .stats { padding: 5px 0 0 10px; line-height: 1.26; }
+.mana-row { display: flex; align-items: center; gap: .45em; margin-top: 3px; }
+.mana-value {
+  position: relative;
+  isolation: isolate;
+  width: min(61px, 46%);
+  text-align: center;
+  border: 1px solid #fcf8f0;
+  box-shadow: inset 0 0 0 1px #15110a;
+  background: #343434;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.mana-value::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 1px;
+  background: linear-gradient(to right, #3470a4 var(--mana, 0%), transparent 0);
+}
 .production-progress { display: flex; align-items: center; gap: 5px; margin-top: 4px; }
 .production-progress > canvas {
   width: clamp(22px, 7vw, 34px);
@@ -225,6 +245,7 @@ button:focus-visible,
   height: var(--command-height);
   pointer-events: auto;
 }
+.command.current-order { border-color: #44ed26; }
 .command.armed { outline: 1px solid #c7ff81; }
 .command.unavailable canvas { filter: grayscale(1) brightness(.75); }
 .command.cancel { position: absolute; bottom: 0; right: 0; }
@@ -241,12 +262,13 @@ button:focus-visible,
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
-  column-gap: .65em;
+  column-gap: .8em;
   row-gap: .2em;
   vertical-align: middle;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--light);
 }
-#command-detail > .resource-costs { margin-inline-start: .55em; }
+#command-detail > .resource-costs { display: flex; margin-block-start: .22em; }
 .command-description, .command-reason {
   display: block;
   max-width: min(100%, 46ch);
@@ -255,13 +277,14 @@ button:focus-visible,
   line-height: 1.18;
 }
 #command-detail > .command-reason { color: #ffcb81; }
+.command-description { color: var(--light); }
 .resource-cost {
   display: inline-flex;
   align-items: center;
   gap: .24em;
   white-space: nowrap;
 }
-.resource-cost canvas { width: 1em; height: 1em; }
+.resource-cost canvas { width: auto; height: 1.06em; flex: none; }
 #placement { display: flex; justify-content: space-between; align-items: end; }
 #placement .war-button { min-width: 94px; }
 #command-area.placing #command-detail { bottom: 50px; }

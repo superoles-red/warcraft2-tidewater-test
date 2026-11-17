@@ -1,4 +1,4 @@
-const BUILD = '78209a4418914b50';
+const BUILD = 'b061da08e1a004d0';
 const SCOPE = new URL(self.registration.scope);
 const PREFIX = 'tidewater-pilot:' + SCOPE.pathname + ':';
 const CACHE = PREFIX + BUILD;
@@ -41,18 +41,24 @@ async function downloadOptional(cache, url, catalog) {
   return response;
 }
 
-async function prepareCore(cache, catalog) {
-  const previousKey = (await caches.keys()).reverse().find(key =>
-    key.startsWith(PREFIX) && key !== CACHE && !key.startsWith(PREFIX + 'language:'));
-  const previous = previousKey ? await caches.open(previousKey) : null;
-  const previousList = await (await previous?.match(LIST))?.json();
-  const integrity = new Map((previousList?.files ?? []).map(file => [file.path, file.integrity]));
-  for (let offset = 0; offset < catalog.files.length; offset += 24) {
-    const batch = catalog.files.slice(offset, offset + 24);
+async function previousRelease() {
+  for (const key of (await caches.keys()).reverse()) {
+    if (!key.startsWith(PREFIX) || key === CACHE || key.startsWith(PREFIX + 'language:')) continue;
+    const candidate = await caches.open(key);
+    const list = await candidate.match(LIST);
+    if (list) return {cache:candidate, catalog:await list.json()};
+  }
+  return {cache:null, catalog:null};
+}
+
+async function cacheFiles(cache, files, previous, oldFiles = []) {
+  const integrity = new Map(oldFiles.map(file => [file.path, file.integrity]));
+  for (let offset = 0; offset < files.length; offset += 24) {
+    const batch = files.slice(offset, offset + 24);
     const requests = await Promise.all(batch.map(async file => {
       const url = new URL(file.path, SCOPE);
       if (integrity.get(file.path) === file.integrity) {
-        const existing = await previous.match(url);
+        const existing = await previous?.match(url);
         if (existing) {
           await cache.put(url, existing);
           return null;
@@ -62,6 +68,10 @@ async function prepareCore(cache, catalog) {
     }));
     await cache.addAll(requests.filter(Boolean));
   }
+}
+
+async function prepareCore(cache, catalog, {cache:previous, catalog:previousList}) {
+  await cacheFiles(cache, catalog.files, previous, previousList?.files);
   const optional = new Map((previousList?.optional ?? []).map(file => [file.path, file.integrity]));
   if (previous) {
     for (const file of catalog.optional ?? []) {
@@ -73,6 +83,28 @@ async function prepareCore(cache, catalog) {
   }
 }
 
+async function prepareLanguages(previous, catalog) {
+  for (const [code, pack] of Object.entries(catalog.localePacks ?? {})) {
+    const oldPack = previous?.localePacks?.[code];
+    if (!oldPack || oldPack.release === pack.release) continue;
+    const prefix = PREFIX + 'language:' + code + ':';
+    const oldKey = prefix + oldPack.release;
+    const newKey = prefix + pack.release;
+    const flag = new URL('art/lang/' + code + '/.installed', SCOPE);
+    if (!await caches.match(flag, {cacheName:oldKey}) || await caches.match(flag, {cacheName:newKey})) continue;
+    const oldCache = await caches.open(oldKey);
+    const newCache = await caches.open(newKey);
+    try {
+      await cacheFiles(newCache, pack.files, oldCache, oldPack.files);
+      if (await caches.match(flag, {cacheName:oldKey})) await newCache.put(flag, new Response('ready'));
+      else await caches.delete(newKey);
+    } catch (error) {
+      await caches.delete(newKey);
+      throw error;
+    }
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const response = await fetch(LIST, {cache: 'no-store'});
@@ -80,10 +112,55 @@ self.addEventListener('install', event => {
     const catalog = await response.clone().json();
     if (catalog.release !== BUILD) throw new Error('The Tidewater worker and file list do not match');
     const cache = await caches.open(CACHE);
-    await prepareCore(cache, catalog);
-    await cache.put(LIST, response);
-    await self.skipWaiting();
+    try {
+      const previous = await previousRelease();
+      await prepareCore(cache, catalog, previous);
+      await prepareLanguages(previous.catalog, catalog);
+      await cache.put(LIST, response);
+      // Previously installed pages expect the replacement to activate on its own.
+      if (!self.registration.active || !previous.catalog?.updateProtocol) await self.skipWaiting();
+    } catch (error) {
+      await caches.delete(CACHE);
+      throw error;
+    }
   })());
+});
+
+function menuReady(client) {
+  return new Promise(resolve => {
+    const channel = new MessageChannel();
+    const timeout = setTimeout(() => finish(false), 800);
+    function finish(ready) {
+      clearTimeout(timeout);
+      channel.port1.close();
+      resolve(ready);
+    }
+    channel.port1.onmessage = event => finish(event.data === true);
+    try { client.postMessage('tidewater:check-menu', [channel.port2]); }
+    catch { finish(false); }
+  });
+}
+
+async function allWindowsAtMenu() {
+  const clients = (await self.clients.matchAll({type:'window', includeUncontrolled:true})).filter(client => {
+    const url = new URL(client.url);
+    return url.pathname === SCOPE.pathname || url.pathname === ENTRY.pathname;
+  });
+  return (await Promise.all(clients.map(menuReady))).every(Boolean);
+}
+
+let activation;
+self.addEventListener('message', event => {
+  if (event.data !== 'tidewater:apply-update' || !event.ports[0]) return;
+  activation ??= (async () => {
+    if (!await allWindowsAtMenu()) return false;
+    const previous = await previousRelease();
+    await prepareLanguages(previous.catalog, await getManifest(await caches.open(CACHE)));
+    if (!await allWindowsAtMenu()) return false;
+    await self.skipWaiting();
+    return true;
+  })().catch(() => false).finally(() => { activation = undefined; });
+  event.waitUntil(activation.then(ready => event.ports[0].postMessage(ready)));
 });
 
 self.addEventListener('activate', event => {

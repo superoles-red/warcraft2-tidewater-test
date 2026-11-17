@@ -37,13 +37,19 @@ export function eraDirectory(world) {
 }
 
 function sameUnits(previous, next) {
-  return previous?.length === next.length && next.every((unit, index) => {
+  if (previous === next) return true;
+  return previous.length === next.length && next.every((unit, index) => {
     const old = previous[index];
     return old.id === unit.id && old.x === unit.x && old.y === unit.y &&
       old.frame === unit.frame && old.picture === unit.picture &&
-      old.colour === unit.colour && old.mirrored === unit.mirrored;
+      old.colour === unit.colour && old.owner === unit.owner && old.allied === unit.allied &&
+      old.width === unit.width && old.height === unit.height &&
+      old.boxWidth === unit.boxWidth && old.boxHeight === unit.boxHeight &&
+      old.mirrored === unit.mirrored && old.carry === unit.carry && old.dying === unit.dying;
   });
 }
+
+const noBuildings = [];
 
 export async function createMapRenderer(game, minimap, initialWorld, invalidate = () => {}) {
   const root = eraDirectory(initialWorld);
@@ -53,13 +59,16 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
       return {atlas: await readJson('./art/sprites.json'), source:'./art'};
     });
   const {atlas, source} = catalog;
-  const [tiles, fogShapes, fogCodes, previewTerrain] = await Promise.all([
+  const [tiles, fogShapes, fogCodes, previewTerrain, effectAtlas, effectImage] = await Promise.all([
     readImage(source + '/tiles.webp'),
     readImage(source + '/fog-shapes.png'),
     readJson('./art/fog-codes.json'),
     initialWorld.terrain ? null : readImage('./art/terrain.webp'),
+    readJson('./art/effects.json'),
+    readImage('./art/effects.webp'),
   ]);
   const tile = initialWorld.tileSize;
+  const minimapSize = 128;
   const mapWidth = initialWorld.width, mapHeight = initialWorld.height;
   const width = mapWidth * tile, height = mapHeight * tile;
   const tileColumns = tiles.width / tile;
@@ -68,7 +77,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   const shapeSheet = surface(tile, tile * fogCodes.length);
   shapeSheet.ctx.drawImage(fogShapes, 0, 0);
   const shapes = shapeSheet.ctx.getImageData(0, 0, tile, tile * fogCodes.length).data;
-  const miniTerrain = surface(128, 128);
+  const miniTerrain = surface(minimapSize, minimapSize);
   const ctx = game.getContext('2d', {alpha: false});
   const miniContext = minimap.getContext('2d');
   const fogStamps = new Map();
@@ -81,6 +90,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   const mapColour = key => 'rgb(' + atlas.mapColours[key].join(',') + ')';
   const ownSelection = mapColour('ownSelection');
   const otherSelection = mapColour('otherSelection');
+  const alliedSelection = atlas.mapColours.alliedSelection ? mapColour('alliedSelection') : otherSelection;
   const placingBuilding = mapColour('placingBuilding');
   const buildableTile = placementStamp(tile, mapColour('buildableTile'));
   const blockedTile = placementStamp(tile, mapColour('blockedTile'));
@@ -89,12 +99,15 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   const pageNames = atlas.pages || [atlas.image || 'sprites.webp'];
   let world = initialWorld;
   let unitOrder;
+  let rememberedBuildings = initialWorld.rememberedBuildings ?? noBuildings;
   let painted;
   let miniPainted;
   let paintRevision = 0;
   let miniRevision = 0;
   let miniUnits = '';
   let fogArrays = [];
+  let mapEffects = [];
+  let effectKey = '';
 
   function loadPage(id) {
     if (!spritePages.has(id)) {
@@ -113,17 +126,19 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   }
 
   function spriteFrame(unit) {
-    const meta = atlas.sprites[unit.picture];
+    const carried = unit.carry && atlas.carriedSprites?.[`${unit.kind}:${unit.carry}`];
+    const meta = carried || atlas.sprites[unit.picture];
     if (!meta) return null;
     const frames = meta.frames ?? meta.colours?.[unit.colour] ?? Object.values(meta.colours || {})[0];
     const frame = frames?.[unit.frame];
     const rectangle = frame?.[2] > 0 && frame?.[3] > 0 ? frame : frames?.[0];
     if (!rectangle || rectangle[2] <= 0 || rectangle[3] <= 0) return null;
-    return {rectangle, size: meta.size, page: rectangle[6] ?? 0, frame: rectangle === frame ? unit.frame : 0,
+    return {rectangle, size: meta.size, page: rectangle[6] ?? 0,
       keyed: meta.frames != null && rectangle[7] !== 0};
   }
 
-  await Promise.all([...new Set(initialWorld.units.map(unit => spriteFrame(unit)?.page).filter(Number.isInteger))]
+  await Promise.all([...new Set([...initialWorld.units, ...rememberedBuildings]
+    .map(unit => spriteFrame(unit)?.page).filter(Number.isInteger))]
     .map(loadPage));
 
   function fogStamp(visible, explored) {
@@ -179,9 +194,9 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
 
   function paintMiniTile(index) {
     const x = index % mapWidth, y = Math.floor(index / mapWidth);
-    const left = Math.floor(x * 128 / mapWidth), top = Math.floor(y * 128 / mapHeight);
-    const w = Math.floor((x + 1) * 128 / mapWidth) - left;
-    const h = Math.floor((y + 1) * 128 / mapHeight) - top;
+    const left = Math.floor(x * minimapSize / mapWidth), top = Math.floor(y * minimapSize / mapHeight);
+    const w = Math.floor((x + 1) * minimapSize / mapWidth) - left;
+    const h = Math.floor((y + 1) * minimapSize / mapHeight) - top;
     if (!w || !h) return;
     const context = miniTerrain.ctx;
     context.clearRect(left, top, w, h);
@@ -251,11 +266,38 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     return updated;
   }
 
+  function updateMapEffects(state) {
+    mapEffects = state.effects ?? [];
+    const key = mapEffects.map(effect => [effect.kind, effect.x, effect.y, effect.frame].join(':')).join(';');
+    if (key === effectKey) return;
+    effectKey = key;
+    ++paintRevision;
+  }
+
+  function drawMapEffects(view, groundMarkers) {
+    const {x: left, y: top} = view.visibleGlobal;
+    for (const effect of mapEffects) {
+      if ((effect.kind === 0x1c) !== groundMarkers) continue;
+      const sheet = effectAtlas[effect.kind], frame = sheet?.frames[effect.frame];
+      if (!frame) continue;
+      const [sx, sy, w, h, ox, oy] = frame;
+      if (!w || !h) continue;
+      const x = effect.x + ox - Math.floor(sheet.size[0] / 2);
+      const y = effect.y + oy - Math.floor(sheet.size[1] / 2);
+      if (x + w <= left || y + h <= top || x >= left + view.width || y >= top + view.height) continue;
+      ctx.drawImage(effectImage, sx, sy, w, h, x, y, w, h);
+    }
+  }
+
   function update(state) {
     const previousRevision = paintRevision;
     const previousMini = miniRevision;
+    updateMapEffects(state);
     const terrainChanged = applyTerrain(state);
     const visionChanged = updateFog(state);
+    const remembered = state.rememberedBuildings ?? noBuildings;
+    if (!sameUnits(rememberedBuildings, remembered)) ++paintRevision;
+    rememberedBuildings = remembered;
     if (!unitOrder || !sameUnits(world.units, state.units) ||
         world.selection.join(',') !== state.selection.join(',') || terrainChanged || visionChanged) {
       ++paintRevision;
@@ -263,7 +305,9 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     }
     world = state;
     const points = state.units.filter(unit => unit.minimap !== false)
-      .map(unit => [unit.id, unit.tileX, unit.tileY, unit.owner]).join(';');
+      .map(unit => [unit.tileX, unit.tileY, unit.width, unit.height, unit.owner]).join(';') + '/' +
+      rememberedBuildings.filter(unit => unit.minimap !== false)
+        .map(unit => [unit.x, unit.y, unit.width, unit.height, unit.owner]).join(';');
     if (points !== miniUnits || terrainChanged || visionChanged) {
       miniUnits = points;
       ++miniRevision;
@@ -275,7 +319,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     const [x, y, w, h] = frame.rectangle;
     const colours = atlas.teamColours?.[unit.colour];
     if (!frame.keyed || !colours) return [image, x, y];
-    const key = `${unit.picture}:${frame.frame}:${unit.colour}`;
+    const key = `${frame.page}:${x}:${y}:${unit.colour}`;
     if (!teamFrames.has(key)) {
       const tinted = surface(w, h);
       tinted.ctx.drawImage(image, x, y, w, h, 0, 0, w, h);
@@ -316,7 +360,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   }
 
   function drawMinimap(view) {
-    const mapScale = 128;
+    const mapScale = minimapSize;
     const id = [miniRevision, view.visibleGlobal.x.toFixed(2), view.visibleGlobal.y.toFixed(2),
       view.width, view.height].join(':');
     if (id === miniPainted) return;
@@ -325,14 +369,17 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     miniContext.imageSmoothingEnabled = false;
     miniContext.clearRect(0, 0, mapScale, mapScale);
     miniContext.drawImage(miniTerrain.canvas, 0, 0);
-    for (const unit of world.units) {
-      if (unit.minimap === false) continue;
-      miniContext.fillStyle = unit.owner === world.player ? '#2aff05' : unit.owner === 15 ? '#d4c66e' : '#ef3324';
-      miniContext.fillRect(
-        Math.floor(unit.x * mapScale / width), Math.floor(unit.y * mapScale / height),
-        Math.max(1, Math.round(unit.width * mapScale / width)),
-        Math.max(1, Math.round(unit.height * mapScale / height)),
-      );
+    for (const layer of [rememberedBuildings, world.units]) {
+      for (const unit of layer) {
+        if (unit.minimap === false) continue;
+        miniContext.fillStyle = unit.owner === world.player ? '#2aff05' : unit.owner === 15 ? '#d4c66e' : '#ef3324';
+        miniContext.fillRect(
+          Math.floor((unit.tileX ?? unit.x / tile) * mapScale / mapWidth),
+          Math.floor((unit.tileY ?? unit.y / tile) * mapScale / mapHeight),
+          Math.max(1, Math.round(unit.width * mapScale / width)),
+          Math.max(1, Math.round(unit.height * mapScale / height)),
+        );
+      }
     }
     const x = view.visibleGlobal.x * mapScale / width;
     const y = view.visibleGlobal.y * mapScale / height;
@@ -382,21 +429,39 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
         }
         ctx.setTransform(scale, 0, 0, scale, -left * scale, -top * scale);
         const selected = new Set(world.selection);
-        for (const unit of unitOrder) {
-          if (unit.x + unit.width < left - 64 || unit.x > right + 64 ||
-              unit.y + unit.height < top - 64 || unit.y > bottom + 64) continue;
-          drawUnit(unit);
-          const owned = unit.owner === world.player;
-          if (selected.has(unit.id) || (placing && owned && unit.building && unit.hp > 0 && !unit.dying)) {
-            ctx.lineWidth = 1 / scale;
-            ctx.strokeStyle = selected.has(unit.id) ? (owned ? ownSelection :
-              (unit.kind === 92 ? '#ffff00' : otherSelection)) : placingBuilding;
-            const x = deviceX(unit.x), y = deviceY(unit.y);
-            ctx.strokeRect(left + (x + .5) / scale, top + (y + .5) / scale,
-              (deviceX(unit.x + unit.width) - x) / scale,
-              (deviceY(unit.y + unit.height) - y) / scale);
-          }
+        const onScreen = unit => unit.x + unit.width >= left - 64 && unit.x <= right + 64 &&
+          unit.y + unit.height >= top - 64 && unit.y <= bottom + 64;
+        function drawSelection(unit, colour) {
+          const w = unit.boxWidth ?? unit.width, h = unit.boxHeight ?? unit.height;
+          const x = unit.x + unit.width / 2 - Math.floor(w / 2) - 1;
+          const y = unit.y + unit.height / 2 - Math.floor(h / 2) - 1;
+          const l = deviceX(x), t = deviceY(y);
+          const r = deviceX(x + w + 1), b = deviceY(y + h + 1);
+          const upper = Math.max(1, deviceY(y + 1) - t);
+          const lower = Math.max(1, b - deviceY(y + h));
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.fillStyle = colour;
+          ctx.fillRect(l, t, r - l, upper);
+          ctx.fillRect(l, b - lower, r - l, lower);
+          ctx.fillRect(l, t, Math.max(1, deviceX(x + 1) - l), b - t);
+          const edge = Math.max(1, r - deviceX(x + w));
+          ctx.fillRect(r - edge, t, edge, b - t);
+          ctx.setTransform(scale, 0, 0, scale, -left * scale, -top * scale);
         }
+        for (const unit of rememberedBuildings) {
+          if (onScreen(unit)) drawUnit(unit);
+        }
+        for (const unit of unitOrder) {
+          if (!onScreen(unit)) continue;
+          const owned = unit.owner === world.player;
+          if (selected.has(unit.id)) {
+            drawSelection(unit, owned ? ownSelection : unit.allied ? alliedSelection : otherSelection);
+          } else if (placing && owned && unit.building && unit.hp > 0 && !unit.dying) {
+            drawSelection(unit, placingBuilding);
+          }
+          drawUnit(unit);
+        }
+        drawMapEffects(view, false);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         for (const [fog, px, py] of visibleChunks) chunkAt(fog, px, py);
         const line = Math.max(1, Math.round(ratio));
@@ -430,6 +495,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
           }
         }
       }
+      drawMapEffects(view, true);
       if (selectBox) {
         ctx.strokeStyle = ownSelection;
         ctx.lineWidth = 1 / scale;

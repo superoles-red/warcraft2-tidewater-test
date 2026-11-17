@@ -1,5 +1,6 @@
 {
-  "release": "78209a4418914b50",
+  "release": "b061da08e1a004d0",
+  "updateProtocol": 1,
   "files": [
     {
       "path": "act-interlude.css",
@@ -352,6 +353,21 @@
       "integrity": "sha256-p9em+myPa69AdM7kk+dNrJKlJKx4l7XjMXojDe9iLcQ="
     },
     {
+      "path": "art/audio/aleria-alpissd1.m4a",
+      "bytes": 7503,
+      "integrity": "sha256-Nsq2z2z8OmD6hylYEyWQq6X38NzcdTfRTviNfuZ+nVs="
+    },
+    {
+      "path": "art/audio/aleria-alpissd2.m4a",
+      "bytes": 11712,
+      "integrity": "sha256-ch/IdfmSIsdya3cdkq0hMSP3PSA5P/Z9jBm22WHyvF0="
+    },
+    {
+      "path": "art/audio/aleria-alpissd3.m4a",
+      "bytes": 11979,
+      "integrity": "sha256-N5U5pMGWllo57ILQChRsSwcgpiF5mUdHN6F6ndAMY3I="
+    },
+    {
       "path": "art/audio/aleria-alwhat1.m4a",
       "bytes": 4172,
       "integrity": "sha256-vYsJ5u1J1R4bfzjsY1gz7zkza+VZmC3VqPOAyem8/aU="
@@ -477,6 +493,21 @@
       "integrity": "sha256-E4J2UPcJg3u3xO03aDfnTPdTLFliSxrjJYSb4xpZOfA="
     },
     {
+      "path": "art/audio/buildingDeath-1.m4a",
+      "bytes": 17393,
+      "integrity": "sha256-uvd2JfEdjImNddyz9A8R5sWoRpTwVASYioQ/d2hqKfg="
+    },
+    {
+      "path": "art/audio/buildingDeath-2.m4a",
+      "bytes": 15582,
+      "integrity": "sha256-tquN5tDBASSgXPyYepEo41h+eGxxrWoI0+16OqIzeUo="
+    },
+    {
+      "path": "art/audio/buildingDeath-3.m4a",
+      "bytes": 21527,
+      "integrity": "sha256-LZ8Jm8c6iVaXK3/X3gQGGAZ1/937D6UiUHpDsvWJelo="
+    },
+    {
       "path": "art/audio/button.m4a",
       "bytes": 1809,
       "integrity": "sha256-W09/+2yUpAhDWLppuSJgz3dy/EcXOy/7G1//i7d7Ps0="
@@ -505,6 +536,21 @@
       "path": "art/audio/construct-1.m4a",
       "bytes": 12386,
       "integrity": "sha256-0/Z2rHaFRnRcl+zAOnhBWNQyZACU4AfYruJOejUkqSU="
+    },
+    {
+      "path": "art/audio/danath-dnpisd1.m4a",
+      "bytes": 7326,
+      "integrity": "sha256-hTM0oQRGMpC+G6yGH+LnuAFTGnXJ6GOjwvD4SpCU24U="
+    },
+    {
+      "path": "art/audio/danath-dnpisd2.m4a",
+      "bytes": 7166,
+      "integrity": "sha256-ty2zzzpYY7kcv6b1vVcFUWWcVc8ftP5Sw38gwAzOeZc="
+    },
+    {
+      "path": "art/audio/danath-dnpisd3.m4a",
+      "bytes": 8733,
+      "integrity": "sha256-x6ajG5E3KajW2H+DgZC8BqOpaE9bCK3cn0Szo1zm/zQ="
     },
     {
       "path": "art/audio/danath-dnwhat1.m4a",
@@ -537,6 +583,21 @@
       "integrity": "sha256-OvpXlFeJjz0By/VUFPbfY4Bu5dMsIoeC6M6jUc1ePc4="
     },
     {
+      "path": "art/audio/deathknt-dkpissd1.m4a",
+      "bytes": 12339,
+      "integrity": "sha256-mu1LppavAG9Nz4GCYYJpLQCQatY0bFOAC3ubIp94yiI="
+    },
+    {
+      "path": "art/audio/deathknt-dkpissd2.m4a",
+      "bytes": 8292,
+      "integrity": "sha256-U7fkONFaJrdrPeBbcn4Kppn0qvYrFGH/jUyJF6kyNiw="
+    },
+    {
+      "path": "art/audio/deathknt-dkpissd3.m4a",
+      "bytes": 20742,
+      "integrity": "sha256-F6dQ78j+S8rna54FVxpjrrz4C9zHKIEwnxFs8UJWI/A="
+    },
+    {
       "path": "art/audio/deathknt-dkready.m4a",
       "bytes": 11854,
       "integrity": "sha256-S5yLb+20yDw+F11SVkN9M+q29ipcTiwPfZBGLVyq8Ts="
@@ -567,6 +628,21 @@
       "integrity": "sha256-pejfYGur6Qm/0ko3sV7jL1RAZKyNUop791iLvSC1b54="
     },
     {
+      "path": "art/audio/deathwng-depissd1.m4a",
+      "bytes": 11039,
+      "integrity": "sha256-M3K4xJJyoSF8ptgLosK1btg1wn+1R56Zj+r6gA1hG1w="
+    },
+    {
+      "path": "art/audio/deathwng-depissd2.m4a",
+      "bytes": 10243,
+      "integrity": "sha256-3NDNqxYxcxxof47/3rbrJ3tLBOBWfl1WeEl7Hvim1P4="
+    },
+    {
+      "path": "art/audio/deathwng-depissd3.m4a",
+      "bytes": 14348,
+      "integrity": "sha256-+yVvRWQJM4DrhnnE+efvQh6ae+xZGJPopnFomy3mjmk="
+    },
+    {
       "path": "art/audio/deathwng-dewhat1.m4a",
       "bytes": 6828,
       "integrity": "sha256-kdDgceaqlL2Kfw5+MoIFk5Kr4EQKO30yzcjUZI85YDY="
@@ -595,6 +671,21 @@
       "path": "art/audio/deathwng-deyessr3.m4a",
       "bytes": 9587,
       "integrity": "sha256-ZGzl2wuzYe8ZJyu1TjtNtC5b/b7cZwT0M4wj5zlyXtA="
+    },
+    {
+      "path": "art/audio/dentarg-odpissd1.m4a",
+      "bytes": 9284,
+      "integrity": "sha256-lVFEv19RP/RFLMWImRvwF5HOwC05mRawA0faErfrzsw="
+    },
+    {
+      "path": "art/audio/dentarg-odpissd2.m4a",
+      "bytes": 11723,
+      "integrity": "sha256-MHFY//CiS5FX8lSRwLL4F87mNXRJSbAMRqc05ufiClE="
+    },
+    {
+      "path": "art/audio/dentarg-odpissd3.m4a",
+      "bytes": 12774,
+      "integrity": "sha256-Bvr7NIbqlnJsZeWxleQx0hMaa53JHZLWKqk6nLJ6Ub0="
     },
     {
       "path": "art/audio/dentarg-odwhat1.m4a",
@@ -657,6 +748,21 @@
       "integrity": "sha256-vSYIa5JytiT0lzQAmPwqS4/S+jUhbBsJdInqFt0sjl8="
     },
     {
+      "path": "art/audio/dwarf-dwpissd1.m4a",
+      "bytes": 7427,
+      "integrity": "sha256-sFp0lObL69zcqtwFyvIB1bR5hxJngKs1ah4zbkagkeM="
+    },
+    {
+      "path": "art/audio/dwarf-dwpissd2.m4a",
+      "bytes": 6200,
+      "integrity": "sha256-/u2DK4jGDRpMwLGXRdxp5nY5moRuabojKsm8Ny+Tk2M="
+    },
+    {
+      "path": "art/audio/dwarf-dwpissd3.m4a",
+      "bytes": 10051,
+      "integrity": "sha256-UP3M4dC5LiyeRCrFg+M9Rc0K+DiohXNxMv7CeLJ0mOc="
+    },
+    {
       "path": "art/audio/dwarf-dwready.m4a",
       "bytes": 5513,
       "integrity": "sha256-s2Y7KgRmAQ4eB+3++9OCUR6YiNM6XFAFiJRJmU4jPEM="
@@ -685,6 +791,21 @@
       "path": "art/audio/dwarf-dwyessr5.m4a",
       "bytes": 4523,
       "integrity": "sha256-kjqyIRGtT12YXuKsbWN+h116OPdkbom76RTJDD0YWxM="
+    },
+    {
+      "path": "art/audio/elves-epissed1.m4a",
+      "bytes": 6520,
+      "integrity": "sha256-h8EHY9Nnrr/Q6pq304AWww7F38o9sUyaCMyc3IPKMnQ="
+    },
+    {
+      "path": "art/audio/elves-epissed2.m4a",
+      "bytes": 8535,
+      "integrity": "sha256-J3eClfPjDP2fEDVWS1H33giibkNf/B7KxQYWU1AoRPM="
+    },
+    {
+      "path": "art/audio/elves-epissed3.m4a",
+      "bytes": 14006,
+      "integrity": "sha256-4xltz4XXq7gVtEuhpwVU+S+3zVsybGnop0ztW8JKjLU="
     },
     {
       "path": "art/audio/elves-eready.m4a",
@@ -742,6 +863,31 @@
       "integrity": "sha256-v93un92/XyhB2iyn2JPIEnqw6a/RmCGIe09Whk/0H48="
     },
     {
+      "path": "art/audio/gnome-gnpissd1.m4a",
+      "bytes": 6200,
+      "integrity": "sha256-qtNfOj/3zYjAckD2fu2OW+B65xCfvxi6giMhsMbp9HY="
+    },
+    {
+      "path": "art/audio/gnome-gnpissd2.m4a",
+      "bytes": 6616,
+      "integrity": "sha256-GXIHaLjogxmeSl4UaiYYXwTidgIs86WxMwF4tJWhnjE="
+    },
+    {
+      "path": "art/audio/gnome-gnpissd3.m4a",
+      "bytes": 7063,
+      "integrity": "sha256-AGh6AynaLJsk1ApcwXIY/F2WUcwaDdC8YVfsqtnZ0a4="
+    },
+    {
+      "path": "art/audio/gnome-gnpissd4.m4a",
+      "bytes": 11715,
+      "integrity": "sha256-wjeH3eLuXntQxta+ecyMxdPkBcVlcMi3JVRVHRCoQvc="
+    },
+    {
+      "path": "art/audio/gnome-gnpissd5.m4a",
+      "bytes": 11347,
+      "integrity": "sha256-O1hbow0sSzmtOkv6XDPDOuKKc1eYWpW42sCiE8buSf8="
+    },
+    {
       "path": "art/audio/gnome-gnready.m4a",
       "bytes": 10754,
       "integrity": "sha256-vJYcXzcB6pONbcsTNVkByHvdBW6UsWsCwIbBvD1HR/8="
@@ -750,6 +896,21 @@
       "path": "art/audio/gnome-gnyessr1.m4a",
       "bytes": 6942,
       "integrity": "sha256-+PDPu7rVmz2mxGxyHgFFNKFXtT2wexCQ3hetpGktBy4="
+    },
+    {
+      "path": "art/audio/goblin-gopissd1.m4a",
+      "bytes": 8965,
+      "integrity": "sha256-DUaypJgiM8Sd43ItaCQA6f/i1FH2VcuAIfXHvPQ+dZ8="
+    },
+    {
+      "path": "art/audio/goblin-gopissd2.m4a",
+      "bytes": 7095,
+      "integrity": "sha256-RKRyaPMssg7HJlgPcuLp1X1uC4qTg6TLZb3OK6q9wGA="
+    },
+    {
+      "path": "art/audio/goblin-gopissd3.m4a",
+      "bytes": 10201,
+      "integrity": "sha256-PK8yRwPgGDArjx77yUuZbiy2sWec3Rk7HeGCwqWYA1c="
     },
     {
       "path": "art/audio/goblin-goready.m4a",
@@ -812,6 +973,21 @@
       "integrity": "sha256-NeGmmb6sLemz6D+6S4kELHTfBt9SUxQZRb0JClKsgCc="
     },
     {
+      "path": "art/audio/grom-grpissd1.m4a",
+      "bytes": 9294,
+      "integrity": "sha256-SinGsj4hWzFngkvdxDXpGlNOxLSiMxUbfhAsr3gIl1Y="
+    },
+    {
+      "path": "art/audio/grom-grpissd2.m4a",
+      "bytes": 7736,
+      "integrity": "sha256-jQd8G77nTGpoBn7yJAOIfsefnq+9g/SUCih+fsEK63M="
+    },
+    {
+      "path": "art/audio/grom-grpissd3.m4a",
+      "bytes": 5596,
+      "integrity": "sha256-fjh0Y97kpb6975K84HlBXB9H+DaZqEh6f1yhHtY3eBQ="
+    },
+    {
       "path": "art/audio/grom-grwhat1.m4a",
       "bytes": 3567,
       "integrity": "sha256-D7lpYPzmQs6XbZUgnWeJ0AO9E1qjLE6EbRrK87SQIS4="
@@ -850,6 +1026,41 @@
       "path": "art/audio/human-hhelp2.m4a",
       "bytes": 8094,
       "integrity": "sha256-2+6wtp/BxAhKyEWgwovuM0z0lYlRglgIuBy20H09qZo="
+    },
+    {
+      "path": "art/audio/human-hpissed1.m4a",
+      "bytes": 8762,
+      "integrity": "sha256-M7gmlvZPXfdRG++893KlVdwmhZEj11giBOfwI524JyA="
+    },
+    {
+      "path": "art/audio/human-hpissed2.m4a",
+      "bytes": 9435,
+      "integrity": "sha256-BWc2Xbxg0DDIJaWfRU8DJf/jb84ZTsQwQICwyfnKF4c="
+    },
+    {
+      "path": "art/audio/human-hpissed3.m4a",
+      "bytes": 11145,
+      "integrity": "sha256-DFiQToKJj13zeeK9+N3mlcUzHpgZdk0v1o8+SjT3uEQ="
+    },
+    {
+      "path": "art/audio/human-hpissed4.m4a",
+      "bytes": 10487,
+      "integrity": "sha256-lEVX9Oty40e50ibEotTc20fdXMo8jlMJITUNZ8dv1vE="
+    },
+    {
+      "path": "art/audio/human-hpissed5.m4a",
+      "bytes": 11105,
+      "integrity": "sha256-07ZUPK18OGPgia91BtkQosg8kz0v/RZSueh0vsvcDKM="
+    },
+    {
+      "path": "art/audio/human-hpissed6.m4a",
+      "bytes": 9993,
+      "integrity": "sha256-SEgYe0iAHIS/24GlZaOujpbxzuqxU7QB+BBneBonWNQ="
+    },
+    {
+      "path": "art/audio/human-hpissed7.m4a",
+      "bytes": 10452,
+      "integrity": "sha256-PhWKesj3I/SN1imHCdIxtHTSAxtYYuelKfo6eUrbBpY="
     },
     {
       "path": "art/audio/human-hready.m4a",
@@ -907,6 +1118,21 @@
       "integrity": "sha256-0Xg76WWmGVGpcLV9FvAI3fPBvkffh3CbBXXPaGUtMds="
     },
     {
+      "path": "art/audio/kargath-kapissd1.m4a",
+      "bytes": 8130,
+      "integrity": "sha256-V3jHqwCKumo6wo+DytOoEvFtsVMzgUd4TQ6+ZniyF0I="
+    },
+    {
+      "path": "art/audio/kargath-kapissd2.m4a",
+      "bytes": 10807,
+      "integrity": "sha256-frSk/8zBtmQqXYG6l6Dv1bN8h6MfWyXD5sv6SEKkOv8="
+    },
+    {
+      "path": "art/audio/kargath-kapissd3.m4a",
+      "bytes": 15169,
+      "integrity": "sha256-xihDsC4IoXi0O3gvZS2u/0K9Bqb0W8nfKE+6wnI6NWo="
+    },
+    {
       "path": "art/audio/kargath-kawhat1.m4a",
       "bytes": 7511,
       "integrity": "sha256-GPQQueAJDX6p6HHoK6tNa6fD8dcracEtJxKbY8r2/1s="
@@ -937,6 +1163,21 @@
       "integrity": "sha256-WBuhsPGFNgibdK2i2E+5kf9p6CTbWLWFJK40eH6VePg="
     },
     {
+      "path": "art/audio/khadgar-khpissd1.m4a",
+      "bytes": 9625,
+      "integrity": "sha256-95mVE7tWc2zM3IZhioM9+TrzQ7h5AJEkrjyOWzVvokA="
+    },
+    {
+      "path": "art/audio/khadgar-khpissd2.m4a",
+      "bytes": 7541,
+      "integrity": "sha256-qJuiSv2Dp9j50g+Ad55QMNSvcLJqfUEN4T2g7wGIDRE="
+    },
+    {
+      "path": "art/audio/khadgar-khpissd3.m4a",
+      "bytes": 9177,
+      "integrity": "sha256-9+/iE9pgpM82hvBMs/2S8eJJxvZ7grIqC7WHzQLMbnk="
+    },
+    {
       "path": "art/audio/khadgar-khwhat1.m4a",
       "bytes": 4521,
       "integrity": "sha256-yGDsYEjjPd9oa9eBXpcBB8H6GF15/OwmWZ6F+gCtuks="
@@ -965,6 +1206,21 @@
       "path": "art/audio/khadgar-khyessr3.m4a",
       "bytes": 4528,
       "integrity": "sha256-y43k11red2sVXL/JbUSEuzPji/Tr2Pue5mm8Iwr7KJg="
+    },
+    {
+      "path": "art/audio/knight-knpissd1.m4a",
+      "bytes": 9640,
+      "integrity": "sha256-f7kQPAF4RBxR2Pi3PK3vQCCnQs3K5utaPfUXBCANYTc="
+    },
+    {
+      "path": "art/audio/knight-knpissd2.m4a",
+      "bytes": 8535,
+      "integrity": "sha256-ulfuI0165v6+cOE+no0QzVCa2q/TXs6Lj5Gj53DaXyY="
+    },
+    {
+      "path": "art/audio/knight-knpissd3.m4a",
+      "bytes": 11925,
+      "integrity": "sha256-09o5/Z15PS5PtsWnTK3qkLf6uXLwOWUhelaA0CZ1/YE="
     },
     {
       "path": "art/audio/knight-knready.m4a",
@@ -1012,6 +1268,21 @@
       "integrity": "sha256-SHYxP1F4jd40svMbO5tzP7ep5+obIitjOgI+p61r73E="
     },
     {
+      "path": "art/audio/kurdran-kupissd1.m4a",
+      "bytes": 9254,
+      "integrity": "sha256-4OJ4p18Gbz0NP0CGFvzyGG1HYjrHGXeaxMAaMoL/Q9s="
+    },
+    {
+      "path": "art/audio/kurdran-kupissd2.m4a",
+      "bytes": 9460,
+      "integrity": "sha256-WoLwHScDJNOKQtPtIalkE4PZF97OGRPj3deZ1mWVgqk="
+    },
+    {
+      "path": "art/audio/kurdran-kupissd3.m4a",
+      "bytes": 10073,
+      "integrity": "sha256-ISVgIOxVLSrdIN3cOxiectql6dLH8HcZx2YwXWiQjDA="
+    },
+    {
       "path": "art/audio/kurdran-kuwhat1.m4a",
       "bytes": 2487,
       "integrity": "sha256-IrAL8YbemSrRFXiObId61FXzpBMlMHD+1eyP2Z4UbKg="
@@ -1047,14 +1318,134 @@
       "integrity": "sha256-3mOeXRJDPBDOhdhbBaNaZHFQijmDxAt6d1M6MQleMxk="
     },
     {
-      "path": "art/audio/music-orc.m4a",
+      "path": "art/audio/misc-explode.m4a",
+      "bytes": 9396,
+      "integrity": "sha256-bYql6e/VrEXy6EnSYPEwIhrarizEy3/tdFQA66xHgk8="
+    },
+    {
+      "path": "art/audio/misc-pig.m4a",
+      "bytes": 6090,
+      "integrity": "sha256-QBKEP+SB1hd8kPqiT0delCrxDpY2EtWjs/WDraCH7jg="
+    },
+    {
+      "path": "art/audio/misc-pigpissd.m4a",
+      "bytes": 5860,
+      "integrity": "sha256-l31cXwfrKZuOKVFLM5gfF+3oJRqku/txnqNsFmIuIpQ="
+    },
+    {
+      "path": "art/audio/misc-seal.m4a",
+      "bytes": 2912,
+      "integrity": "sha256-7BxmDOXTpgzqmIuVgJqOVE5DizsMhmAQllURB8C5c+4="
+    },
+    {
+      "path": "art/audio/misc-sealpisd.m4a",
+      "bytes": 3509,
+      "integrity": "sha256-ZG/08d+Eble4Hg5KNeIjGf0uyuWvUA5y8am8wosbGpU="
+    },
+    {
+      "path": "art/audio/misc-sheep.m4a",
+      "bytes": 5505,
+      "integrity": "sha256-7PxOWvN1Bmpcb8tjyo4cHwm1M90j9mGzVQdP3hS8u5k="
+    },
+    {
+      "path": "art/audio/misc-shpisd1.m4a",
+      "bytes": 8262,
+      "integrity": "sha256-gsloK4o37tz9GITjO8q4sKdPddK2tz4xSGAumk1kgwA="
+    },
+    {
+      "path": "art/audio/misc-warthog.m4a",
+      "bytes": 7302,
+      "integrity": "sha256-1TKhu+k41MrwMpd1JLx6h54k4xx8pOmR+CjR2Bp0HF8="
+    },
+    {
+      "path": "art/audio/misc-wartpisd.m4a",
+      "bytes": 14390,
+      "integrity": "sha256-ZPtiLLc2XVVDf1cRC0AxVpIXKSVTpxlruMJdL808YC4="
+    },
+    {
+      "path": "art/audio/music-human-1.m4a",
+      "bytes": 1267004,
+      "integrity": "sha256-XQz32/9sc7dKeit/HsfxqYKUQuygm5lXxJhKaLbQuS8="
+    },
+    {
+      "path": "art/audio/music-human-2.m4a",
+      "bytes": 1122111,
+      "integrity": "sha256-lg309KO24hQGZ3HEU50i3vT3CPnLP0gOaER/PQhtNb0="
+    },
+    {
+      "path": "art/audio/music-human-3.m4a",
+      "bytes": 944839,
+      "integrity": "sha256-3YGUh3RTDBKvZqZLt8yLyYr6YhJhHU6nT+NHRBYRp3Y="
+    },
+    {
+      "path": "art/audio/music-human-6.m4a",
+      "bytes": 1580225,
+      "integrity": "sha256-qHPq3TrcEfrnTzchz/Gzh9OPLPZ8uxNfAMyQLwd/wgU="
+    },
+    {
+      "path": "art/audio/music-human-briefing.m4a",
+      "bytes": 388337,
+      "integrity": "sha256-mezXyOKs2TSMtE4mmtbULv/srH+p2AKDaJ3X7c1AabQ="
+    },
+    {
+      "path": "art/audio/music-orc-1.m4a",
       "bytes": 1060404,
       "integrity": "sha256-LtOCdj2bfK6duQXI5/eHt5Oqkd2HykQb3Yjd1V+SHMM="
     },
     {
-      "path": "art/audio/music.m4a",
-      "bytes": 1686147,
-      "integrity": "sha256-JJfXNyQ0SmdPKpb3+zrgVBTeDbYDc6NMkjZ9QRq9FsM="
+      "path": "art/audio/music-orc-2.m4a",
+      "bytes": 923319,
+      "integrity": "sha256-IMpn4cJHYqX7nFYrI1+pxvq+11Vn6ADOlGLB7B77sf4="
+    },
+    {
+      "path": "art/audio/music-orc-3.m4a",
+      "bytes": 1047775,
+      "integrity": "sha256-1C4uwv94P7nuhMkU8ONM9q6vjdAdrpmH+eg7aRhlW+g="
+    },
+    {
+      "path": "art/audio/music-orc-4.m4a",
+      "bytes": 1073112,
+      "integrity": "sha256-Rz76+YI+sD3MG/h9bfkKvUE/FixqPU1bRpJq3iDKdeo="
+    },
+    {
+      "path": "art/audio/music-orc-5.m4a",
+      "bytes": 1043822,
+      "integrity": "sha256-lYnHlnJM4ekUwHJgu6FIDrYXi42h0a9z9k03Cb870m0="
+    },
+    {
+      "path": "art/audio/music-orc-6.m4a",
+      "bytes": 1560948,
+      "integrity": "sha256-GTmeClWihQejC7d684ERY5hc4YxIN0WC+AzpdVb7SKQ="
+    },
+    {
+      "path": "art/audio/music-orc-briefing.m4a",
+      "bytes": 291430,
+      "integrity": "sha256-o8IcdUca/nz3e+WrOSfnL6vD73Vq+JnTzsQKw4H9vjg="
+    },
+    {
+      "path": "art/audio/ogre-ogpissd1.m4a",
+      "bytes": 11597,
+      "integrity": "sha256-4ZwdjhsNB1nWlFtbZ2gDbozpVgeRNdC/l6YnFQGN1ww="
+    },
+    {
+      "path": "art/audio/ogre-ogpissd2.m4a",
+      "bytes": 10975,
+      "integrity": "sha256-OI8DeRwIY9Uc77XgNVcONDxmrTrDWDIU0ijZ/PMBfGY="
+    },
+    {
+      "path": "art/audio/ogre-ogpissd3.m4a",
+      "bytes": 9257,
+      "integrity": "sha256-5apMXadZ7+wTUbRhPw9E6LwX7zjxB5UicaE6GWlAaCo="
+    },
+    {
+      "path": "art/audio/ogre-ogpissd4.m4a",
+      "bytes": 13960,
+      "integrity": "sha256-rkYHkmoPZSN84NJ8k59Za796i1mu9hwT1k8wTcWVprU="
+    },
+    {
+      "path": "art/audio/ogre-ogpissd5.m4a",
+      "bytes": 8278,
+      "integrity": "sha256-sR5mpuQbhKF98ahct+tnoAGky0j0sc1xaFE2e2vKNmg="
     },
     {
       "path": "art/audio/ogre-ogready.m4a",
@@ -1095,6 +1486,21 @@
       "path": "art/audio/ogre-ogyessr3.m4a",
       "bytes": 5889,
       "integrity": "sha256-gQf31Nhb+6FPo6VUKb81WJ4Ea6mEODsgbhGHTfygays="
+    },
+    {
+      "path": "art/audio/ogremage-ompissd1.m4a",
+      "bytes": 11284,
+      "integrity": "sha256-a1BsYfL9sxYafvLlCSvDv2csW53Mi2QZ1O/f90v6/Ls="
+    },
+    {
+      "path": "art/audio/ogremage-ompissd2.m4a",
+      "bytes": 10242,
+      "integrity": "sha256-8Oh5qwij6H3DtBCrVXatPDR18CGpazx9yezGjQYXMjQ="
+    },
+    {
+      "path": "art/audio/ogremage-ompissd3.m4a",
+      "bytes": 12602,
+      "integrity": "sha256-dPN+BYAlFtfTvhUWndRb3PBaPv48xv/A4G6twwUIy7s="
     },
     {
       "path": "art/audio/ogremage-omready.m4a",
@@ -1145,6 +1551,41 @@
       "path": "art/audio/orc-ohelp2.m4a",
       "bytes": 11051,
       "integrity": "sha256-GmU1Sbr6aZ2fA0hUKIh2Fh2hq7SoHQ/J0UPMYRlIK9A="
+    },
+    {
+      "path": "art/audio/orc-opissed1.m4a",
+      "bytes": 7557,
+      "integrity": "sha256-wWxu13FzrlPlHXLZiFjKTuRlyoVeGRMpaIxG6/fAGYg="
+    },
+    {
+      "path": "art/audio/orc-opissed2.m4a",
+      "bytes": 5116,
+      "integrity": "sha256-iIWesqFhG1+fOYsHG5dUlamEHOUIyWqxsyKllPgBFMI="
+    },
+    {
+      "path": "art/audio/orc-opissed3.m4a",
+      "bytes": 5187,
+      "integrity": "sha256-Ibt3BffjJwGe/zE9WF2a6I16LmmgNul5DbURWzCMZZ8="
+    },
+    {
+      "path": "art/audio/orc-opissed4.m4a",
+      "bytes": 10584,
+      "integrity": "sha256-M9TydqwT3vzS/mE31G9R6sy0gEW9hydsx1MvxIzX5vo="
+    },
+    {
+      "path": "art/audio/orc-opissed5.m4a",
+      "bytes": 9688,
+      "integrity": "sha256-S6CUlIu0J+l+1u5htUg4GQfI/Aj2tVC2Jlqj/4ZVbmY="
+    },
+    {
+      "path": "art/audio/orc-opissed6.m4a",
+      "bytes": 10177,
+      "integrity": "sha256-eeMx7OEJfeONG4majnQcSqOuATNlvX+UCkRP/D/5H9E="
+    },
+    {
+      "path": "art/audio/orc-opissed7.m4a",
+      "bytes": 12791,
+      "integrity": "sha256-+i2BEMDjvXeJ+UyAxuZKiLXVm0SOSHMpknmQ7cWsQL0="
     },
     {
       "path": "art/audio/orc-oready.m4a",
@@ -1207,6 +1648,21 @@
       "integrity": "sha256-rNM/Hd46lhBeZrPZwEjol75CNMsemfR81FGzy4VX+i4="
     },
     {
+      "path": "art/audio/paladin-pkpissd1.m4a",
+      "bytes": 10613,
+      "integrity": "sha256-o2owsXunZz+DDemBQLB1mEzedVByEp6N1oPyLa6MPls="
+    },
+    {
+      "path": "art/audio/paladin-pkpissd2.m4a",
+      "bytes": 8823,
+      "integrity": "sha256-DSxr4SJkmOTH4VaXvJEWOvG9zQ2SgX1YLs/iiOSeoyQ="
+    },
+    {
+      "path": "art/audio/paladin-pkpissd3.m4a",
+      "bytes": 12899,
+      "integrity": "sha256-91KSSbLmoUE7qUCoEt0UzJJ3GEC/bzfzHQ9bQ5f/76g="
+    },
+    {
       "path": "art/audio/paladin-pkready.m4a",
       "bytes": 10290,
       "integrity": "sha256-BeIyKxoSBGiyxlm9HacCt16gn9gNUkAw8/rkc7FD4T0="
@@ -1250,6 +1706,41 @@
       "path": "art/audio/paladin-pkyessr4.m4a",
       "bytes": 9335,
       "integrity": "sha256-QPr92/KURcMxssgCbdf5Y9jC9DUhZ9yZkTrhVh66GRc="
+    },
+    {
+      "path": "art/audio/peasant-pspissd1.m4a",
+      "bytes": 4596,
+      "integrity": "sha256-XMmz34Do9s8GYRId2fqobwFa33ALPVKY1U7dYXLAGEw="
+    },
+    {
+      "path": "art/audio/peasant-pspissd2.m4a",
+      "bytes": 5330,
+      "integrity": "sha256-F4Qtty+gCU96IjizVIgL2dskQ1vQMv41Q5q6wsjO4fw="
+    },
+    {
+      "path": "art/audio/peasant-pspissd3.m4a",
+      "bytes": 6438,
+      "integrity": "sha256-rTdYYKfUh/KTH5YQ0D9TSKUYqCmIYoTmWNh6JNS9pOM="
+    },
+    {
+      "path": "art/audio/peasant-pspissd4.m4a",
+      "bytes": 5845,
+      "integrity": "sha256-xib/WRe0t/UbiwMNke5CTzLNpS+IcHj+P3oeteLPzHM="
+    },
+    {
+      "path": "art/audio/peasant-pspissd5.m4a",
+      "bytes": 10014,
+      "integrity": "sha256-P9pxGQLSagY9oIMjvzd86MZ12wGfJ8P8sFr3Wdcselc="
+    },
+    {
+      "path": "art/audio/peasant-pspissd6.m4a",
+      "bytes": 7992,
+      "integrity": "sha256-RcQFA+jZZj29646xHE8LUnderQsEXSXj/62hQu8Zut4="
+    },
+    {
+      "path": "art/audio/peasant-pspissd7.m4a",
+      "bytes": 9291,
+      "integrity": "sha256-tN/BlRChw996yXOU95NKIuZcqyQ4qE8YYJ/10kowqjk="
     },
     {
       "path": "art/audio/peasant-psready.m4a",
@@ -1352,6 +1843,21 @@
       "integrity": "sha256-U4Rp2Z11aSZeYrUH71+17/euaq9Oxb42tujXojTx8Dc="
     },
     {
+      "path": "art/audio/ships-hshppis1.m4a",
+      "bytes": 10846,
+      "integrity": "sha256-cvnvNcM4HkuWG9p/gJeUhOLlPNCh6SmKVi/dwdZXtww="
+    },
+    {
+      "path": "art/audio/ships-hshppis2.m4a",
+      "bytes": 11548,
+      "integrity": "sha256-HxkF20wcWqLVYQ4+PCaQvkAC2LXAaKX22cqvu/LHzFY="
+    },
+    {
+      "path": "art/audio/ships-hshppis3.m4a",
+      "bytes": 12589,
+      "integrity": "sha256-7c5UpoKrFMPAsOor8FUW2k9MundzGJ1uCZNk04WNBbs="
+    },
+    {
       "path": "art/audio/ships-hshpredy.m4a",
       "bytes": 7904,
       "integrity": "sha256-kaqsaV6BBBHC4pXhQzZbPrsr6SLIvjN20vSfttiGmn8="
@@ -1385,6 +1891,21 @@
       "path": "art/audio/ships-hshpyes3.m4a",
       "bytes": 5886,
       "integrity": "sha256-L5muBH4eF6APg0CA2cA2JJczyJlWqZekxNFeDmLdoqo="
+    },
+    {
+      "path": "art/audio/ships-oshppis1.m4a",
+      "bytes": 5498,
+      "integrity": "sha256-xriE0hZBWiQ0MevLaA/c+TowJbI9SbHXaANiGfTucbU="
+    },
+    {
+      "path": "art/audio/ships-oshppis2.m4a",
+      "bytes": 7181,
+      "integrity": "sha256-Kltg2SnQ9T0LLgWZ9lnd/yFkgPyEBYJkJE8pJQAYeqw="
+    },
+    {
+      "path": "art/audio/ships-oshppis3.m4a",
+      "bytes": 17457,
+      "integrity": "sha256-nRM7UJhK8q9AOxdbika1laPbpeaS/H6d2K79P/Kn+Bc="
     },
     {
       "path": "art/audio/ships-oshpredy.m4a",
@@ -1422,6 +1943,26 @@
       "integrity": "sha256-P03KEmY0HpXZHKhdKhpcZiesQyg7JfiLYqOrdwRBw1M="
     },
     {
+      "path": "art/audio/ships-subpiss1.m4a",
+      "bytes": 6928,
+      "integrity": "sha256-AxtgtX83HYeJ3irv5WEBDtH0l4JmJBJD0QA4gZ1NB0s="
+    },
+    {
+      "path": "art/audio/ships-subpiss2.m4a",
+      "bytes": 4743,
+      "integrity": "sha256-VsRu7JuMNTbSqoanXjNn87FX+64QCD04lDHjjYK27ic="
+    },
+    {
+      "path": "art/audio/ships-subpiss3.m4a",
+      "bytes": 5479,
+      "integrity": "sha256-MD5QyRM4lLX7KAKIG9BQ7tSak0SVmfeVZ3dOF3lbzBM="
+    },
+    {
+      "path": "art/audio/ships-subpiss4.m4a",
+      "bytes": 8562,
+      "integrity": "sha256-y6wGGw/3motzioxB19hvcfetewKOBot66cB9Vy9cUPk="
+    },
+    {
       "path": "art/audio/sword-1.m4a",
       "bytes": 2836,
       "integrity": "sha256-iQ1nYMpSa8hO9yQv1kP5xrBdB8uNyKmPkOV3chotrAY="
@@ -1435,6 +1976,21 @@
       "path": "art/audio/sword-3.m4a",
       "bytes": 3434,
       "integrity": "sha256-nEiaz1KdrI096zVh6mjfMjVnHkvYPjtNNRSUst7V534="
+    },
+    {
+      "path": "art/audio/teron-tepissd1.m4a",
+      "bytes": 11555,
+      "integrity": "sha256-IJurIomOtTEquvFUXysufocIpG/4p8Zi68krPhJrgdU="
+    },
+    {
+      "path": "art/audio/teron-tepissd2.m4a",
+      "bytes": 14449,
+      "integrity": "sha256-zriH2c8ikku30Xa4YPjceyUrI9/I1i8OQPLfpTpEXmY="
+    },
+    {
+      "path": "art/audio/teron-tepissd3.m4a",
+      "bytes": 15519,
+      "integrity": "sha256-DyLCvI5g859quubITyct/sB/r9ODK4DSaT2GjzQr9zY="
     },
     {
       "path": "art/audio/teron-tewhat1.m4a",
@@ -1465,6 +2021,26 @@
       "path": "art/audio/teron-teyessr3.m4a",
       "bytes": 11099,
       "integrity": "sha256-1TrS2KyM+mLOxVjrkObLy6RhQsgXMaJ3uUOZ4YAjQLo="
+    },
+    {
+      "path": "art/audio/thunk-1.m4a",
+      "bytes": 2266,
+      "integrity": "sha256-xygvPy4EkHkYCjIJCNZvTQHf1Tg0CBDKaLhlJ0/O+OU="
+    },
+    {
+      "path": "art/audio/troll-trpissd1.m4a",
+      "bytes": 6699,
+      "integrity": "sha256-UR4G2Qm3d3ZHdKL8ZzTYxvQ1bjt3be9N1ElPzKvOApk="
+    },
+    {
+      "path": "art/audio/troll-trpissd2.m4a",
+      "bytes": 14500,
+      "integrity": "sha256-8Mh+DgIImGac6Yd12T9xCri5M6FOYlxLkTfyEzE3SwQ="
+    },
+    {
+      "path": "art/audio/troll-trpissd3.m4a",
+      "bytes": 12569,
+      "integrity": "sha256-PKSexIEwBsq2769RhHSypGW4YfvLoDjrZh9ru6gX8hw="
     },
     {
       "path": "art/audio/troll-trready.m4a",
@@ -1502,6 +2078,21 @@
       "integrity": "sha256-0w16HWHipHuykqTXpUf7+ers+S2w1PMyxRxK6izgshU="
     },
     {
+      "path": "art/audio/turalyon-tupissd1.m4a",
+      "bytes": 10648,
+      "integrity": "sha256-Mm9cjcZhr7XCLkctHyTt7RyCLqfK+ChCbghWVJn1yPM="
+    },
+    {
+      "path": "art/audio/turalyon-tupissd2.m4a",
+      "bytes": 16508,
+      "integrity": "sha256-1bWjZmGe2I6aFAbPtzawhDIGbzgixLULS+Le8Kd81Lk="
+    },
+    {
+      "path": "art/audio/turalyon-tupissd3.m4a",
+      "bytes": 13183,
+      "integrity": "sha256-jdqhnfL2yCTv15iyxNxmzN9JHcuD2JRK2e6zmbMKRoM="
+    },
+    {
       "path": "art/audio/turalyon-tuwhat1.m4a",
       "bytes": 9854,
       "integrity": "sha256-HjPPto8cgnE5Au1xQ5NPxyx37rPJ9HvWpThcBp3O0HM="
@@ -1530,6 +2121,21 @@
       "path": "art/audio/turalyon-tuyessr3.m4a",
       "bytes": 11220,
       "integrity": "sha256-86z5pTlRr2hZPXGy0ULMcQtqM42eQIzZGfFIn3PgGkg="
+    },
+    {
+      "path": "art/audio/wizard-wzpissd1.m4a",
+      "bytes": 8190,
+      "integrity": "sha256-gx+uJ+oFa4+puPGDxPvTiJopbTKWWkHq6+k9+sA+rdI="
+    },
+    {
+      "path": "art/audio/wizard-wzpissd2.m4a",
+      "bytes": 7884,
+      "integrity": "sha256-I87n7ZSFojz3CaXjvbZLMGhtADRJaZeMQfgQLvvzkCo="
+    },
+    {
+      "path": "art/audio/wizard-wzpissd3.m4a",
+      "bytes": 19688,
+      "integrity": "sha256-MnJgALNL6U3j0C3McZh0jBCL70eOT+I38k1ES8Yf8v4="
     },
     {
       "path": "art/audio/wizard-wzready.m4a",
@@ -1572,6 +2178,16 @@
       "integrity": "sha256-L6OuESFkbylUUCpQPyfUAfwRkuIfZurrCEkDUa0tdPw="
     },
     {
+      "path": "art/audio/zeppelin-gbpissd1.m4a",
+      "bytes": 11719,
+      "integrity": "sha256-nFdWxPbCqr8aihe8yO12G+shfg7ezvhEru8pTvINVNs="
+    },
+    {
+      "path": "art/audio/zeppelin-gbpissd2.m4a",
+      "bytes": 10463,
+      "integrity": "sha256-QqCJZ7a9sn3Ul30JJEj1q5yjo3fDhi4gPkGH4oZcX74="
+    },
+    {
       "path": "art/audio/zeppelin-gbready.m4a",
       "bytes": 5871,
       "integrity": "sha256-hx2xwX5WAqTajRdtVXOMC+YCVN487XwCFL2I7sS3JQ8="
@@ -1583,8 +2199,8 @@
     },
     {
       "path": "art/audio.json",
-      "bytes": 15201,
-      "integrity": "sha256-WD/yVLJSIQQZHkmIfkgaVmstGMIeiDXxz09NHuPvWSw="
+      "bytes": 32456,
+      "integrity": "sha256-gLcuAAJ9ARCz0jkmrIGYFTQBJnPJbdcaQ56dPI61kVc="
     },
     {
       "path": "art/briefing/human-0.webp",
@@ -1892,6 +2508,16 @@
       "integrity": "sha256-ESYA9vdJFoVJWBfMwdymtiSjGMGPQTjukUUxoOjeahs="
     },
     {
+      "path": "art/effects.json",
+      "bytes": 439,
+      "integrity": "sha256-Fp9Cz4lekHDU/NeSWgFUh3TQbatoZ4tK8TBNM30inyI="
+    },
+    {
+      "path": "art/effects.webp",
+      "bytes": 10990,
+      "integrity": "sha256-lEyEk3N0N41JI963qgEowg08+OM37i1JvvVsWQihvWw="
+    },
+    {
       "path": "art/eras/forest/button.webp",
       "bytes": 448,
       "integrity": "sha256-o4QI7QxCc7LtONddMgrd2M4mrrXHfcHoSy9/vuJsD+M="
@@ -1908,38 +2534,43 @@
     },
     {
       "path": "art/eras/forest/sprites-0.webp",
-      "bytes": 209946,
-      "integrity": "sha256-nh0tzsrEvlL1RBKAeA6wzPWu6AKbvXWQIR/rSBdaxzQ="
+      "bytes": 210038,
+      "integrity": "sha256-8Bljf2vYyWdm06x/9lH90tJkFR5vXgO1SrqmxA3RA54="
     },
     {
       "path": "art/eras/forest/sprites-1.webp",
-      "bytes": 158304,
-      "integrity": "sha256-e2e3HySHfTedq8F52hT5YwTe9e9IF2oWvfvZzOMPfPk="
+      "bytes": 158332,
+      "integrity": "sha256-AdN9gWogp9xUJcaJOkdStN8BSEB0vq+HLzkIZAdTNG8="
     },
     {
       "path": "art/eras/forest/sprites-2.webp",
-      "bytes": 160086,
-      "integrity": "sha256-lH4ho1bhYJ7woPNV2xQEh7SggqWN8IWmXR31+yN5nw0="
+      "bytes": 159946,
+      "integrity": "sha256-JsNbLXJt3JiFyC/n9zb0O/I777enq8Y8a0TAU6YNXNU="
     },
     {
       "path": "art/eras/forest/sprites-3.webp",
-      "bytes": 145044,
-      "integrity": "sha256-Ekk1yz1L1vXTpE+4fXRESFssQdfd9IcNj5vQFTb+P4g="
+      "bytes": 144940,
+      "integrity": "sha256-tYFeHix8461/GdvhlRvmEdYmw1iqtJt5StPTj80BAD0="
     },
     {
       "path": "art/eras/forest/sprites-4.webp",
-      "bytes": 144532,
-      "integrity": "sha256-Jmk/vs63s5MeuKOEy0waBWWmUNhqP/B0mLpkevfQaxo="
+      "bytes": 157974,
+      "integrity": "sha256-/YVFXuGyJaJcstTFEnR/wJx5dCVhqzF5BoLAFHrbLKY="
+    },
+    {
+      "path": "art/eras/forest/sprites-5.webp",
+      "bytes": 34454,
+      "integrity": "sha256-nb71T2Q2He1DRvvFsx2zdW80vHCNQO0gTIem+5PEK84="
     },
     {
       "path": "art/eras/forest/sprites.json",
-      "bytes": 72423,
-      "integrity": "sha256-/wc7d0BhxoDhz+J05Ikb7asHRqHNCKvHlwYEexyYo6E="
+      "bytes": 80104,
+      "integrity": "sha256-uZmIdiZShMbU7tZCTrdzJxCdTG3FMOWbL9NWAAgFaSI="
     },
     {
       "path": "art/eras/forest/tiles.webp",
-      "bytes": 79344,
-      "integrity": "sha256-O9YnkNBk33AF25vzjrgKYcvg5x5p7HNCsCYZWjm7QP4="
+      "bytes": 79336,
+      "integrity": "sha256-4XNlrrDc+tHN7IxXm+hmmSRDpGmnxxeF8NKUgwo087U="
     },
     {
       "path": "art/eras/forest/ui.json",
@@ -1968,38 +2599,43 @@
     },
     {
       "path": "art/eras/swamp/sprites-0.webp",
-      "bytes": 209948,
-      "integrity": "sha256-bqdOLlT7uXfIvJk7+LjpqwxHCWKmQvTsvTOh85ZXVTA="
+      "bytes": 210038,
+      "integrity": "sha256-Kp2vVf/WbqRghOQ8ga8x5Svuivb3B0gJv0PKelxMs68="
     },
     {
       "path": "art/eras/swamp/sprites-1.webp",
-      "bytes": 158304,
-      "integrity": "sha256-e2e3HySHfTedq8F52hT5YwTe9e9IF2oWvfvZzOMPfPk="
+      "bytes": 158332,
+      "integrity": "sha256-AdN9gWogp9xUJcaJOkdStN8BSEB0vq+HLzkIZAdTNG8="
     },
     {
       "path": "art/eras/swamp/sprites-2.webp",
-      "bytes": 157738,
-      "integrity": "sha256-TXCt95VAWnsd++/WZfDIG8iEOoTEX3UFsTTl+H6Bhh0="
+      "bytes": 157602,
+      "integrity": "sha256-/oyaDMf5b6W4npLsCwm1QcguBVoPx7w3rAOvXHRR5aU="
     },
     {
       "path": "art/eras/swamp/sprites-3.webp",
-      "bytes": 146280,
-      "integrity": "sha256-oneRyXRLnpQCXm3YMXf5XrcsG27iTSug+bzmjVxx0aY="
+      "bytes": 146122,
+      "integrity": "sha256-ZKwmGel8KMY1tFlEigj6JUtBDIFKI/KmbQKD9Pw995s="
     },
     {
       "path": "art/eras/swamp/sprites-4.webp",
-      "bytes": 161968,
-      "integrity": "sha256-+JE4t+HxdJJudiJN0L0W7G9Mni5An1fF61l9TclyAPs="
+      "bytes": 174966,
+      "integrity": "sha256-dygxCJjLLe14YWoggDwIiibxuGeT4PRHR6qvnpuygBo="
+    },
+    {
+      "path": "art/eras/swamp/sprites-5.webp",
+      "bytes": 34374,
+      "integrity": "sha256-JohFDBM+zaesZ2807RLo8bftbJsxSgszFTxLy/0flM4="
     },
     {
       "path": "art/eras/swamp/sprites.json",
-      "bytes": 72445,
-      "integrity": "sha256-loFCZURl5tW+3taaqjuxJh5ZpdA0u2lSaw5t4zB3SBg="
+      "bytes": 80126,
+      "integrity": "sha256-G7QmoMH7ixW/3FENskDWLMYOml9KmEouGSmmw4KRrFI="
     },
     {
       "path": "art/eras/swamp/tiles.webp",
-      "bytes": 86328,
-      "integrity": "sha256-AEMoO1TuPkyFzupkMS9AbkxhHAFNoHR85htJUzjB4ng="
+      "bytes": 86526,
+      "integrity": "sha256-5WgeU4iyUndsmZIvBma8QXXdIAY5VfAEdo2M2DX1MeI="
     },
     {
       "path": "art/eras/swamp/ui.json",
@@ -2028,38 +2664,43 @@
     },
     {
       "path": "art/eras/wasteland/sprites-0.webp",
-      "bytes": 209832,
-      "integrity": "sha256-FU+1hA/nfkFTsM5iENjeVQ+xyB14YMJ9EoM8jMjEwgQ="
+      "bytes": 209846,
+      "integrity": "sha256-mW/ExKE6iVlo/3W8qQw14Yg8Kbj+QnQDUsKJQwypMXI="
     },
     {
       "path": "art/eras/wasteland/sprites-1.webp",
-      "bytes": 158224,
-      "integrity": "sha256-JP5RbQmBUv/Z5ds7X0gtypYsZQqzTZx54nw0wtS2E5w="
+      "bytes": 158346,
+      "integrity": "sha256-Dbat0SR3cv+9Z3vEzV+SveYuTYGLjbpF3XGfM2BiCM8="
     },
     {
       "path": "art/eras/wasteland/sprites-2.webp",
-      "bytes": 159832,
-      "integrity": "sha256-h0QM2Wzoc2vaSCD2wpusdqjBadk8ZJyEiub2tuw6B1c="
+      "bytes": 159886,
+      "integrity": "sha256-Ol+GUfubVHSNctoIRD5MOGC6+Y9wiV9EHlGZd11+K+w="
     },
     {
       "path": "art/eras/wasteland/sprites-3.webp",
-      "bytes": 147264,
-      "integrity": "sha256-EVQcqFl4xF55foW5t0AjcNoxC7mezGLl+79PuBZu0Lw="
+      "bytes": 147282,
+      "integrity": "sha256-YYbBWrCpwZxwpLnO3Fr/wVGCmkHn6NCBrSESkoO7QvA="
     },
     {
       "path": "art/eras/wasteland/sprites-4.webp",
-      "bytes": 143802,
-      "integrity": "sha256-IJ/B6ap387OuMv4e8FIc6WFbX/yI6sByXAW59jRPyNs="
+      "bytes": 156934,
+      "integrity": "sha256-scjb5YPInxfjAV5XSvYfiO1MiEvR1zFSaQz5VV2DuvU="
+    },
+    {
+      "path": "art/eras/wasteland/sprites-5.webp",
+      "bytes": 34876,
+      "integrity": "sha256-o9QSynQ4/sxmkWe3noFCnSzureEktcfe5qLkSD9JESQ="
     },
     {
       "path": "art/eras/wasteland/sprites.json",
-      "bytes": 72422,
-      "integrity": "sha256-4XgHkrEHWR6f4LWJoYEQMAu4CHRKvHAuWbXntk7o9PU="
+      "bytes": 80103,
+      "integrity": "sha256-MYwDxt5U0boypFkRGLBhr+Xtqfdi3h3DHU5nIV81rts="
     },
     {
       "path": "art/eras/wasteland/tiles.webp",
       "bytes": 75960,
-      "integrity": "sha256-HdUNA0oJ5WX5gk9UZ46QYeOhsfdNVBfrtwOiyRnqdW0="
+      "integrity": "sha256-9fIEbTNTnHEh+I+FyYo3NslgajkBX0mGlgP56QUcLcg="
     },
     {
       "path": "art/eras/wasteland/ui.json",
@@ -2088,38 +2729,43 @@
     },
     {
       "path": "art/eras/winter/sprites-0.webp",
-      "bytes": 209948,
-      "integrity": "sha256-bqdOLlT7uXfIvJk7+LjpqwxHCWKmQvTsvTOh85ZXVTA="
+      "bytes": 210038,
+      "integrity": "sha256-Kp2vVf/WbqRghOQ8ga8x5Svuivb3B0gJv0PKelxMs68="
     },
     {
       "path": "art/eras/winter/sprites-1.webp",
-      "bytes": 158304,
-      "integrity": "sha256-e2e3HySHfTedq8F52hT5YwTe9e9IF2oWvfvZzOMPfPk="
+      "bytes": 158332,
+      "integrity": "sha256-AdN9gWogp9xUJcaJOkdStN8BSEB0vq+HLzkIZAdTNG8="
     },
     {
       "path": "art/eras/winter/sprites-2.webp",
-      "bytes": 159944,
-      "integrity": "sha256-hjKhF3F3PmhUpTz0v/cKn6dGlwmKFfwUKz2ThapWnOQ="
+      "bytes": 160078,
+      "integrity": "sha256-sKKfVVjhO1vpIhQskbQs4gLKG+AhHldXYPx9sx816xk="
     },
     {
       "path": "art/eras/winter/sprites-3.webp",
-      "bytes": 150464,
-      "integrity": "sha256-GgzBPvuBM/lDOgIpVv/XLteskOZIEcRJmyORp5Pw78g="
+      "bytes": 150366,
+      "integrity": "sha256-tFM4FFIRc+voiwiuExao1x/Fw2QzUgOJEl4CYJjRexU="
     },
     {
       "path": "art/eras/winter/sprites-4.webp",
-      "bytes": 163190,
-      "integrity": "sha256-LCjaye46AFdh4ff6AUaCFPBcCE7a6oUWK7C+PlQmY6k="
+      "bytes": 176504,
+      "integrity": "sha256-LWnkbgbCb6DeZWWBNQT0AOxwHUzShgXmhZolnB0Q8d8="
+    },
+    {
+      "path": "art/eras/winter/sprites-5.webp",
+      "bytes": 35172,
+      "integrity": "sha256-5TsST4/AIJyHbAnl2W3z5fA1iNVmLgL0svmIjWgTgAg="
     },
     {
       "path": "art/eras/winter/sprites.json",
-      "bytes": 72418,
-      "integrity": "sha256-Q3XSXDvYs60zsfzY6e/njaswuZMYJmHeaqkASfAGnjE="
+      "bytes": 80100,
+      "integrity": "sha256-BNZqnGOvphkqOJYgGUf2YHadapJ2nN5uUBMR7xp+I0c="
     },
     {
       "path": "art/eras/winter/tiles.webp",
-      "bytes": 74310,
-      "integrity": "sha256-q3FPwqruKXq7TzcYkxiE4hPKMRfx78KN0rzrMj011PY="
+      "bytes": 74256,
+      "integrity": "sha256-j43trKPToXwjFuUytdE3Qb3tsxz9mgesrSecSzb30jo="
     },
     {
       "path": "art/eras/winter/ui.json",
@@ -2383,13 +3029,13 @@
     },
     {
       "path": "art/sprites.json",
-      "bytes": 8317,
-      "integrity": "sha256-WCXkIAhA0wv3ZrV3kZ+dXy0wQVwFaw3CLS0RXdVxpxU="
+      "bytes": 8347,
+      "integrity": "sha256-Vz/ZnoGSLLt07StBnpJSt2bZgOHdmtZr3ln9BLUetkA="
     },
     {
       "path": "art/sprites.webp",
-      "bytes": 136072,
-      "integrity": "sha256-ERfRRm/EN8hH0t1TyxS7tLhzbPIvuYPdn5lXTM09NL8="
+      "bytes": 135910,
+      "integrity": "sha256-Iutjl4f70N63/Ot6y0avxLwpYhd/EGfSfms4+PCLGeM="
     },
     {
       "path": "art/story/credits-1.m4a",
@@ -2438,13 +3084,13 @@
     },
     {
       "path": "art/terrain.webp",
-      "bytes": 73924,
-      "integrity": "sha256-d2pLar0P4Fq41IDDz5mDvk0lIHyjJzzovqTh9uoVIkU="
+      "bytes": 73920,
+      "integrity": "sha256-xQW19iHjGywDNiYM68CmUt1PV1FEbZKWNj77tEoWy4M="
     },
     {
       "path": "art/tiles.webp",
-      "bytes": 74310,
-      "integrity": "sha256-q3FPwqruKXq7TzcYkxiE4hPKMRfx78KN0rzrMj011PY="
+      "bytes": 74256,
+      "integrity": "sha256-j43trKPToXwjFuUytdE3Qb3tsxz9mgesrSecSzb30jo="
     },
     {
       "path": "art/ui.json",
@@ -2948,18 +3594,18 @@
     },
     {
       "path": "battle.css",
-      "bytes": 22736,
-      "integrity": "sha256-MRQd5ba0lRmgFHgpTQ40NMimXY9J3NxICjID2TEXL1M="
+      "bytes": 23491,
+      "integrity": "sha256-Tc7sB/wGrAIaGsq8UNddh2wxmnZaMIsWlCncdFVzNFk="
     },
     {
       "path": "battle.js",
-      "bytes": 53878,
-      "integrity": "sha256-ke2tVfL08fFFF8yqvIuEwllfdMUOLSa/e7PczQqtQJI="
+      "bytes": 60768,
+      "integrity": "sha256-C+ZiPDRADsmnhMU1dT1zOm+s5HxrwTnyGIQDE/c66Pg="
     },
     {
       "path": "campaign-ui.js",
-      "bytes": 13013,
-      "integrity": "sha256-fF5+Q5PTcngKpXB2VnNWW6zlVT2CS7+m3BVveBDHXVI="
+      "bytes": 13072,
+      "integrity": "sha256-WYqxUQhCFt0eFn6lxH7gENRLb+1HJxcwtv2UZjUoJkE="
     },
     {
       "path": "checkpoint-store.js",
@@ -3028,13 +3674,13 @@
     },
     {
       "path": "localization.js",
-      "bytes": 7455,
-      "integrity": "sha256-4rQuqFK/MdzBArRQXb6AvBQcTbU8bES9X9tj984tCpA="
+      "bytes": 7724,
+      "integrity": "sha256-gU1iUqBnv+MpBnjAtq4cDnuKlxalQ89xvSnUmdztRv4="
     },
     {
       "path": "map-renderer.js",
-      "bytes": 18767,
-      "integrity": "sha256-wvzowWI2wab9068QnF3ThudAwPZAk3v+aGcvVKRkYS4="
+      "bytes": 21936,
+      "integrity": "sha256-CBF6qt7Q/V50MY2J6lOWOOwEky4l8TXt5ugxOymD2do="
     },
     {
       "path": "native-video.js",
@@ -3043,8 +3689,8 @@
     },
     {
       "path": "offline.js",
-      "bytes": 3638,
-      "integrity": "sha256-E6UAK3b5/DuYeUUidvBe45+D0n+2iSaK1S51weLisqU="
+      "bytes": 6256,
+      "integrity": "sha256-/GnmDgcKs4qPmC2TGkDyxb1D5Yj0Q1Ht8Q9dlPHMFNw="
     },
     {
       "path": "pilot.webmanifest",
@@ -3093,13 +3739,13 @@
     },
     {
       "path": "tidewater_web.wasm",
-      "bytes": 1708935,
-      "integrity": "sha256-IRBOZo0vwoajWF62ziUEMLdBAogiZd3g7HGY543OWmA="
+      "bytes": 1727507,
+      "integrity": "sha256-ghS7oiqogywEv/ccyXEq0sIhkOElF7cla063tdTiLy8="
     },
     {
       "path": "typography.css",
-      "bytes": 1862,
-      "integrity": "sha256-mhpvh1i5i78hOUyuhieIVWG7rInJjdv/WxrM5S9YXI4="
+      "bytes": 1819,
+      "integrity": "sha256-aUDt2AJlBENmECcgICKb/JUlavuDW4bv1jg6e9JmqJc="
     }
   ],
   "optional": [
@@ -4926,9 +5572,24 @@
   ],
   "localePacks": {
     "ru": {
-      "release": "8d6545d266a2c3a8",
-      "bytes": 11863223,
+      "release": "f059689e45caa027",
+      "bytes": 12998310,
       "files": [
+        {
+          "path": "art/lang/ru/audio/aleria-alpissd1.m4a",
+          "bytes": 5195,
+          "integrity": "sha256-/gXk3MWn7qsuky17QHZ4v1AfEBo9s2FxxRNfRZxxBAw="
+        },
+        {
+          "path": "art/lang/ru/audio/aleria-alpissd2.m4a",
+          "bytes": 10618,
+          "integrity": "sha256-FDJ3/TmGR1VYwuaXIwElMWTTTXVIDevYy2db3N0eSpk="
+        },
+        {
+          "path": "art/lang/ru/audio/aleria-alpissd3.m4a",
+          "bytes": 13232,
+          "integrity": "sha256-F7nutLIXlOiyWWLfRjnP7Ko88hseaGq5QChuy/q11XM="
+        },
         {
           "path": "art/lang/ru/audio/aleria-alwhat1.m4a",
           "bytes": 3323,
@@ -4958,6 +5619,21 @@
           "path": "art/lang/ru/audio/aleria-alyessr3.m4a",
           "bytes": 4153,
           "integrity": "sha256-BJl5sFCRTd6lK8OD1GIjEwlAc7hZq55aEXo5a2XJvUQ="
+        },
+        {
+          "path": "art/lang/ru/audio/danath-dnpisd1.m4a",
+          "bytes": 6059,
+          "integrity": "sha256-Mye897jY2tcboMnzdZhFSrAEBZUQLPSZQSxTNDEybbU="
+        },
+        {
+          "path": "art/lang/ru/audio/danath-dnpisd2.m4a",
+          "bytes": 7640,
+          "integrity": "sha256-oBKHfb/WAcvkhvHdRGR5hMKU7nC/N+BjVral9H4LkFU="
+        },
+        {
+          "path": "art/lang/ru/audio/danath-dnpisd3.m4a",
+          "bytes": 7534,
+          "integrity": "sha256-9COK8lkMWP7704pYkuUGiq/n4wP6IUSl3ibkUFYKqKU="
         },
         {
           "path": "art/lang/ru/audio/danath-dnwhat1.m4a",
@@ -4990,6 +5666,21 @@
           "integrity": "sha256-/WUILJ3Lnu0P2IPqdqYWpgEgXu6h6KzF9Gbik6/tPic="
         },
         {
+          "path": "art/lang/ru/audio/deathknt-dkpissd1.m4a",
+          "bytes": 16280,
+          "integrity": "sha256-fV+oZo7R9pemQ09+4TqKlhteRFIFytplkXLKkA3dRdQ="
+        },
+        {
+          "path": "art/lang/ru/audio/deathknt-dkpissd2.m4a",
+          "bytes": 12584,
+          "integrity": "sha256-wEydBLXm3XKp6sUVGW5THl4QtNqwyIZWHANAx+VXwF8="
+        },
+        {
+          "path": "art/lang/ru/audio/deathknt-dkpissd3.m4a",
+          "bytes": 20931,
+          "integrity": "sha256-rJ7on+j0YM+pjK71L04MdnzAlBTelOhDe5eJYcwAY4o="
+        },
+        {
           "path": "art/lang/ru/audio/deathknt-dkready.m4a",
           "bytes": 15442,
           "integrity": "sha256-FvlzSiSNWS56p3u9V6Q8BiiOEOYUbli8f17PcB6S1pc="
@@ -5020,6 +5711,21 @@
           "integrity": "sha256-+dpk9R2qDas9Sg5s/wU7dp4MfhYz3iqEd6mB6HmFoE8="
         },
         {
+          "path": "art/lang/ru/audio/deathwng-depissd1.m4a",
+          "bytes": 16132,
+          "integrity": "sha256-5/Q+HUd8e1SMmoOrLu9ci4cB4LaJfW1Ja8bWBoTjEag="
+        },
+        {
+          "path": "art/lang/ru/audio/deathwng-depissd2.m4a",
+          "bytes": 14525,
+          "integrity": "sha256-OCbvJ+I8ZDk5K7TBknlEFtLpYI7TWHBE+g8zajoB6ow="
+        },
+        {
+          "path": "art/lang/ru/audio/deathwng-depissd3.m4a",
+          "bytes": 18107,
+          "integrity": "sha256-7exC0LAHBRvXfIEddVG20pmN+6iMidxIH/ch3Ny0ejc="
+        },
+        {
           "path": "art/lang/ru/audio/deathwng-dewhat1.m4a",
           "bytes": 10349,
           "integrity": "sha256-Sa2cpTaLhq6KUPhkkA1uQPy2LqhN3LcRrO9uVnqLAa0="
@@ -5048,6 +5754,21 @@
           "path": "art/lang/ru/audio/deathwng-deyessr3.m4a",
           "bytes": 11533,
           "integrity": "sha256-HLtL342p4vwFWGmMCIT99HAdV2aZA7WmE47C5Czr3eE="
+        },
+        {
+          "path": "art/lang/ru/audio/dentarg-odpissd1.m4a",
+          "bytes": 10463,
+          "integrity": "sha256-XQlH0WkododhhqVDvjPzBB8PSaO7PuMDdZB6iFr2IkM="
+        },
+        {
+          "path": "art/lang/ru/audio/dentarg-odpissd2.m4a",
+          "bytes": 16806,
+          "integrity": "sha256-Kb9S6cisrXuRshKInWdVM78ipo6Q56V+I1ce8NlAqck="
+        },
+        {
+          "path": "art/lang/ru/audio/dentarg-odpissd3.m4a",
+          "bytes": 21312,
+          "integrity": "sha256-e2iGHMbO/rJbWZrYO0e7zITvCJZUbQmVbPablecJlZc="
         },
         {
           "path": "art/lang/ru/audio/dentarg-odwhat1.m4a",
@@ -5090,6 +5811,21 @@
           "integrity": "sha256-7GT40yTUTFaBICQ7lijluuyj6y4RgSdqtZEyZxNZMMA="
         },
         {
+          "path": "art/lang/ru/audio/dwarf-dwpissd1.m4a",
+          "bytes": 12015,
+          "integrity": "sha256-o3YsuKP2gCIunwCiiqWdWgQFXQS7HtQPIkPL/HyvYcg="
+        },
+        {
+          "path": "art/lang/ru/audio/dwarf-dwpissd2.m4a",
+          "bytes": 6629,
+          "integrity": "sha256-GZyjXksJRFU52tS28IyEOQuOZzwegMYhIeY7Ig6QgfE="
+        },
+        {
+          "path": "art/lang/ru/audio/dwarf-dwpissd3.m4a",
+          "bytes": 9128,
+          "integrity": "sha256-jZ4e2aL/HzhGIGZn3UkNw369epVFTiH50hya/Y26GiQ="
+        },
+        {
           "path": "art/lang/ru/audio/dwarf-dwready.m4a",
           "bytes": 13897,
           "integrity": "sha256-U13+n73f7MbL917kNqK7Ujs8YCJ0r7NYV14Dpba9gfU="
@@ -5118,6 +5854,21 @@
           "path": "art/lang/ru/audio/dwarf-dwyessr5.m4a",
           "bytes": 4319,
           "integrity": "sha256-/oRF2neT4l0QUCw9aTh7jLBk8Na0EpOcuoGXz37ocAc="
+        },
+        {
+          "path": "art/lang/ru/audio/elves-epissed1.m4a",
+          "bytes": 6401,
+          "integrity": "sha256-b1tW+i2bwTujg8oYsRNSLeNinbQJnBOIqoisddgmrAk="
+        },
+        {
+          "path": "art/lang/ru/audio/elves-epissed2.m4a",
+          "bytes": 7163,
+          "integrity": "sha256-Va5nMK0g85fU4MffqOo0mqDlaQZPuG+EechaIA2GqbY="
+        },
+        {
+          "path": "art/lang/ru/audio/elves-epissed3.m4a",
+          "bytes": 12643,
+          "integrity": "sha256-HTjoIeavfnybOWPQ4/99sTBEoR/OSkzI4qeEDe4nbrw="
         },
         {
           "path": "art/lang/ru/audio/elves-eready.m4a",
@@ -5165,6 +5916,31 @@
           "integrity": "sha256-XOJjzXpkx143z42RV3xqM9FoCyjj4UxELZVGy52dlBU="
         },
         {
+          "path": "art/lang/ru/audio/gnome-gnpissd1.m4a",
+          "bytes": 7829,
+          "integrity": "sha256-E5aMJze9Wauc/zmZDGv6IeiNI/X6tK3KVmgjxMcZuus="
+        },
+        {
+          "path": "art/lang/ru/audio/gnome-gnpissd2.m4a",
+          "bytes": 9061,
+          "integrity": "sha256-dM9lVSbw0UOMe0XC/l+BCLCvxfuAsWxOGE3NDAGjaEc="
+        },
+        {
+          "path": "art/lang/ru/audio/gnome-gnpissd3.m4a",
+          "bytes": 9053,
+          "integrity": "sha256-3V+8TxbD8jD28CJNN9XKjGMvJdv4bI3Rcs2S7sZJc5Q="
+        },
+        {
+          "path": "art/lang/ru/audio/gnome-gnpissd4.m4a",
+          "bytes": 13505,
+          "integrity": "sha256-6NyvMFRLaZ6rMRPJAvTUi6HnVgu9upgqTU6ABOzhWTo="
+        },
+        {
+          "path": "art/lang/ru/audio/gnome-gnpissd5.m4a",
+          "bytes": 17458,
+          "integrity": "sha256-dEUgFLQY02e2OmYbz1WPbWfCsPw+XOeQLu1PaKJUl1Q="
+        },
+        {
           "path": "art/lang/ru/audio/gnome-gnready.m4a",
           "bytes": 8950,
           "integrity": "sha256-nYrGmXqc11f5o9KZNbHyMsUFpc8LO1YjP5SMOvdcoXU="
@@ -5173,6 +5949,21 @@
           "path": "art/lang/ru/audio/gnome-gnyessr1.m4a",
           "bytes": 10577,
           "integrity": "sha256-pacV/siZckdeaXd9QFZ98lJYS6p71lM5ZNz5lGvJ+tk="
+        },
+        {
+          "path": "art/lang/ru/audio/goblin-gopissd1.m4a",
+          "bytes": 14386,
+          "integrity": "sha256-FTDaUI2fijZNg2WAdgZ1yUyosqSz66fwrCbs7foDfPM="
+        },
+        {
+          "path": "art/lang/ru/audio/goblin-gopissd2.m4a",
+          "bytes": 10140,
+          "integrity": "sha256-o4TvtkpL94Q/7l7qhwhfRVG3/+qOaxuHHbirD4uj05Q="
+        },
+        {
+          "path": "art/lang/ru/audio/goblin-gopissd3.m4a",
+          "bytes": 9323,
+          "integrity": "sha256-SYiPMD+UEIfJ9ZrBnUjCCjoIsX2td1+Sg6v01KJmLP0="
         },
         {
           "path": "art/lang/ru/audio/goblin-goready.m4a",
@@ -5220,6 +6011,21 @@
           "integrity": "sha256-3utajAMvqg2FoOFKF6aVFUOeVQNKjFeu/IaRRSKnz4s="
         },
         {
+          "path": "art/lang/ru/audio/grom-grpissd1.m4a",
+          "bytes": 13136,
+          "integrity": "sha256-cNO5PhjO/j47AhBKWOY23lAFgstenzOMNNdqDGTZkAM="
+        },
+        {
+          "path": "art/lang/ru/audio/grom-grpissd2.m4a",
+          "bytes": 12053,
+          "integrity": "sha256-hghyyBPmiS/CreLni1fIeu6V1Iz3tHZoksfXWVBiZ2g="
+        },
+        {
+          "path": "art/lang/ru/audio/grom-grpissd3.m4a",
+          "bytes": 18826,
+          "integrity": "sha256-IpL/EOZ8+llOBys4SMjkWx6FLnbkQPd5vQ9AEbAgPEI="
+        },
+        {
           "path": "art/lang/ru/audio/grom-grwhat1.m4a",
           "bytes": 5643,
           "integrity": "sha256-pccVZWwtmrRoThmxZpwvRmeB+IRFtFYdgcrHunfsfBg="
@@ -5258,6 +6064,41 @@
           "path": "art/lang/ru/audio/human-hhelp2.m4a",
           "bytes": 6729,
           "integrity": "sha256-mxmkQhxdwfU9ovIMHolsK9Cf26pyF4+u+EXd9OQcEB8="
+        },
+        {
+          "path": "art/lang/ru/audio/human-hpissed1.m4a",
+          "bytes": 8163,
+          "integrity": "sha256-HN/mWIOsZPXHeAkKFHT1RScwfQq4OjURirMk/sQhvOc="
+        },
+        {
+          "path": "art/lang/ru/audio/human-hpissed2.m4a",
+          "bytes": 6672,
+          "integrity": "sha256-UyupIuGOzoK5DjxBfP5my36GKqKfpW2AlGVJaNtPDqU="
+        },
+        {
+          "path": "art/lang/ru/audio/human-hpissed3.m4a",
+          "bytes": 9421,
+          "integrity": "sha256-Qeyl4rvmfDQKvgWcgXOLP656f7ez7qzcZlvLXq2yQFY="
+        },
+        {
+          "path": "art/lang/ru/audio/human-hpissed4.m4a",
+          "bytes": 7529,
+          "integrity": "sha256-4FP74/jdgCOIQuYjxZLzgOsfGSargWT706Bn02h6Hp8="
+        },
+        {
+          "path": "art/lang/ru/audio/human-hpissed5.m4a",
+          "bytes": 9382,
+          "integrity": "sha256-jvyzvg8e8sXCVhMpyFQERr1I1M6DTSxiROlPG/Gtln4="
+        },
+        {
+          "path": "art/lang/ru/audio/human-hpissed6.m4a",
+          "bytes": 9706,
+          "integrity": "sha256-CuOfw4UuXOqwSq5+3Uw2jf1pTWP63Zq3OXSfApAS0zI="
+        },
+        {
+          "path": "art/lang/ru/audio/human-hpissed7.m4a",
+          "bytes": 8460,
+          "integrity": "sha256-iBkS3VGbo8u6Qt1MCFWp0VwximQJhDrWYxUK9SYmcRg="
         },
         {
           "path": "art/lang/ru/audio/human-hready.m4a",
@@ -5315,6 +6156,21 @@
           "integrity": "sha256-KUQc87JED6s90Rcike9HgFUwXO/VWeCYIrPOpS6bx/w="
         },
         {
+          "path": "art/lang/ru/audio/kargath-kapissd1.m4a",
+          "bytes": 7635,
+          "integrity": "sha256-IqO1akxkbC6NreGNFYvoznN3vcwwKvpQGeuoEnYAqEw="
+        },
+        {
+          "path": "art/lang/ru/audio/kargath-kapissd2.m4a",
+          "bytes": 12188,
+          "integrity": "sha256-1HMjlD1Tvfuo7/5ILFyOREZEFtjwFWYvDWlqfdUp61k="
+        },
+        {
+          "path": "art/lang/ru/audio/kargath-kapissd3.m4a",
+          "bytes": 17906,
+          "integrity": "sha256-r2MNCyy2tnn+IQtmLcxfFOR8z2QOgKV0fIXzhFi7TG8="
+        },
+        {
           "path": "art/lang/ru/audio/kargath-kawhat1.m4a",
           "bytes": 7219,
           "integrity": "sha256-dsXQsLX6BSBD1oigYHDhY2RNXc+VAlvL3oebasT67lg="
@@ -5345,6 +6201,21 @@
           "integrity": "sha256-UW7aymJuhav7YYO1+4TjaFb4CiMw6BipdlgmdukO+vk="
         },
         {
+          "path": "art/lang/ru/audio/khadgar-khpissd1.m4a",
+          "bytes": 7441,
+          "integrity": "sha256-q1GfO5PuXY4+VT8RING0en4U1U0dKdPlJhc9hSOJkiY="
+        },
+        {
+          "path": "art/lang/ru/audio/khadgar-khpissd2.m4a",
+          "bytes": 6222,
+          "integrity": "sha256-iqGFNj74CdSIu2LcXvnffaz9TJEZdVAmD/XivH+gq1s="
+        },
+        {
+          "path": "art/lang/ru/audio/khadgar-khpissd3.m4a",
+          "bytes": 5522,
+          "integrity": "sha256-dVybAFFJLfM+dEwJKDIpgUzBBgpmwbybTPRUa0l+XZ4="
+        },
+        {
           "path": "art/lang/ru/audio/khadgar-khwhat1.m4a",
           "bytes": 3667,
           "integrity": "sha256-aQmZ7H/eLfdcXmOISvbUP3swiYchF974M563OiSCfLQ="
@@ -5373,6 +6244,21 @@
           "path": "art/lang/ru/audio/khadgar-khyessr3.m4a",
           "bytes": 4058,
           "integrity": "sha256-UKo8FpNyjq5iAnWtVhSYbh+9QG9hIsFhlG/G2LYTzqI="
+        },
+        {
+          "path": "art/lang/ru/audio/knight-knpissd1.m4a",
+          "bytes": 13916,
+          "integrity": "sha256-XIbPbAkHbcGjyL9yHpwsGK5QDtF+Y1h/lV/1GNaBpgo="
+        },
+        {
+          "path": "art/lang/ru/audio/knight-knpissd2.m4a",
+          "bytes": 9359,
+          "integrity": "sha256-jbzdEXgvLwbd8QVGZRdOZPTMq1GykWWVouZS6/Mw30I="
+        },
+        {
+          "path": "art/lang/ru/audio/knight-knpissd3.m4a",
+          "bytes": 11011,
+          "integrity": "sha256-f0USq+xJNV6UVHcbzXB4IYMLGfHycHvsSfAKtIMsJ7g="
         },
         {
           "path": "art/lang/ru/audio/knight-knready.m4a",
@@ -5420,6 +6306,21 @@
           "integrity": "sha256-44VZBpkOrZcY8duH3L6PgtVMLFxuy5SKZbggiU1C2cs="
         },
         {
+          "path": "art/lang/ru/audio/kurdran-kupissd1.m4a",
+          "bytes": 8784,
+          "integrity": "sha256-7MHzbarflN9FYPxHn1OSuKYpAf6YqgEWof5PFvAwveg="
+        },
+        {
+          "path": "art/lang/ru/audio/kurdran-kupissd2.m4a",
+          "bytes": 9308,
+          "integrity": "sha256-ykmj/f03ZxSIASIzJaPfiRfPIrwz2Fcd0TWqf/2RKJM="
+        },
+        {
+          "path": "art/lang/ru/audio/kurdran-kupissd3.m4a",
+          "bytes": 9652,
+          "integrity": "sha256-c579vXjD/pv1ZUMQuddUqf9g3c02EOuYPeZVPLAjvl4="
+        },
+        {
           "path": "art/lang/ru/audio/kurdran-kuwhat1.m4a",
           "bytes": 3253,
           "integrity": "sha256-qMSkYvdREdBe6C1SluHopJBD+tkCw6CdO9bYin7nbXc="
@@ -5448,6 +6349,41 @@
           "path": "art/lang/ru/audio/kurdran-kuyessr3.m4a",
           "bytes": 4900,
           "integrity": "sha256-7Pg+U2TS5/a8jrM80RPuaQl3mtC2isy5gPqkHVUuxnE="
+        },
+        {
+          "path": "art/lang/ru/audio/misc-sheep.m4a",
+          "bytes": 5011,
+          "integrity": "sha256-HUKm+ykmP49yUeSH6hWqPdCgW26yGlVgUVlvzgbizEI="
+        },
+        {
+          "path": "art/lang/ru/audio/misc-shpisd1.m4a",
+          "bytes": 13405,
+          "integrity": "sha256-/w2sYVPzR5jeXg+eVG33poXfTQrY0OqCnIAdjXdPkg4="
+        },
+        {
+          "path": "art/lang/ru/audio/ogre-ogpissd1.m4a",
+          "bytes": 9698,
+          "integrity": "sha256-XI5ibkuwVOtJNuNiTpRVY1D8kaePXcG9xt6Ojg8rit8="
+        },
+        {
+          "path": "art/lang/ru/audio/ogre-ogpissd2.m4a",
+          "bytes": 13369,
+          "integrity": "sha256-z286pjsuu3OVr4CriUXBVtfNcHBBq1o/qxsXNFtJtX0="
+        },
+        {
+          "path": "art/lang/ru/audio/ogre-ogpissd3.m4a",
+          "bytes": 10228,
+          "integrity": "sha256-AhhKeOif1ymJLqGSULHniTW+DO7MVBnTxSmBRuWpqi4="
+        },
+        {
+          "path": "art/lang/ru/audio/ogre-ogpissd4.m4a",
+          "bytes": 16226,
+          "integrity": "sha256-H1FzLunSbysDlVKqHVAQ0F75TWy+l8uxaFIS9CpPQMQ="
+        },
+        {
+          "path": "art/lang/ru/audio/ogre-ogpissd5.m4a",
+          "bytes": 9684,
+          "integrity": "sha256-mWDd+Pkcp1E8RM4jDrHzVDkl6kqJFcwiuVk3VGdlhRg="
         },
         {
           "path": "art/lang/ru/audio/ogre-ogready.m4a",
@@ -5488,6 +6424,21 @@
           "path": "art/lang/ru/audio/ogre-ogyessr3.m4a",
           "bytes": 18185,
           "integrity": "sha256-vCmJ+NmFYhczY5w+qjg/gqvW8IUrUyuaiAPt9Y2frB4="
+        },
+        {
+          "path": "art/lang/ru/audio/ogremage-ompissd1.m4a",
+          "bytes": 14126,
+          "integrity": "sha256-yCvkojm1EJ2Rk7II7NDUYeGU8H+P0jQ7MWK/93cROME="
+        },
+        {
+          "path": "art/lang/ru/audio/ogremage-ompissd2.m4a",
+          "bytes": 16885,
+          "integrity": "sha256-g7Yce9jEt9GVqT8rI1treQ94anHUHJjJ1x3oIsrU5pU="
+        },
+        {
+          "path": "art/lang/ru/audio/ogremage-ompissd3.m4a",
+          "bytes": 14024,
+          "integrity": "sha256-StcAPgdACf3J8VeeP0/ZwbvvyKxDPNZiFo8Q087+i6U="
         },
         {
           "path": "art/lang/ru/audio/ogremage-omready.m4a",
@@ -5538,6 +6489,41 @@
           "path": "art/lang/ru/audio/orc-ohelp2.m4a",
           "bytes": 9166,
           "integrity": "sha256-cJans6PCQVpqd6wpyBnzG+TZgK1oFcRTNd+GXaagWOc="
+        },
+        {
+          "path": "art/lang/ru/audio/orc-opissed1.m4a",
+          "bytes": 6299,
+          "integrity": "sha256-w/QKf+nmsBJhNIOYvDZ1jOqGivKL40JhG7a/qQn6lII="
+        },
+        {
+          "path": "art/lang/ru/audio/orc-opissed2.m4a",
+          "bytes": 3895,
+          "integrity": "sha256-n8OIc5Z0I7FQI32fE8XxZBZ8NHNhspYwvhurwy9zJlI="
+        },
+        {
+          "path": "art/lang/ru/audio/orc-opissed3.m4a",
+          "bytes": 5327,
+          "integrity": "sha256-04tu5GjbMJ+h1iJ1wRhT+A9DJKg2SGLQ/UBjrOHFwv4="
+        },
+        {
+          "path": "art/lang/ru/audio/orc-opissed4.m4a",
+          "bytes": 8652,
+          "integrity": "sha256-pHWCyvwjniHs2hsyp+Y4JZ8ezIaFB3EsI5tLdJq/ZN8="
+        },
+        {
+          "path": "art/lang/ru/audio/orc-opissed5.m4a",
+          "bytes": 7008,
+          "integrity": "sha256-AW8aYzTTPdZWtzBOqND4YSdSrFhyj4irOV9DlgEv1nU="
+        },
+        {
+          "path": "art/lang/ru/audio/orc-opissed6.m4a",
+          "bytes": 9321,
+          "integrity": "sha256-Eoe0sVwlMZoxWGvmOTuxpPkeUl+PZbD7i6djecHkV/I="
+        },
+        {
+          "path": "art/lang/ru/audio/orc-opissed7.m4a",
+          "bytes": 11470,
+          "integrity": "sha256-zn3DGTQNbEW2jJDEupE3IDF00T/U8b4JCGtndi02wgI="
         },
         {
           "path": "art/lang/ru/audio/orc-oready.m4a",
@@ -5600,6 +6586,21 @@
           "integrity": "sha256-iV1JjCPR3zeyox8tahBLg1Kawa3WpU/Pd5OE2v7gu0Q="
         },
         {
+          "path": "art/lang/ru/audio/paladin-pkpissd1.m4a",
+          "bytes": 11596,
+          "integrity": "sha256-MIf/qeLm9+6mNW+yCAUv5fq+AySUDzH55u7/EhIh85Y="
+        },
+        {
+          "path": "art/lang/ru/audio/paladin-pkpissd2.m4a",
+          "bytes": 9307,
+          "integrity": "sha256-eWuJl1HGUm2G/NFHYycAGCiy7xwPvbB9vpdrnUvMFN4="
+        },
+        {
+          "path": "art/lang/ru/audio/paladin-pkpissd3.m4a",
+          "bytes": 9788,
+          "integrity": "sha256-rDXC1MC4LN4LOmKElOfQxfxkHcTZhtns5ZkYhWbZ8Rs="
+        },
+        {
           "path": "art/lang/ru/audio/paladin-pkready.m4a",
           "bytes": 11874,
           "integrity": "sha256-KSzntAUjcycxZ+e9XsGpb9/7yZ4mIrVeXe3VPNhdVn0="
@@ -5643,6 +6644,41 @@
           "path": "art/lang/ru/audio/paladin-pkyessr4.m4a",
           "bytes": 9388,
           "integrity": "sha256-44VZBpkOrZcY8duH3L6PgtVMLFxuy5SKZbggiU1C2cs="
+        },
+        {
+          "path": "art/lang/ru/audio/peasant-pspissd1.m4a",
+          "bytes": 17478,
+          "integrity": "sha256-ZkcoYd0osSZcFiWLw6Wal3EsBxAOaQ/fRGNiPciZa5M="
+        },
+        {
+          "path": "art/lang/ru/audio/peasant-pspissd2.m4a",
+          "bytes": 7700,
+          "integrity": "sha256-iXJoRGW2oWRD633V5PClbrjG0DkDyJqP34f2J02GK4s="
+        },
+        {
+          "path": "art/lang/ru/audio/peasant-pspissd3.m4a",
+          "bytes": 5412,
+          "integrity": "sha256-Qg2tngnPyzLI8aa7B/quKlNXo4hLTPS1MT/F/pVEo3Y="
+        },
+        {
+          "path": "art/lang/ru/audio/peasant-pspissd4.m4a",
+          "bytes": 10287,
+          "integrity": "sha256-5XIdwfOGbbOeFJNrIYBW0kvOSroEYH4njLzfS8nq0Wk="
+        },
+        {
+          "path": "art/lang/ru/audio/peasant-pspissd5.m4a",
+          "bytes": 13196,
+          "integrity": "sha256-DoqsRMxrEyo3pe1wiZRQm41PV/Q1XkpAsBQMBs3nnjc="
+        },
+        {
+          "path": "art/lang/ru/audio/peasant-pspissd6.m4a",
+          "bytes": 24159,
+          "integrity": "sha256-m3twjXpxmj+dZnZ8QbGn8SNRWlAXKevI71dhpeM7toc="
+        },
+        {
+          "path": "art/lang/ru/audio/peasant-pspissd7.m4a",
+          "bytes": 14308,
+          "integrity": "sha256-nAehdiDSn+beNqfldpxA3q7XtJLHPYQFmRYEw+Xzj68="
         },
         {
           "path": "art/lang/ru/audio/peasant-psready.m4a",
@@ -5700,6 +6736,21 @@
           "integrity": "sha256-JQxzqRoSLc4gj5h+YFSvgS3atEoGC/mde+elFTZ1iys="
         },
         {
+          "path": "art/lang/ru/audio/ships-hshppis1.m4a",
+          "bytes": 9017,
+          "integrity": "sha256-xJ05v4gNF89wV/dyziJog0s59A3G5VPF3/pJj4kSsIE="
+        },
+        {
+          "path": "art/lang/ru/audio/ships-hshppis2.m4a",
+          "bytes": 9049,
+          "integrity": "sha256-DZbt8dP1cysH8lEcmA4hpk2Ir8RZKYov3Y2bkP30kBM="
+        },
+        {
+          "path": "art/lang/ru/audio/ships-hshppis3.m4a",
+          "bytes": 10347,
+          "integrity": "sha256-EsUVeTSsmuqkpRHW/uqJAWvDN8kD88xq2OxDJbT21Do="
+        },
+        {
           "path": "art/lang/ru/audio/ships-hshpredy.m4a",
           "bytes": 10029,
           "integrity": "sha256-zmYA3FSbu6NHSwT+c2u49guJfB1z5o60OCM3D7ThP5E="
@@ -5733,6 +6784,21 @@
           "path": "art/lang/ru/audio/ships-hshpyes3.m4a",
           "bytes": 9084,
           "integrity": "sha256-5HMwcO+XMjbyRewX3d0VO9Q0DMaC9kVfL64nFthoduE="
+        },
+        {
+          "path": "art/lang/ru/audio/ships-oshppis1.m4a",
+          "bytes": 18483,
+          "integrity": "sha256-kbdiNxvEZbbgyPFdEebK1i/eKC7/GwcqQl9MqJTO7r0="
+        },
+        {
+          "path": "art/lang/ru/audio/ships-oshppis2.m4a",
+          "bytes": 6852,
+          "integrity": "sha256-srzHMsV4qU/GF0+hqyUjpMA5RM/FYfuox0LqV4eOMHo="
+        },
+        {
+          "path": "art/lang/ru/audio/ships-oshppis3.m4a",
+          "bytes": 14148,
+          "integrity": "sha256-g8/IhjNlExu11kmWeo/IAhW0R7gPM0NwKWnbgUJQ628="
         },
         {
           "path": "art/lang/ru/audio/ships-oshpredy.m4a",
@@ -5770,6 +6836,21 @@
           "integrity": "sha256-lKdgG9Zn57+6YP2JpdRV/OOOlObhnJg7YyFI7PkWaGQ="
         },
         {
+          "path": "art/lang/ru/audio/teron-tepissd1.m4a",
+          "bytes": 15043,
+          "integrity": "sha256-ECUMBMtTeuqqFQZ99bW7gszElNfNgeGpN+aPBr6DbPg="
+        },
+        {
+          "path": "art/lang/ru/audio/teron-tepissd2.m4a",
+          "bytes": 15626,
+          "integrity": "sha256-c+9Z9SQ2AKzR7PaUh2SEDxSDVAC4N/9YIVxjF8/TZIo="
+        },
+        {
+          "path": "art/lang/ru/audio/teron-tepissd3.m4a",
+          "bytes": 15287,
+          "integrity": "sha256-vmZmD4cZoz7PVwQ4g+QVjBr9TZihLd4WZQk8Awbbsvg="
+        },
+        {
           "path": "art/lang/ru/audio/teron-tewhat1.m4a",
           "bytes": 10883,
           "integrity": "sha256-nAyRRpykDM31xyacqRvS+A/nvO+Nynr/aN/Far12BC8="
@@ -5798,6 +6879,21 @@
           "path": "art/lang/ru/audio/teron-teyessr3.m4a",
           "bytes": 14169,
           "integrity": "sha256-IjAOQzWaxuDVKjSO3i4Uov0wfekiVh4TpIBC21XFT0s="
+        },
+        {
+          "path": "art/lang/ru/audio/troll-trpissd1.m4a",
+          "bytes": 11058,
+          "integrity": "sha256-B6Ls518U8wQ6Z1DwmuDUiaZPhtufISMSwcapFj5HJms="
+        },
+        {
+          "path": "art/lang/ru/audio/troll-trpissd2.m4a",
+          "bytes": 13573,
+          "integrity": "sha256-LZhnajKnNn5FmCZqM07Aciv8EOk+yNyJJWGwlePfMoc="
+        },
+        {
+          "path": "art/lang/ru/audio/troll-trpissd3.m4a",
+          "bytes": 12338,
+          "integrity": "sha256-p+3GcVnD14n6DF1DTLhzmRrHJgNflhX0bN/bRoWx/5s="
         },
         {
           "path": "art/lang/ru/audio/troll-trready.m4a",
@@ -5835,6 +6931,21 @@
           "integrity": "sha256-tlhtYJY9oTeXPM9jr/yfPRy7JS+1SWTSHVfEYcTPmLE="
         },
         {
+          "path": "art/lang/ru/audio/turalyon-tupissd1.m4a",
+          "bytes": 7954,
+          "integrity": "sha256-6vN2nkMbTqi3C/xbq3JTyinCG0zCF41tJHeP/dJWAuM="
+        },
+        {
+          "path": "art/lang/ru/audio/turalyon-tupissd2.m4a",
+          "bytes": 13991,
+          "integrity": "sha256-ZBxl/kczYSq5ocEtY4I7sq20RKtlNl/mAqy9PHO8Qqo="
+        },
+        {
+          "path": "art/lang/ru/audio/turalyon-tupissd3.m4a",
+          "bytes": 14809,
+          "integrity": "sha256-BmcDXL0bzB7LCAKxQLg1cx0KsfKmiwB9qpGyTD/v2A4="
+        },
+        {
           "path": "art/lang/ru/audio/turalyon-tuwhat1.m4a",
           "bytes": 6622,
           "integrity": "sha256-Od3okcLT+P7LaRpULu8JDx4+FXfVlYarSps3p6s76Zw="
@@ -5863,6 +6974,21 @@
           "path": "art/lang/ru/audio/turalyon-tuyessr3.m4a",
           "bytes": 7466,
           "integrity": "sha256-Gt0G7FHD9f39lEHAF/O3e6Bg3/xjixmTKlM5bEIbZGU="
+        },
+        {
+          "path": "art/lang/ru/audio/wizard-wzpissd1.m4a",
+          "bytes": 8069,
+          "integrity": "sha256-kydgwapvsCWhkDI/p68Dg12skgiEas+OpnTSwI+KtnA="
+        },
+        {
+          "path": "art/lang/ru/audio/wizard-wzpissd2.m4a",
+          "bytes": 11032,
+          "integrity": "sha256-Xh6FttW2wdzHtSgaqEKp3+Mt0dw+LZc2wSuKPKl6gTM="
+        },
+        {
+          "path": "art/lang/ru/audio/wizard-wzpissd3.m4a",
+          "bytes": 20371,
+          "integrity": "sha256-UmJ8RqRg4vMRG/yl4J+fwzZ7R8YApqCWX/YIET5zGV8="
         },
         {
           "path": "art/lang/ru/audio/wizard-wzready.m4a",
@@ -5900,6 +7026,16 @@
           "integrity": "sha256-ToNjhFdLkgja9HF1k0GtBc8Dg3kf4KQiW3JMj2cTM0I="
         },
         {
+          "path": "art/lang/ru/audio/zeppelin-gbpissd1.m4a",
+          "bytes": 12080,
+          "integrity": "sha256-veTgTPBOYfRO3e83qR5ttPTF0TIRHEoaclYWI/zsvUI="
+        },
+        {
+          "path": "art/lang/ru/audio/zeppelin-gbpissd2.m4a",
+          "bytes": 17807,
+          "integrity": "sha256-tZo/RuvxhieZaIWgzNWLzHRG3RruwPO/i9Aka3Kvsa0="
+        },
+        {
           "path": "art/lang/ru/audio/zeppelin-gbready.m4a",
           "bytes": 7432,
           "integrity": "sha256-P01X8/ZBurRaZm1N4PFIX9RIbkXdveoekoQEGk2sC44="
@@ -5911,8 +7047,8 @@
         },
         {
           "path": "art/lang/ru/audio.json",
-          "bytes": 13169,
-          "integrity": "sha256-Hx3cmrVhkfhRnsvySRRWedsTjFYQA7FWQ36uyjRqV9s="
+          "bytes": 29019,
+          "integrity": "sha256-t/zWBGs39vS7llbwXUG313XE3pH4IOk0Ni0geozgfHU="
         },
         {
           "path": "art/lang/ru/hud.woff",

@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
+use tidewater_command_panel::carry::{Carried, Load};
 use tidewater_command_panel::score as results;
 use tidewater_formats::{
     identity::{FNV_BASIS, data_hash, fnv_extend},
@@ -14,7 +15,7 @@ use tidewater_formats::{
     mpq::ReadSeek,
 };
 use tidewater_sim::economy::{Event, JobKind};
-use tidewater_sim::sound::{Cue, Pick, Place, Sound};
+use tidewater_sim::sound::{CRITTER, Cue, Pick, Place, Sound};
 use tidewater_sim::timing::{Pacing, Scheduler};
 use tidewater_sim::victory::Outcome;
 use tidewater_sim::vision::Map;
@@ -177,6 +178,11 @@ struct UnitView<'a> {
     tile_y: i32,
     width: i32,
     height: i32,
+    box_width: u16,
+    box_height: u16,
+    allied: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    carry: Option<&'static str>,
     hp: u16,
     max_hp: u16,
     building: bool,
@@ -197,8 +203,24 @@ struct UnitView<'a> {
     display_speed: u8,
     sight: u32,
     range: u8,
+    level: Option<u32>,
+    mana: Option<u8>,
     resources: u32,
     resources_amount: Option<u32>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RememberedBuilding {
+    owner: u8,
+    colour: u8,
+    picture: u8,
+    frame: u8,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+    minimap: bool,
 }
 
 #[derive(Serialize)]
@@ -215,6 +237,8 @@ struct Resources {
 struct SoundView {
     cue: &'static str,
     kind: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    variant: Option<u8>,
     tile: Option<(i32, i32)>,
 }
 
@@ -249,6 +273,25 @@ struct DemoView {
     finished: bool,
 }
 
+const BLAST_EFFECT: u8 = 0x17;
+const GROUND_MARKER: u8 = 0x1c;
+const GROUND_MARKER_FRAMES: [u8; 13] = [0, 0, 1, 2, 3, 3, 3, 3, 3, 3, 2, 1, 0];
+
+#[derive(Clone, Copy)]
+struct GroundOrder {
+    x: i32,
+    y: i32,
+    tick: u32,
+}
+
+#[derive(Serialize)]
+struct MapEffect {
+    kind: u8,
+    x: i32,
+    y: i32,
+    frame: u8,
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Snapshot<'a> {
@@ -256,11 +299,14 @@ struct Snapshot<'a> {
     player: u8,
     player_colour: u8,
     race: u8,
+    orc_sounds: bool,
     width: u16,
     height: u16,
     tile_size: i32,
     resources: Resources,
     units: Vec<UnitView<'a>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    remembered_buildings: Vec<RememberedBuilding>,
     selection: Vec<u32>,
     actions: Vec<Action>,
     fog: bool,
@@ -294,6 +340,8 @@ struct Snapshot<'a> {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     events: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    effects: Vec<MapEffect>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     sounds: Vec<SoundView>,
 }
 
@@ -310,7 +358,9 @@ pub struct Engine {
     demo: Option<u8>,
     start_controllers: [u8; 8],
     speeds: Vec<u8>,
+    carried: Carried,
     clock: Option<Scheduler>,
+    ground_order: Option<GroundOrder>,
     sent_explored: Vec<u8>,
     sent_visible: Vec<u8>,
 }
@@ -345,7 +395,9 @@ impl Engine {
             demo: None,
             start_controllers,
             speeds,
+            carried: Carried::default(),
             clock: None,
+            ground_order: None,
             sent_explored: Vec::new(),
             sent_visible: Vec::new(),
         })
@@ -425,12 +477,24 @@ impl Engine {
                             .unit(id)
                             .is_some_and(|unit| unit.owner == player && self.world.is_mobile(unit))
                     })
-                    .collect();
+                    .collect::<Vec<_>>();
+                if !units.is_empty() {
+                    self.mark_order(x, y);
+                }
                 self.send(Command::Move { player, units, to });
             }
             Request::Smart { x, y } => {
                 let tile = self.tile(x, y)?;
                 let target = self.hit(x, y, 0.0);
+                if target.is_none()
+                    && self
+                        .primary()
+                        .ok()
+                        .and_then(|id| self.world.unit(id))
+                        .is_some_and(|unit| self.world.is_mobile(unit))
+                {
+                    self.mark_order(x, y);
+                }
                 self.send(Command::RightClick { player, target, tile });
             }
             Request::Target { action, spell, x, y } => {
@@ -438,6 +502,9 @@ impl Engine {
                 let target = self.hit(x, y, 0.0);
                 let aim = self.commands().target(&self.text, &action, spell)?;
                 if let Some(command) = tidewater_command_panel::target_command(aim, player, target, tile) {
+                    if target.is_none() {
+                        self.mark_order(x, y);
+                    }
                     self.send(command);
                 }
             }
@@ -492,9 +559,11 @@ impl Engine {
         self.origin.map = self.mission.map_hash;
         self.origin.start = self.world.state_hash();
         self.speeds = tidewater_command_panel::stats::speeds(&self.world.scripts, &self.world.stats.0);
+        self.carried = Carried::default();
         self.start_controllers = std::array::from_fn(|slot| self.world.players[slot].controller);
         self.demo = None;
         self.clock = None;
+        self.ground_order = None;
     }
 
     fn load_mission(&mut self, id: u8) -> Result<()> {
@@ -575,7 +644,9 @@ impl Engine {
             bail!("A finished battle cannot be continued");
         }
         self.world = world;
+        self.carried = Carried::default();
         self.clock = None;
+        self.ground_order = None;
         Ok(self.snapshot(true, false, None, None)?)
     }
 
@@ -593,7 +664,65 @@ impl Engine {
                 break;
             }
             self.world.step(&[]);
+            self.carried.update(&self.world);
         }
+        if self
+            .ground_order
+            .is_some_and(|order| self.world.tick.wrapping_sub(order.tick) > GROUND_MARKER_FRAMES.len() as u32 + 1)
+        {
+            self.ground_order = None;
+        }
+    }
+
+    fn mark_order(&mut self, x: f64, y: f64) {
+        if self.world.players[self.player as usize].result.is_none() {
+            self.ground_order = Some(GroundOrder {
+                x: x.floor() as i32,
+                y: y.floor() as i32,
+                tick: self.world.tick,
+            });
+        }
+    }
+
+    fn map_effects(&self) -> Vec<MapEffect> {
+        // The simulation already owns the building explosion, including its
+        // position and lifetime when a site is cancelled or killed.
+        let world = &self.world;
+        let mut effects = world
+            .missiles
+            .iter()
+            .flatten()
+            .filter(|effect| effect.kind == BLAST_EFFECT && effect.showing())
+            .filter(|effect| {
+                let x = effect.pos.0.div_euclid(TILE);
+                let y = effect.pos.1.div_euclid(TILE);
+                world.reveal_view()
+                    || (-1..=1).any(|dy| (-1..=1).any(|dx| !world.vision.unseen_by(self.player, x + dx, y + dy)))
+            })
+            .map(|effect| MapEffect {
+                kind: BLAST_EFFECT,
+                x: effect.pos.0,
+                y: effect.pos.1,
+                // The original restarted boom.grp script displays 16 frames
+                // for three updates each after its start step.
+                frame: (effect.elapsed.saturating_sub(3) / 3).min(15) as u8,
+            })
+            .collect::<Vec<_>>();
+
+        // The click's first update starts the animation. Its second update
+        // draws the first frame, after which the 13-frame sequence runs.
+        if let Some(order) = self.ground_order
+            && let Some(age) = world.tick.wrapping_sub(order.tick).checked_sub(2)
+            && let Some(&frame) = GROUND_MARKER_FRAMES.get(age as usize)
+        {
+            effects.push(MapEffect {
+                kind: GROUND_MARKER,
+                x: order.x,
+                y: order.y,
+                frame,
+            });
+        }
+        effects
     }
 
     fn send(&mut self, command: Command) {
@@ -635,7 +764,10 @@ impl Engine {
             player: self.player,
             units: self.world.slots_of(&selected),
         });
-        if let Some(id) = self.world.first_selected(self.player) {
+        let selection = self.selection();
+        if (self.world.rules.enhanced || selection.len() == 1)
+            && let Some(&id) = selection.first()
+        {
             self.world.select_sound(id);
         }
         Ok(())
@@ -724,6 +856,7 @@ impl Engine {
         } else {
             self.commands().actions(&self.text)
         };
+        let effects = self.map_effects();
         let world = &mut self.world;
         let player = &world.players[self.player as usize];
         let outcome = demo.is_none().then_some(player.result).flatten();
@@ -773,6 +906,7 @@ impl Engine {
             player: self.player,
             player_colour: player.colour,
             race: player.race,
+            orc_sounds: world.start.orc_sounds,
             width: world.terrain.width,
             height: world.terrain.height,
             tile_size: TILE,
@@ -791,8 +925,13 @@ impl Engine {
                         && !unit.removing
                         && (demo.is_some() || unit.owner == self.player || world.visible_to(self.player, unit.id))
                 })
-                .map(|unit| unit_view(world, unit, &self.text, &self.speeds))
+                .map(|unit| unit_view(world, unit, &self.text, &self.speeds, &self.carried, self.player))
                 .collect(),
+            remembered_buildings: if demo.is_some() {
+                Vec::new()
+            } else {
+                remembered_buildings(world, self.player)
+            },
             selection: world.selection(self.player).into_iter().map(|id| id.0).collect(),
             fog: world.rules.fog_of_war,
             speed: world.speed,
@@ -828,15 +967,65 @@ impl Engine {
             visible: send_visible.then_some(&self.sent_visible),
             placement,
             events,
+            effects,
             sounds,
         };
         Ok(serde_json::to_vec(&snapshot)?)
     }
 }
 
-fn unit_view<'a>(world: &World, unit: &Unit, text: &'a Text, speeds: &[u8]) -> UnitView<'a> {
+fn remembered_buildings(world: &World, player: u8) -> Vec<RememberedBuilding> {
+    if world.reveal_view() {
+        return Vec::new();
+    }
+    let copies = world.remembered.copies().map(|copy| RememberedBuilding {
+        owner: copy.colour,
+        colour: world.players[usize::from(copy.colour)].colour,
+        picture: copy.look.kind,
+        frame: copy.look.frame,
+        x: copy.tile.0 * TILE,
+        y: copy.tile.1 * TILE,
+        width: i32::from(copy.size.0) * TILE,
+        height: i32::from(copy.size.1) * TILE,
+        minimap: true,
+    });
+    let hidden = world.units.iter().filter_map(|unit| {
+        if !unit.building
+            || unit.owner == player
+            || unit.removing
+            || unit.inside
+            || unit.hidden_from & tidewater_sim::vision::bit(player) == 0
+        {
+            return None;
+        }
+        let look = unit.look.0?;
+        Some(RememberedBuilding {
+            owner: unit.owner,
+            colour: world.players[usize::from(unit.colour)].colour,
+            picture: look.kind,
+            frame: look.frame,
+            x: unit.pos.0,
+            y: unit.pos.1,
+            width: i32::from(unit.size.0) * TILE,
+            height: i32::from(unit.size.1) * TILE,
+            minimap: world.on_minimap(unit),
+        })
+    });
+    copies.chain(hidden).collect()
+}
+
+fn unit_view<'a>(
+    world: &World,
+    unit: &Unit,
+    text: &'a Text,
+    speeds: &[u8],
+    carried: &Carried,
+    player: u8,
+) -> UnitView<'a> {
+    use tidewater_command_panel::stats as info;
     let stats = &world.stats.0[unit.kind as usize];
-    let (minimum, maximum) = tidewater_command_panel::stats::damage(stats.basic_damage, stats.piercing_damage);
+    let owner = &world.players[unit.owner as usize];
+    let (minimum, maximum) = info::damage(stats.basic_damage, stats.piercing_damage);
     let facing = unit.facing & 7;
     let mirrored = !unit.building && facing > 4;
     let offset = if unit.building { 0 } else { facing.min(8 - facing) };
@@ -860,6 +1049,14 @@ fn unit_view<'a>(world: &World, unit: &Unit, text: &'a Text, speeds: &[u8]) -> U
         tile_y: unit.tile.1,
         width: i32::from(unit.size.0) * TILE,
         height: i32::from(unit.size.1) * TILE,
+        box_width: stats.box_size.0,
+        box_height: stats.box_size.1,
+        allied: unit.owner != player && world.allied(player, unit.owner),
+        carry: carried.file(world, unit).map(|file| match file.load {
+            Load::Gold => "gold",
+            Load::Lumber => "lumber",
+            Load::Oil => "oil",
+        }),
         hp: unit.hp,
         max_hp: stats.hit_points,
         building: unit.building,
@@ -880,6 +1077,8 @@ fn unit_view<'a>(world: &World, unit: &Unit, text: &'a Text, speeds: &[u8]) -> U
         display_speed: speeds.get(usize::from(unit.kind)).copied().unwrap_or(0),
         sight: stats.sight,
         range: stats.attack_range,
+        level: (!unit.building).then(|| info::level(unit.kind, stats, &owner.levels, owner.spells_known)),
+        mana: (!unit.building && info::shows_mana(unit.kind, stats)).then_some(unit.mana),
         resources: unit.resources,
         resources_amount: matches!(unit.kind, 86 | 87 | 92 | 93).then_some(unit.resources * 100),
     }
@@ -888,10 +1087,18 @@ fn unit_view<'a>(world: &World, unit: &Unit, text: &'a Text, speeds: &[u8]) -> U
 fn order_name(unit: &Unit) -> &'static str {
     match unit.order {
         Order::Build { .. } | Order::InsideSite { .. } => "building",
-        Order::Harvest { .. } | Order::ReturnGoods { .. } | Order::Enter { .. } | Order::Inside { .. } => "harvesting",
-        Order::Attack { .. } | Order::AttackMove { .. } | Order::Chase { .. } | Order::AttackInPlace { .. } => {
-            "attacking"
-        }
+        Order::Harvest { .. } | Order::Enter { .. } | Order::Inside { .. } => "harvesting",
+        Order::ReturnGoods { .. } => "returning",
+        Order::Attack { .. }
+        | Order::AttackMove { .. }
+        | Order::MoveAttack { .. }
+        | Order::Chase { .. }
+        | Order::AttackInPlace { .. }
+        | Order::AttackWall { .. } => "attacking",
+        Order::AttackGround { .. } | Order::AttackGroundMove { .. } => "attackGround",
+        Order::Demolish { .. } | Order::DemolishAt { .. } => "demolish",
+        Order::Unload => "unload",
+        Order::Cast { .. } => "casting",
         Order::Patrol { .. } => "patrolling",
         Order::StandGround => "holding",
         Order::Repair { .. } => "repairing",
@@ -930,6 +1137,12 @@ fn sound_view(Cue { sound, place }: Cue) -> Option<SoundView> {
     ) {
         return None;
     }
+    let variant = match sound {
+        Sound::Select {
+            pick: Pick::Annoyed(n), ..
+        } => Some(n),
+        _ => None,
+    };
     let (cue, kind) = match sound {
         Sound::Select { kind, pick, .. } => (
             match pick {
@@ -937,7 +1150,9 @@ fn sound_view(Cue { sound, place }: Cue) -> Option<SoundView> {
                 Pick::Constructing => "constructing",
                 Pick::Building { .. } => "buildingSelect",
                 Pick::Annoyed(_) => "annoyed",
-                _ => "select",
+                Pick::CritterSelected => "critterSelect",
+                Pick::CritterAnnoyed => "critterAnnoyed",
+                Pick::Selected => "select",
             },
             Some(kind),
         ),
@@ -947,8 +1162,11 @@ fn sound_view(Cue { sound, place }: Cue) -> Option<SoundView> {
         Sound::Help { building } => (if building { "buildingHelp" } else { "help" }, None),
         Sound::Attack { kind, .. } | Sound::TowerFire { kind } => ("attack", Some(kind)),
         Sound::Chop { .. } => ("chop", None),
+        Sound::Death { kind: CRITTER, .. } => ("critterDeath", Some(CRITTER)),
         Sound::Death { kind, .. } => ("death", Some(kind)),
-        Sound::BuildingDeath | Sound::Explode | Sound::CritterExplode => ("explode", None),
+        Sound::BuildingDeath => ("buildingDeath", None),
+        Sound::Explode => ("explode", None),
+        Sound::CritterExplode => ("critterExplode", None),
         Sound::Impact { kind, .. } => ("impact", Some(kind)),
         Sound::Construction => ("construction", None),
         Sound::Dock => ("dock", None),
@@ -959,6 +1177,7 @@ fn sound_view(Cue { sound, place }: Cue) -> Option<SoundView> {
     Some(SoundView {
         cue,
         kind,
+        variant,
         tile: place.map(|position| position.tile()),
     })
 }

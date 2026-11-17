@@ -19,6 +19,11 @@ const unitNames = {0: 'Footman', 1: 'Grunt', 2: 'Peasant', 3: 'Peon', 58: 'Farm'
   60: 'Barracks', 61: 'Barracks', 74: 'Town Hall', 75: 'Great Hall', 92: 'Gold Mine'};
 const targetIcons = {move: 83, attack: 116, repair: 85, harvest: 86, patrol: 184};
 const targetSlots = {move: 0, attack: 2, repair: 3, harvest: 4, patrol: 3};
+const orderCommands = {
+  idle:'stop', holding:'hold', returning:'returnGoods', unload:'unload',
+  moving:'target:move', attacking:'target:attack', attackGround:'target:attackGround',
+  demolish:'target:demolish', patrolling:'target:patrol', repairing:'target:repair', harvesting:'target:harvest',
+};
 const clamp = (value, max) => Math.max(0, Math.min(max, value));
 
 const resourceFields = [
@@ -150,7 +155,14 @@ function createInterface({
   function selectTouchGroup(id, point) {
     if (id == null || touchTapSubject(point) !== id) return false;
     const leader = world.units.find(unit => unit.id === id);
-    if (!leader || !groupSelectable(leader)) return false;
+    if (!leader) return false;
+    if (leader.kind === 0x39) {
+      // A second tap on the same critter is a selection click. A smart order
+      // would reset the original game's click count via acknowledgement.
+      send({op:'selectIds', ids:[id]});
+      return true;
+    }
+    if (!groupSelectable(leader)) return false;
     const {x, y} = view.visibleGlobal;
     const radius = Math.max(14, Math.ceil(view.width / world.tileSize)) - 1;
     const neighbors = world.units.filter(unit => unit.id !== id && unit.kind === leader.kind &&
@@ -296,15 +308,21 @@ async function bytes(path) {
 function makeAudio() {
   let files = {};
   let languageFiles = {};
-  let race = 'human';
   let music;
+  let musicKey = 'music-menu';
+  let trackIndex = 0;
+  let skipFirstTrack = false;
+  let loopPoint = 0;
+  let nextTrack;
   let narration;
   let audioContext;
   let unlocked = false;
   let mediaActive = false;
+  let effectEpoch = 0;
+  let constructionPlaying = false;
+  const effects = new Set();
   const cache = new Map();
-  readJson('./art/audio.json').then(source => { files = source; }).catch(() => {});
-  const musicSource = () => files['music-' + race]?.[0] ?? files.music?.[0];
+  readJson('./art/audio.json').then(source => { files = source; sync(); }).catch(() => {});
   const audioPath = path => './art/' + path;
   const clip = key => {
     const localized = languageFiles[key];
@@ -318,51 +336,135 @@ function makeAudio() {
     } catch { return fallback; }
   };
   const volumes = {music: getVolume('music', .6), effects: getVolume('effects', .8)};
+
+  function clearMusic() {
+    clearTimeout(nextTrack);
+    nextTrack = undefined;
+    if (!music?.hasAttribute('src')) return;
+    music.pause();
+    music.removeAttribute('src');
+    music.load();
+  }
+
+  function setMusic(key, index = 0, {skipFirst = false, loopFrom = 0} = {}) {
+    clearMusic();
+    musicKey = key;
+    skipFirstTrack = skipFirst;
+    trackIndex = skipFirst && index === 0 ? 1 : index;
+    loopPoint = loopFrom;
+    sync();
+  }
+
+  function trackEnded() {
+    const tracks = files[musicKey];
+    if (loopPoint) {
+      music.currentTime = loopPoint;
+      sync();
+    } else if (tracks?.length > 1) {
+      nextTrack = setTimeout(() => {
+        nextTrack = undefined;
+        trackIndex = (trackIndex + 1) % tracks.length || (skipFirstTrack ? 1 : 0);
+        sync();
+      }, 2000);
+    }
+  }
+
   function sync() {
-    if (!unlocked || !musicSource()) return;
+    const tracks = files[musicKey];
+    const path = tracks?.[trackIndex];
+    if (!unlocked || !path || !volumes.music || nextTrack !== undefined) return;
+    if (document.hidden || mediaActive) {
+      music?.pause();
+      return;
+    }
     if (!music) {
       music = new Audio();
-      music.loop = true;
       music.preload = 'auto';
+      music.addEventListener('ended', trackEnded);
     }
-    const source = audioPath(musicSource());
+    const source = audioPath(path);
+    music.loop = tracks.length === 1 && !loopPoint;
     if (music.getAttribute('src') !== source) music.src = source;
     music.volume = volumes.music;
-    if (document.hidden || mediaActive || !volumes.music) music.pause();
-    else music.play().catch(() => {});
+    if (music.paused) music.play().catch(() => {});
   }
   function activate() {
     const Context = window.AudioContext || window.webkitAudioContext;
     unlocked = true;
     if (!audioContext && Context) audioContext = new Context();
-    audioContext?.resume().catch(() => {});
+    if (audioContext?.state !== 'running') audioContext?.resume().catch(() => {});
     sync();
   }
-  async function play(key, fallback) {
+  async function play(key, fallback, level = 1) {
     const preferred = clip(key);
     const paths = preferred.length ? preferred : clip(fallback);
     if (!unlocked || !audioContext || !paths?.length || !volumes.effects || document.hidden) return;
+    const construction = key === 'construct';
+    if (construction && constructionPlaying) return;
+    if (construction) constructionPlaying = true;
+    const epoch = effectEpoch;
     const file = paths[Math.floor(Math.random() * paths.length)];
+    let stop;
+    function ended() {
+      effects.delete(stop);
+      if (construction && epoch === effectEpoch) constructionPlaying = false;
+    }
     try {
       if (!cache.has(file))
-        cache.set(file, fetch(file).then(response => response.arrayBuffer())
-          .then(buffer => audioContext.decodeAudioData(buffer)));
+        cache.set(file, bytes(file).then(buffer =>
+          audioContext.decodeAudioData(buffer.buffer).catch(() => null)));
       const data = await cache.get(file);
-      if (document.hidden || audioContext.state !== 'running') return;
-      const source = audioContext.createBufferSource();
-      const gain = audioContext.createGain();
-      gain.gain.value = volumes.effects;
-      source.buffer = data;
-      source.connect(gain).connect(audioContext.destination);
-      source.start();
+      if (epoch !== effectEpoch || document.hidden || audioContext.state !== 'running' || !volumes.effects) return;
+      if (data) {
+        const source = audioContext.createBufferSource();
+        const gain = audioContext.createGain();
+        gain.gain.value = volumes.effects * level;
+        source.buffer = data;
+        source.connect(gain).connect(audioContext.destination);
+        source.addEventListener('ended', ended, {once: true});
+        source.start();
+        stop = () => source.stop();
+        effects.add(stop);
+      } else {
+        // Some WebKit builds accept AAC as media but cannot decode it into an AudioBuffer.
+        const media = new Audio(file);
+        media.volume = volumes.effects * level;
+        media.addEventListener('ended', ended, {once:true});
+        stop = () => {
+          media.pause();
+          media.removeAttribute('src');
+          media.load();
+        };
+        effects.add(stop);
+        await media.play();
+      }
     } catch {
-      cache.delete(file);
+      if (!stop) cache.delete(file);
+      stop?.();
+      effects.delete(stop);
+    } finally {
+      if (construction && epoch === effectEpoch && !effects.has(stop)) constructionPlaying = false;
     }
   }
+
+  function stopEffects() {
+    ++effectEpoch;
+    constructionPlaying = false;
+    for (const stop of effects) stop();
+    effects.clear();
+  }
+
   function change(key, value) {
+    const previous = volumes[key];
     volumes[key] = value;
     try { localStorage.setItem('tidewater-pilot-' + key, value); } catch {}
-    if (key === 'music') sync();
+    if (key === 'music') {
+      if (value) sync();
+      else clearMusic();
+    } else if (previous && !value) {
+      stopEffects();
+    }
+    if (key === 'effects' && narration) narration.volume = value;
   }
   function stopBriefing() {
     narration?.pause();
@@ -370,6 +472,8 @@ function makeAudio() {
   }
   function briefing(id) {
     stopBriefing();
+    const orc = id % 2 !== 0;
+    setMusic(orc ? 'music-orc-briefing' : 'music-human-briefing', 0, {loopFrom: orc ? 0 : 3.020});
     const path = clip('briefing-' + id)[0];
     if (!path || !unlocked) return;
     narration = new Audio(path);
@@ -379,8 +483,10 @@ function makeAudio() {
   window.addEventListener('pointerdown', activate, {passive: true, capture: true});
   window.addEventListener('pointerup', activate, {passive: true, capture: true});
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) audioContext?.suspend().catch(() => {});
-    else if (unlocked) audioContext?.resume().catch(() => {});
+    if (document.hidden) {
+      stopEffects();
+      audioContext?.suspend().catch(() => {});
+    } else if (unlocked) audioContext?.resume().catch(() => {});
     sync();
     if (document.hidden) narration?.pause();
     else narration?.play().catch(() => {});
@@ -388,7 +494,26 @@ function makeAudio() {
   return {
     play, change, volumes, briefing, stopBriefing,
     media(active) { mediaActive = active; sync(); },
-    race(value) { race = value; sync(); },
+    quiet() {
+      stopBriefing();
+      stopEffects();
+      setMusic(null);
+    },
+    menu() {
+      stopBriefing();
+      stopEffects();
+      mediaActive = false;
+      setMusic('music-menu');
+    },
+    battle({mission}, race) {
+      stopBriefing();
+      stopEffects();
+      mediaActive = false;
+      const campaign = Number.isInteger(mission.id) && mission.campaign !== 'quick';
+      // Track choice must never consume a draw from the simulation's generator.
+      const first = campaign ? Math.floor(mission.id / 2) % 6 : Math.floor(Math.random() * 6);
+      setMusic('music-' + race, first, {skipFirst: campaign && mission.id < 28});
+    },
     async language() {
       languageFiles = currentLanguage() === 'ru'
         ? await readJson('./art/lang/ru/audio.json').catch(() => ({})) : {};
@@ -446,6 +571,8 @@ async function start() {
   let lastPortrait = null;
   let notice = null;
   let infoKey = '';
+  let manaBar;
+  let litOrder;
   let progressBar;
   let panelKey = '';
   let detailKey = '';
@@ -505,7 +632,7 @@ async function start() {
     load: loadMission,
     play: () => playMission(),
     briefing: id => audio.briefing(id),
-    stopBriefing: () => audio.stopBriefing(),
+    stopBriefing: back => back ? audio.menu() : audio.stopBriefing(),
     async act(mission) {
       const {createActInterlude} = await import('./act-interlude.js');
       acts ??= createActInterlude();
@@ -544,10 +671,11 @@ async function start() {
     },
     async update() {
       const message = text(t('Checking for updates…'));
-      showModal('Update', [message], [['Back', closeModal, 'negative']]);
+      showModal('Update', [message], [['Back', closeModal, 'negative']], {layout:'update'});
       try {
         const result = await window.TidewaterOffline?.checkForUpdate();
         const statuses = {current:'You have the latest version.', updated:'The update is ready.',
+          deferred:'The update will apply when all open game windows are at the main menu.',
           unavailable:'Updates are unavailable right now.'};
         message.textContent = t(statuses[result] || statuses.unavailable);
       } catch (error) {
@@ -601,6 +729,7 @@ async function start() {
     demoBack?.remove();
     demoBack = undefined;
     showHud(false);
+    audio.menu();
     returnToStory?.();
   }
 
@@ -645,6 +774,7 @@ async function start() {
   async function loadBattle(command, resume = false) {
     battleActive = false;
     loadingMission = true;
+    audio.quiet();
     outcomeShown = false;
     clearTimeout(tickTimer);
     tickTimer = undefined;
@@ -686,9 +816,11 @@ async function start() {
       const race = mission.race === 1 || mission.mission.campaign === 'orc' || mission.mission.campaign === 'xorc'
         ? 'orc' : 'human';
       byId('battle').dataset.race = race;
-      audio.race(race);
       restoredBattle = restored;
       return {world:adapter.world, restored};
+    } catch (error) {
+      audio.menu();
+      throw error;
     } finally { loadingMission = false; }
   }
 
@@ -699,6 +831,7 @@ async function start() {
     showHud(!demoReturn);
     adapter.frame(performance.now());
     const world = adapter.world;
+    audio.battle(world, byId('battle').dataset.race);
     const home = world.units.find(unit => unit.owner === world.player && [74,75].includes(unit.kind)) ??
       world.units.find(unit => unit.owner === world.player);
     if (demoReturn) centerDemo(world);
@@ -716,7 +849,7 @@ async function start() {
 
   function toFront() {
     battleActive = false;
-    audio.media(false);
+    audio.menu();
     closeModal();
     showHud(false);
     front.home();
@@ -734,14 +867,27 @@ async function start() {
     const sounds = {
       acknowledge: 'ack', select: 'select', ready: 'ready', attack: 'sword',
       construction: 'construct', constructing: 'construct', chop: 'chop', workComplete: 'workComplete',
+      buildingDeath: 'buildingDeath', critterExplode: 'critterExplode',
     };
-    for (const {cue, kind, tile} of world.sounds ?? []) {
+    for (const {cue, kind, tile, variant} of world.sounds ?? []) {
+      let level = 1;
       if (tile && adapter.view) {
         const {visibleGlobal: origin, width, height} = adapter.view;
-        const [x, y] = tile.map(value => value * world.tileSize);
-        if (x < origin.x || y < origin.y || x > origin.x + width || y > origin.y + height) continue;
+        const [x, y] = tile;
+        const size = world.tileSize;
+        const offscreen = x < Math.floor(origin.x / size) || y < Math.floor(origin.y / size) ||
+          x > Math.floor((origin.x + width) / size) || y > Math.floor((origin.y + height) / size);
+        if (offscreen) {
+          if (cue === 'chop') continue;
+          level = 0.24;
+        }
       }
-      if (['acknowledge', 'select', 'ready'].includes(cue)) {
+      if (cue === 'annoyed') {
+        const set = world.orcSounds ? 'orc' : 'human';
+        audio.play(`annoyed-${set}-${kind}-${variant}`);
+      } else if (['critterSelect', 'critterAnnoyed', 'critterDeath'].includes(cue)) {
+        audio.play(cue + '-' + eraDirectory(world).split('/').at(-1), undefined, level);
+      } else if (['acknowledge', 'select', 'ready'].includes(cue)) {
         audio.play(sounds[cue] + '-' + kind);
       } else if (cue === 'buildingSelect') {
         audio.play('buildingSelect-' + kind, [58,59].includes(kind) ? 'farm' : kind === 92 ? 'mine' : 'button');
@@ -749,7 +895,7 @@ async function start() {
         const race = byId('battle').dataset.race;
         audio.play((cue === 'workComplete' ? 'workComplete-' : 'under-attack-') + race, sounds[cue]);
       } else if (sounds[cue]) {
-        audio.play(sounds[cue]);
+        audio.play(sounds[cue], undefined, level);
       }
     }
     if (demoReturn) {
@@ -802,7 +948,7 @@ async function start() {
       ['Objectives', showObjectives, '', true],
       ['Settings', showBattleSettings, '', true],
       ['Restart', showRestart],
-      ['Exit to Main Menu', showExit],
+      ['Main Menu', showExit],
       ['Back', closeModal, 'negative', true],
     ], {layout:'game-menu'});
   }
@@ -1012,11 +1158,18 @@ async function start() {
 
   function confirmPlacement() {
     if (!placement || !placementTile?.valid) return;
-    audio.play('button');
     const {kind} = placement;
     const point = placementTile.point;
     byId('place-button').disabled = true;
-    adapter.run({op: 'build', kind, ...point}).then(cancelPlacement).catch(() => {
+    adapter.run({op: 'build', kind, ...point}).then(world => {
+      if (world.placement?.valid) {
+        audio.play('thunk');
+        cancelPlacement();
+      } else {
+        audio.play('error');
+        previewBuilding(point);
+      }
+    }).catch(() => {
       byId('place-button').disabled = false;
     });
   }
@@ -1061,18 +1214,27 @@ async function start() {
     progressBar.textContent = progress + '% ' + t('complete');
   }
 
+  function updateMana(value) {
+    if (!manaBar || manaBar.textContent === String(value)) return;
+    manaBar.style.setProperty('--mana', value / 255 * 100 + '%');
+    manaBar.setAttribute('aria-valuenow', value);
+    manaBar.textContent = value;
+  }
+
   function paintSelection(world) {
     const units = world.selection.map(id => world.units.find(unit => unit.id === id)).filter(Boolean);
     const selected = units.length === 1 ? units[0] : null;
     const subject = selected && world.actions.find(action => action.op === 'cancel' && action.subject?.unit === selected.id)?.subject;
     const key = units.map(unit => [unit.id, unit.kind, unit.colour, unit.hp, unit.progress != null, unit.construction,
-      unit.level, unit.resourcesAmount].join(':')).join(',') + ':' + workSubjectKey(subject);
+      unit.level, unit.mana != null, unit.resourcesAmount].join(':')).join(',') + ':' + workSubjectKey(subject);
     if (infoKey === key) {
       updateProgress(selected?.progress);
+      updateMana(selected?.mana);
       return;
     }
     infoKey = key;
     progressBar = null;
+    manaBar = null;
     selection.replaceChildren();
     if (!units.length) return;
     const grid = document.createElement('div');
@@ -1102,13 +1264,23 @@ async function start() {
     }
     if (units.length === 1) {
       const unit = units[0];
-      const name = document.createElement('span');
+      const name = document.createElement('div');
+      name.className = 'unit-name';
       name.textContent = unitLabel(unit.kind, unit.name ?? unitNames[unit.kind] ?? (unit.building ? 'Building' : 'Unit'));
+      if (unit.level != null) {
+        const level = document.createElement('span');
+        level.className = 'unit-level';
+        level.textContent = `${t('Level')} ${unit.level}`;
+        name.append(level);
+      }
       grid.append(name);
       const stats = document.createElement('div');
       stats.className = 'stats';
-      stats.textContent = `${unit.hp} / ${unit.maxHp}`;
-      const rows = unit.kind === 92 ? [['Gold left', unit.resourcesAmount ?? unit.resources * 100]] : !unit.building ? [
+      const own = unit.owner === world.player;
+      if (own && unit.hp <= 9999 && unit.maxHp <= 9999) stats.textContent = `${unit.hp} / ${unit.maxHp}`;
+      const rows = unit.kind === 92 ? [['Gold left', unit.resourcesAmount]] :
+        [86, 87, 93].includes(unit.kind) && !unit.construction ? [['Oil left', unit.resourcesAmount]] :
+        own && !unit.building ? [
         ['Armor', unit.armor], ['Damage', unit.damageRange?.join('–')], ['Range', unit.range],
         ['Sight', unit.sight], ['Speed', unit.displaySpeed],
       ] : [];
@@ -1117,6 +1289,19 @@ async function start() {
         const row = document.createElement('div');
         row.textContent = `${t(label)}: ${value}`;
         stats.append(row);
+      }
+      if (own && unit.mana != null) {
+        const row = document.createElement('div');
+        row.className = 'mana-row';
+        manaBar = document.createElement('span');
+        manaBar.className = 'mana-value';
+        manaBar.setAttribute('role', 'meter');
+        manaBar.setAttribute('aria-label', t('Mana'));
+        manaBar.setAttribute('aria-valuemin', '0');
+        manaBar.setAttribute('aria-valuemax', '255');
+        row.append(t('Mana'), manaBar);
+        stats.append(row);
+        updateMana(unit.mana);
       }
       if (typeof unit.progress === 'number' && unit.progress >= 0) {
         const row = document.createElement('div');
@@ -1158,6 +1343,7 @@ async function start() {
     const key = JSON.stringify([actions, armed, Boolean(placement), colour]);
     if (panelKey !== key) {
       panelKey = key;
+      litOrder = undefined;
       commands.replaceChildren();
       const used = new Set();
       actions.forEach((command, index) => {
@@ -1177,6 +1363,7 @@ async function start() {
         el.dataset.command = command.op;
         if (command.kind != null) el.dataset.kind = command.kind;
         if (command.action != null) el.dataset.action = command.action;
+        el.dataset.order = command.action ? command.op + ':' + command.action : command.op;
         if (!cancel) {
           el.style.gridColumn = slot % 3 + 1;
           el.style.gridRow = 3 - Math.floor(slot / 3);
@@ -1185,6 +1372,13 @@ async function start() {
         el.addEventListener('click', () => activateCommand(command));
         commands.append(el);
       });
+    }
+    const primary = world.units.find(unit => unit.id === world.selection[0] && unit.owner === world.player);
+    const activeOrder = orderCommands[primary?.order] ?? '';
+    if (litOrder !== activeOrder) {
+      litOrder = activeOrder;
+      for (const command of commands.children)
+        command.classList.toggle('current-order', command.dataset.order === activeOrder);
     }
     commands.hidden = Boolean(placement);
     byId('placement').hidden = !placement;
