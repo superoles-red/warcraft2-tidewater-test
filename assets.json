@@ -1,5 +1,5 @@
 {
-  "release": "74614ce87bb30098",
+  "release": "8a0b519c7fcfeae6",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,18 +3919,18 @@
     },
     {
       "path": "battle.css",
-      "bytes": 30139,
-      "integrity": "sha256-kkgAIqNLHYprkBJv3EMIzeabrvjaEtRsMjbgS5CrY1s="
+      "bytes": 30293,
+      "integrity": "sha256-Jn+YHkAJ2nI1JiH6BHIw1PX+rnMzRa1ZNKiC9/C167w="
     },
     {
       "path": "battle.js",
-      "bytes": 70570,
-      "integrity": "sha256-XiphYYfCkXcoIu/H8WdVgtvBAocgInbQeWVOx8xv66s="
+      "bytes": 70572,
+      "integrity": "sha256-0puppscUZOOWztMO2RF5VoLbHKjVbtypU8tleF4pTCw="
     },
     {
       "path": "campaign-ui.js",
-      "bytes": 15354,
-      "integrity": "sha256-dSIJImoeIqoUnBYDXpwtqkggVDVs5pu9hoZK2HvrERA="
+      "bytes": 15319,
+      "integrity": "sha256-aW7wVd0Y/DaYXLHNQHrO8j305nZxcLw5TZh8OPIz8qo="
     },
     {
       "path": "checkpoint-store.js",
@@ -4009,8 +4009,8 @@
     },
     {
       "path": "localization.js",
-      "bytes": 10150,
-      "integrity": "sha256-SXNEO8s/8SsWvg/Ow+fk/Dw17Y248A6oVvtitWimzlE="
+      "bytes": 10181,
+      "integrity": "sha256-EeY3LwukSl023SDwG2jNkCTzhjlFnbHzvfY6aEE3aw0="
     },
     {
       "path": "map-renderer.js",

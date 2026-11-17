@@ -1140,7 +1140,7 @@ async function start() {
       list.append(line);
     }
     showModal('Mission Objectives', [list, checkControl('Show every time', setting('objectives', true),
-      value => setSetting('objectives', value))], [['OK', back, 'positive']]);
+      value => setSetting('objectives', value))], [['Back', back, 'negative']]);
   }
 
   function volumeControls() {

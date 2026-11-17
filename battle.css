@@ -427,6 +427,9 @@ button:focus-visible,
   min-height: var(--modal-action-height);
 }
 #modal[data-layout="game-menu"] #modal-actions .war-button { min-width: 0; overflow-wrap: anywhere; }
+#modal[data-layout="game-menu"] #modal-actions .war-button:not(.wide) {
+  margin-block-start: calc(var(--modal-action-spacing) - var(--modal-row-gap));
+}
 .purchase-preview { display: flex; justify-content: center; align-items: center; gap: 10px; color: var(--paper); }
 #modal-content .purchase-preview > p { margin: 0; }
 #modal-content > .purchase-description {

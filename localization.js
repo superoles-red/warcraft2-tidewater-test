@@ -33,8 +33,8 @@ const russian = {
   'Tap a target':'Нажмите на цель', 'Victory':'Победа', 'Defeat':'Поражение', 'Next Mission':'Следующая миссия',
   'Units defeated':'Убито врагов', 'Buildings destroyed':'Уничтожено строений', 'Units lost':'Потеряно бойцов',
   'Buildings lost':'Потеряно строений', 'Score':'Очки',
-  'Language':'Язык', 'Russian language':'Русский язык', 'Use Russian':'Включить русский',
-  'Delete Russian?':'Удалить русский язык?',
+  'Language':'Язык', 'Delete Russian?':'Удалить русский язык?',
+  'Are you sure you want to delete Russian?':'Точно удалить русский язык?', 'Yes':'Да', 'No':'Нет',
   'The installed language pack takes up about {size}. Deleting it frees that space.':
     'Языковой пакет занимает около {size}. После удаления это место освободится.',
   'The game will switch to English.':'Игра переключится на английский.',
