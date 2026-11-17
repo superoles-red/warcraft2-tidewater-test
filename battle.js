@@ -293,9 +293,9 @@ function createInterface({
   };
   return {
     frame, run, input, send, checkpoint,
-    centerOn(x, y, {useEdgeRoom = true, clampBottom = false, manualBottomOverflow = false} = {}) {
-      manualVerticalPan = manualBottomOverflow;
-      if (view && (clampBottom || (view.height > view.width && !manualBottomOverflow))) {
+    centerOn(x, y, {useEdgeRoom = true, clampBottom = false} = {}) {
+      manualVerticalPan = false;
+      if (view && (clampBottom || view.height > view.width)) {
         y = Math.min(y, bottomCenter(view));
       }
       camera.centerOn(x, y, {useEdgeRoom});
@@ -303,7 +303,6 @@ function createInterface({
     },
     get world() { return world; },
     get view() { return view; },
-    get manualBottomOverflow() { return Boolean(view && manualVerticalPan && extendsBelowMap(view)); },
     get cameraMoving() { return camera.active; },
   };
 }
@@ -883,7 +882,6 @@ async function start() {
     const camera = view && {
       x:view.visibleGlobal.x + view.width / 2,
       y:view.visibleGlobal.y + view.height / 2,
-      manualBottomOverflow:adapter.manualBottomOverflow,
     };
     savingCheckpoint = adapter.checkpoint().then(bytes => {
       if (epoch !== checkpointEpoch) return;
@@ -951,6 +949,7 @@ async function start() {
     battleActive = true;
     outcomeShown = false;
     showHud(!demoReturn);
+    syncProjection();
     adapter.frame(performance.now());
     const world = adapter.world;
     audio.battle(world, byId('battle').dataset.race);
@@ -958,7 +957,7 @@ async function start() {
       world.units.find(unit => unit.owner === world.player);
     if (demoReturn) centerDemo(world);
     else if (Number.isFinite(savedCamera?.x) && Number.isFinite(savedCamera?.y))
-      adapter.centerOn(savedCamera.x, savedCamera.y, {manualBottomOverflow:savedCamera.manualBottomOverflow === true});
+      adapter.centerOn(savedCamera.x, savedCamera.y);
     else if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2, {useEdgeRoom:false});
     if (!demoReturn) updateHud(world);
     nextTick = 0;
@@ -1035,6 +1034,7 @@ async function start() {
       const control = button(caption, () => { audio.play('button'); activate(); }, tone);
       control.classList.toggle('wide', Boolean(wide));
       control.classList.toggle('modal-back', caption === t('Back'));
+      control.classList.toggle('modal-ok', caption === t('OK'));
       if (tone === 'current-choice') control.setAttribute('aria-current', 'true');
       return control;
     }));
@@ -1084,7 +1084,7 @@ async function start() {
       list.append(line);
     }
     showModal('Mission Objectives', [list, checkControl('Show every time', setting('objectives', true),
-      value => setSetting('objectives', value))], [['OK', back, 'positive']], {layout:'compact-ok'});
+      value => setSetting('objectives', value))], [['OK', back, 'positive']]);
   }
 
   function volumeControls() {
@@ -1147,7 +1147,7 @@ async function start() {
       speed.append(choice);
     }
     showModal('Settings', [...volumeControls(), fog, text(t('Game speed')), speed],
-      [['OK', closeModal, 'positive']], {layout:'compact-ok'});
+      [['OK', closeModal, 'positive']], {layout:'battle-settings'});
   }
 
   function showRestart() {
@@ -1643,13 +1643,13 @@ async function start() {
   });
   function syncProjection() {
     const viewport = window.visualViewport;
-    // Safari can keep fixed and dynamic-CSS bounds at the old portrait
-    // height even after exposing more usable space to the page.
-    const visibleHeight = viewport?.scale === 1 && window.innerHeight > window.innerWidth
-      ? `${Math.min(window.innerHeight, viewport.height + viewport.offsetTop)}px` : '';
+    // Use the visible bottom if it extends beyond CSS bounds. A stale
+    // viewport or innerHeight on portrait launch must never shorten the map.
+    const visibleBottom = viewport?.scale === 1 ? viewport.height + viewport.offsetTop : 0;
+    const extent = visibleBottom > 0 ? `${visibleBottom}px` : '';
     const root = document.documentElement.style;
-    if (root.getPropertyValue('--battle-visible-height') !== visibleHeight) {
-      root.setProperty('--battle-visible-height', visibleHeight);
+    if (root.getPropertyValue('--battle-visible-bottom') !== extent) {
+      root.setProperty('--battle-visible-bottom', extent);
     }
     const next = game.getBoundingClientRect();
     if (next.width !== canvasRect.width || next.height !== canvasRect.height ||
@@ -1663,9 +1663,8 @@ async function start() {
   }
   const resize = new ResizeObserver(syncProjection);
   resize.observe(game);
-  // Safari can update the small viewport even when fixed bounds and resize events lag.
-  resize.observe(byId('viewport-size'));
   window.addEventListener('resize', syncProjection);
+  window.addEventListener('pageshow', syncProjection);
   window.visualViewport?.addEventListener('resize', syncProjection);
   syncProjection();
 
@@ -1710,6 +1709,7 @@ async function start() {
       tickTimer = undefined;
       controls.cancel();
     } else {
+      syncProjection();
       scheduleFrame();
       scheduleTick();
     }
@@ -1721,6 +1721,7 @@ async function start() {
     clearTimeout(tickTimer);
     resize.disconnect();
     window.removeEventListener('resize', syncProjection);
+    window.removeEventListener('pageshow', syncProjection);
     window.visualViewport?.removeEventListener('resize', syncProjection);
     controls.destroy();
   });

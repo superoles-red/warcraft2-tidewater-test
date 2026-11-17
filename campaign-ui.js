@@ -231,8 +231,14 @@ export function createCampaignUi(root, campaigns, actions) {
       const pack = await language?.languagePack('ru').catch(() => null);
       if (!russian.isConnected || root.hidden) return;
       if (!pack) return use('ru').catch(showError);
+      const size = new Intl.NumberFormat(currentLanguage(), {
+        style:'unit', unit:'megabyte', unitDisplay:'short', maximumFractionDigits:1,
+      }).format(pack.bytes / 1000000);
       if (pack.installed) {
         const isRussian = currentLanguage() === 'ru';
+        const content = [node('p', t('The installed language pack takes up about {size}. Deleting it frees that space.')
+          .replace('{size}', size))];
+        if (isRussian) content.push(node('p', t('The game will switch to English.')));
         const buttons = [];
         if (!isRussian) {
           buttons.push(['Use Russian', async () => {
@@ -252,12 +258,12 @@ export function createCampaignUi(root, campaigns, actions) {
           } catch (error) {
             showError(error);
           }
-        }, 'negative'], ['Back', actions.dismiss]);
-        actions.confirm(isRussian ? 'Delete Russian?' : 'Russian language', [], buttons);
+        }, 'negative'], ['Back', actions.dismiss, 'negative', !isRussian]);
+        actions.confirm(isRussian ? 'Delete Russian?' : 'Russian language', content, buttons);
         return;
       }
-      const size = new Intl.NumberFormat(currentLanguage(), {maximumFractionDigits:1}).format(pack.bytes / 1000000);
-      actions.confirm('Download language?', [node('p', `${size} ${t('MB of storage required')}`)], [
+      actions.confirm('Download language?', [node('p', t('The language pack needs {size} of free space.')
+        .replace('{size}', size))], [
         ['Download', async () => {
           actions.dismiss();
           show('loading', 'Downloading language…', []);

@@ -25,6 +25,7 @@
 .warcraft-results .war-button { min-height: 44px; }
 
 .result-prompt {
+  --result-ok-height: 44px;
   display: grid;
   gap: clamp(9px, 3vh, 19px);
   background: var(--result-texture) center / cover #292623;
@@ -40,6 +41,12 @@
 .result-prompt h1 { margin: 0; font-size: clamp(20px, 5.6vw, 27px); font-weight: normal; line-height: 1.22; }
 .result-prompt h1 span { display: block; }
 .result-prompt button { font-size: clamp(20px, 6vw, 29px); }
+.result-prompt:has(.result-ok) { row-gap: calc(var(--result-ok-height) / 2); }
+.result-prompt .result-ok {
+  width: 50%;
+  min-height: var(--result-ok-height);
+  justify-self: center;
+}
 
 .result-content {
   width: min(100%, 1070px);

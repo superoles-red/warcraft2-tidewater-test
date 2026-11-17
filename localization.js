@@ -35,9 +35,13 @@ const russian = {
   'Buildings lost':'Потеряно строений', 'Score':'Очки',
   'Language':'Язык', 'Russian language':'Русский язык', 'Use Russian':'Включить русский',
   'Delete Russian?':'Удалить русский язык?',
+  'The installed language pack takes up about {size}. Deleting it frees that space.':
+    'Языковой пакет занимает около {size}. После удаления это место освободится.',
+  'The game will switch to English.':'Игра переключится на английский.',
   'Story':'История', 'Introduction':'Вступление', 'Credits':'Об авторах', 'Demo':'Демо',
   'Media unavailable':'Не удалось открыть этот экран.',
-  'Download language?':'Скачать язык?', 'MB of storage required':'МБ свободного места',
+  'Download language?':'Скачать язык?', 'The language pack needs {size} of free space.':
+    'Для языкового пакета потребуется {size} свободного места.',
   'Download':'Скачать', 'Downloading language…':'Загрузка языка…', 'Delete':'Удалить',
   'Language unavailable':'Язык недоступен', 'Files':'Файлы', 'About the game':'Об игре', 'Update':'Обновить',
   'Feedback':'Отзыв', 'No scenarios match these filters.':'Нет сценариев с такими параметрами.',

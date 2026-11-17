@@ -1,5 +1,5 @@
 {
-  "release": "f1b19127bc171f91",
+  "release": "964aec5644753206",
   "updateProtocol": 1,
   "files": [
     {
@@ -3919,18 +3919,18 @@
     },
     {
       "path": "battle.css",
-      "bytes": 27925,
-      "integrity": "sha256-3ZMOd40zSaiRkFlFPs8o6aaQzixnbXsz7QqZ9POU8pc="
+      "bytes": 28799,
+      "integrity": "sha256-zAKGx1K4v+Ls9hEpxrTJGbHa0Sb2Xt5Im/f2Kq5MDxE="
     },
     {
       "path": "battle.js",
-      "bytes": 68821,
-      "integrity": "sha256-WbbBD704SoKydFCGXu2/L3xXwHzI+LyiEja0H5/HCvw="
+      "bytes": 68579,
+      "integrity": "sha256-+H9Xni9uJzZZsS+xQTVytmQwmbXpXKHDE6bFO+lCUoo="
     },
     {
       "path": "campaign-ui.js",
-      "bytes": 14349,
-      "integrity": "sha256-w+/sNb+TCTRgzG4Sa7MFG1KrPibqbZtRZeM1xGSz1N4="
+      "bytes": 14736,
+      "integrity": "sha256-pNtCHAmgaffctJISidMF6GnaNvGgC0ZSQzo3tob+ZIw="
     },
     {
       "path": "checkpoint-store.js",
@@ -3974,8 +3974,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 3237,
-      "integrity": "sha256-KDQXOOgnnXR6tlXSNXBkfWypJ0A/0RZroh9GIFloxTs="
+      "bytes": 3183,
+      "integrity": "sha256-/PVYbaYcJiPhb8ZcQZ87JGJqEe12bSWBI6ab2c7cgcU="
     },
     {
       "path": "lib/dune-controls.js",
@@ -4009,8 +4009,8 @@
     },
     {
       "path": "localization.js",
-      "bytes": 7815,
-      "integrity": "sha256-7Et1rDWlPm2496D2zuDsD/iSwRpqr0dlAFvS+2idxIU="
+      "bytes": 8236,
+      "integrity": "sha256-SZly1R+0zcgEdNi9/znnpJz/gsU1D0afPg+yRrHHIZ0="
     },
     {
       "path": "map-renderer.js",
@@ -4044,13 +4044,13 @@
     },
     {
       "path": "results-ui.css",
-      "bytes": 4949,
-      "integrity": "sha256-7VHZ7hHvuYd0yH84SHi8TxuWp6TgyELgJ6K9kgtg4sM="
+      "bytes": 5163,
+      "integrity": "sha256-whrb03tkf1t8LQGGWTknK6XgJmDYXg/3KVqqnEr7zu4="
     },
     {
       "path": "results-ui.js",
-      "bytes": 9514,
-      "integrity": "sha256-IJzmt0RdbE6QowOY+7KUvauBMuM/i2iABZO0iRjT4YU="
+      "bytes": 9561,
+      "integrity": "sha256-+6tAwX1K6/F2wvBWStS33caeTZro66+beCBGF2FW1Y0="
     },
     {
       "path": "scenarios/catalog.json",

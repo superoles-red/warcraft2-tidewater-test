@@ -58,7 +58,7 @@ html[lang="ru"] { font-family: 'Warcraft HUD', 'Warcraft HUD Russian', Georgia, 
 html, body {
   width: 100%;
   height: 100%;
-  min-height: max(100svh, var(--battle-visible-height, 0px));
+  min-height: 100svh;
   margin: 0;
   overflow: hidden;
   background: #000;
@@ -74,19 +74,20 @@ html, body {
 #battle {
   position: fixed;
   inset: 0;
-  height: var(--battle-visible-height, auto);
   overflow: hidden;
   isolation: isolate;
   color: var(--light);
   background: #000;
 }
-#viewport-size {
-  position: absolute;
-  inset: 0 auto auto 0;
-  width: 1px;
-  height: 100svh;
-  visibility: hidden;
-  pointer-events: none;
+@media (orientation: portrait) {
+  :root { --battle-height: max(100svh, 100dvh, var(--battle-visible-bottom, 0px)); }
+  html, body { min-height: var(--battle-height); }
+  #battle { height: var(--battle-height); }
+}
+@media (orientation: portrait) and (display-mode: standalone) {
+  /* Home Screen apps have no browser toolbar. WebKit can report smaller
+     dynamic and visual heights on launch even when 100vh fills the screen. */
+  :root { --battle-height: max(100vh, 100lvh, var(--battle-visible-bottom, 0px)); }
 }
 canvas { display: block; touch-action: none; image-rendering: pixelated; }
 #game { position: absolute; inset: 0; width: 100%; height: 100%; outline: none; }
@@ -343,6 +344,9 @@ button:focus-visible,
 #loading p { margin: 0; padding: 5px 8px; background: #080706db; }
 #loading-progress { width: min(265px, 70vw); accent-color: #d3a84e; }
 #modal {
+  --modal-action-height: 44px;
+  --modal-action-spacing: calc(var(--modal-action-height) / 2);
+  --modal-row-gap: 8px;
   width: min(420px, calc(100% - 28px));
   max-height: calc(100% - var(--safe-top) - var(--safe-bottom));
   overflow: auto;
@@ -363,19 +367,24 @@ button:focus-visible,
 #modal-content:empty { display: none; }
 #modal-content p, #modal-content ul { margin: 0 0 8px; }
 #modal-content ul { padding-left: 25px; text-align: left; }
-#modal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-#modal-actions .war-button { flex: 1 1 40%; }
+#modal-actions { display: flex; flex-wrap: wrap; gap: var(--modal-row-gap); }
+#modal-actions .war-button { flex: 1 1 40%; min-height: var(--modal-action-height); }
 #modal-actions .wide { flex-basis: 100%; }
-#modal-actions .modal-back:not(.wide):not(:first-child) { margin-inline-start: 12px; }
-#modal-actions .modal-back.wide:not(:first-child) { margin-block-start: 12px; }
-#modal-actions .modal-back.wide,
-#modal-actions .modal-back:only-child {
+#modal-actions .modal-back:not(.wide):not(:first-child) {
+  margin-inline-start: calc(var(--modal-action-spacing) - var(--modal-row-gap));
+}
+#modal-actions .modal-back.wide:not(:first-child) {
+  margin-block-start: calc(var(--modal-action-spacing) - var(--modal-row-gap));
+}
+#modal-actions :is(.modal-back.wide, .modal-back:only-child, .modal-ok:only-child) {
   flex: 0 0 50%;
-  margin-inline-start: auto;
+  margin-inline: auto;
+}
+#modal:has(#modal-actions :is(.modal-ok, .modal-back:only-child)) #modal-content,
+#modal:has(#modal-actions :is(.modal-ok, .modal-back:only-child)):has(#modal-content:empty) #modal-title {
+  margin-block-end: var(--modal-action-spacing);
 }
 #modal[data-layout="game-menu"] #modal-actions .war-button { min-width: 0; overflow-wrap: anywhere; }
-#modal[data-layout="compact-ok"] #modal-actions { justify-content: center; }
-#modal[data-layout="compact-ok"] #modal-actions .war-button { flex: 0 1 50%; }
 .purchase-preview { display: flex; justify-content: center; align-items: center; gap: 10px; color: var(--paper); }
 #modal-content .purchase-preview > p { margin: 0; }
 #modal-content > .purchase-description {
@@ -701,6 +710,7 @@ button:focus-visible,
 .quick-fields .check-control { font-size: clamp(12px,3.5vw,16px); }
 .dropdown::after, .scenario-filter summary::after { content: '▾'; margin-left: 8px; color: #ffde78; }
 #front[data-screen="scenarios"] {
+  --scenario-action-height: clamp(44px, 8vh, 62px);
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -722,10 +732,11 @@ button:focus-visible,
   margin-block-start: 17px;
 }
 #front[data-screen="quick"] .front-footer { justify-content: end; }
+#front[data-screen="scenarios"] .front-footer { margin-block-start: calc(var(--scenario-action-height) / 2); }
 #front:is([data-screen="quick"], [data-screen="scenarios"]) .front-back { position: relative; inset: auto; }
 #front[data-screen="scenarios"] .front-footer > .war-button:not(.front-back) {
   width: min(170px, 45%);
-  min-height: clamp(44px, 8vh, 62px);
+  min-height: var(--scenario-action-height);
 }
 .scenario-filters { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 5px; }
 .scenario-filter {
@@ -814,10 +825,10 @@ button:focus-visible,
   #hud-top { right: calc(var(--safe-right) + var(--mini) + 12px); }
   #selection { width: min(245px, 32vw); }
   #resources { justify-content: start; }
-  #modal { padding-block: 12px; }
+  #modal { --modal-action-height: 40px; padding-block: 12px; }
+  #modal[data-layout="battle-settings"] { padding-block: 8px; }
   #modal h1 { margin-bottom: 8px; }
   .sound-control { padding-block: 3px; }
-  #modal-actions .war-button { min-height: 40px; }
   #front { grid-template-rows: minmax(55px, 1fr) minmax(0, 4fr) minmax(14px, .35fr); }
   .front-art { background-image: url('./art/menu/title-art.webp'); }
   .front-logo { width: clamp(169px, 44vh, 350px); max-height: 25vh; }

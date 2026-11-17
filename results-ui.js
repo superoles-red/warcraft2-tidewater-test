@@ -239,6 +239,7 @@ export function showResults({
   announcement.append(node('span', null, copy[result + 'Prompt'][0]),
     node('span', null, copy[result + 'Prompt'][1]));
   primary = button(copy[result + 'Button'], () => { onClick?.(); statistics(); });
+  primary.classList.toggle('result-ok', !won);
   prompt.append(announcement, primary);
   dialog.append(prompt);
   dialog.addEventListener('cancel', event => {
