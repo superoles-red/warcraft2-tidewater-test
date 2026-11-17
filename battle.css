@@ -30,9 +30,11 @@
   --safe-right: max(8px, env(safe-area-inset-right));
   --safe-top: max(4px, env(safe-area-inset-top));
   --safe-bottom: max(22px, calc(env(safe-area-inset-bottom) + 14px));
-  --command: clamp(42px, 10.7vw, 64px);
+  --hud-top: calc(env(safe-area-inset-top) + 18px);
+  --hud-bottom: max(12px, calc(env(safe-area-inset-bottom) + 5px));
+  --command: clamp(52px, 15.7vw, 74px);
   --command-height: calc(var(--command) * .86);
-  --menu-height: clamp(38px, 9.8vw, 54px);
+  --menu-height: clamp(44px, 11.5vw, 54px);
   --mini: clamp(94px, 34vw, 156px);
 }
 
@@ -62,13 +64,13 @@ html, body {
   -webkit-touch-callout: none;
 }
 
-#battle { position: relative; isolation: isolate; color: var(--light); }
+#battle { position: relative; height: 100dvh; isolation: isolate; color: var(--light); }
 canvas { display: block; touch-action: none; image-rendering: pixelated; }
 #game { width: 100%; height: 100%; outline: none; }
 
 #hud-top {
   position: absolute;
-  top: var(--safe-top);
+  top: var(--hud-top);
   left: var(--safe-x);
   right: var(--safe-right);
   display: flex;
@@ -156,7 +158,7 @@ button:focus-visible,
 
 #minimap {
   position: absolute;
-  top: calc(var(--safe-top) + var(--menu-height) + 5px);
+  top: calc(var(--hud-top) + var(--menu-height) + 5px);
   right: var(--safe-right);
   width: var(--mini);
   aspect-ratio: 1;
@@ -166,7 +168,7 @@ button:focus-visible,
 
 #selection {
   position: absolute;
-  top: calc(var(--safe-top) + var(--menu-height) + 10px);
+  top: calc(var(--hud-top) + var(--menu-height) + 10px);
   left: var(--safe-x);
   width: min(45vw, 220px);
   font-size: clamp(13px, 3.6vw, 16px);
@@ -174,6 +176,7 @@ button:focus-visible,
   pointer-events: none;
 }
 .portraits { display: grid; grid-template-columns: repeat(3, var(--command)); gap: 3px; }
+.passenger-portraits { margin-top: 4px; grid-auto-rows: var(--command-height); }
 .one-selected { display: flex; align-items: center; gap: 7px; }
 .unit-name { font-weight: 700; min-width: 0; }
 .unit-level { display: block; font-weight: 600; }
@@ -227,7 +230,7 @@ button:focus-visible,
 
 #command-area {
   position: absolute;
-  bottom: var(--safe-bottom);
+  bottom: var(--hud-bottom);
   left: var(--safe-x);
   right: var(--safe-right);
   pointer-events: none;
@@ -557,16 +560,83 @@ button:focus-visible,
   border: 1px solid var(--rim);
   text-align: left;
 }
-.briefing-text p { white-space: pre-line; line-height: 1.4; }
-.briefing-goals { margin: 8px 0 0; padding-left: 20px; }
-.briefing-illustration { display: block; width: 100%; max-height: 26vh; object-fit: contain; }
+.briefing-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(8px, 2vmin, 15px);
+}
+.briefing-text {
+  min-height: 0;
+  overflow: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  box-shadow: var(--theme-panel-shadow);
+  scrollbar-color: #b7a063 #35210d;
+}
+.briefing-text p { margin: 0; white-space: pre-line; line-height: 1.45; }
+.briefing-scene {
+  position: relative;
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  min-height: clamp(125px, 30dvh, 310px);
+  margin: 0;
+  padding: clamp(7px, 2vw, 14px);
+  overflow: hidden;
+  background: #120e0a;
+  border: 1px solid var(--rim);
+}
+.briefing-illustration {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.briefing-objectives {
+  position: relative;
+  max-width: min(100%, 32ch);
+  padding: 6px 10px;
+  text-align: left;
+  background: #100c08e5;
+  border: 1px solid #bd9c627d;
+  color: var(--light);
+  font-size: clamp(13px, 3.6vw, 17px);
+  line-height: 1.25;
+}
+.briefing-objectives h2 { margin: 0; color: var(--paper); font-size: 1.1em; }
+.briefing-goals { margin: 4px 0 0; padding-inline-start: 1.15em; }
 #front[data-screen="briefing"] {
-  background: linear-gradient(#0009, #000b), var(--briefing-art) center / cover no-repeat, #14100b;
+  background: linear-gradient(#080605c0, #090705ed), var(--briefing-art) center / cover no-repeat, #14100b;
   grid-template-rows: minmax(0, 1fr);
 }
 #front[data-screen="briefing"] .front-logo, #front[data-screen="briefing"] .front-art { display:none; }
-#front[data-screen="briefing"] .front-panel { align-self:center; }
-#front[data-screen="briefing"] .briefing-text { max-height:64vh; box-shadow: var(--theme-panel-shadow); }
+#front[data-screen="briefing"] .front-panel {
+  align-self: stretch;
+  position: relative;
+  width: min(580px, 100%);
+}
+#front[data-screen="briefing"] .front-heading { flex: none; margin-block: 3px 10px; }
+#front[data-screen="briefing"] .front-content {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  flex: 1 1 auto;
+}
+#front[data-screen="briefing"] .front-content > .war-button {
+  width: min(320px, 100%);
+  justify-self: center;
+  min-height: clamp(44px, 8dvh, 62px);
+}
+#front[data-screen="briefing"] .front-back {
+  position: relative;
+  inset: auto;
+  align-self: end;
+  margin-top: clamp(7px, 1.2dvh, 14px);
+  min-height: 0;
+  width: clamp(44px, 7.2dvh, 58px);
+}
 .accent { color: var(--paper); }
 .quick-details {
   min-height: 0;
@@ -655,11 +725,12 @@ button:focus-visible,
 
 @media (orientation: landscape) {
   :root {
-    --command: clamp(42px, 12vh, 60px);
+    --command: clamp(46px, 14vh, 68px);
+    --hud-top: var(--safe-top);
     --mini: clamp(86px, 26vh, 142px);
     --safe-bottom: max(13px, calc(env(safe-area-inset-bottom) + 10px));
   }
-  #minimap { top: var(--safe-top); }
+  #minimap { top: var(--hud-top); }
   #hud-top { right: calc(var(--safe-right) + var(--mini) + 12px); }
   #selection { width: min(245px, 32vw); }
   #resources { justify-content: start; }
@@ -673,16 +744,29 @@ button:focus-visible,
   .front-panel { width: min(420px, 66%); }
   .front-content .war-button { min-height: clamp(36px, 10.8vh, 52px); }
   #front[data-screen="main"] .front-content .war-button { min-height: clamp(45px, 13vh, 60px); }
-  .mission-list, .briefing-text { max-height: 47vh; }
+  .mission-list { max-height: 47vh; }
   #front[data-screen="missions"] .front-panel { padding-bottom:72px; }
   #front[data-screen="missions"] .mission-list { height:min(64vh,390px); }
   #front[data-screen="missions"] .mission-list .war-button { min-height:clamp(45px,14vh,60px); }
   #front[data-screen="missions"] .front-back { width:58px; min-height:58px; bottom:8px; }
-  #front[data-screen="briefing"] .briefing-text { max-height:65vh; }
+  #front[data-screen="briefing"] .front-panel { width: min(950px, 100%); }
+  #front[data-screen="briefing"] .front-content {
+    grid-template-columns: minmax(0, 1fr) clamp(44px, 7.2dvh, 58px);
+    column-gap: 12px;
+  }
+  .briefing-layout { grid-column: 1 / -1; grid-template: minmax(0, 1fr) / 1fr 1fr; }
+  .briefing-scene { min-height: 0; }
+  #front[data-screen="briefing"] .front-content > .war-button { grid-column: 1; }
+  #front[data-screen="briefing"] .front-back { position:absolute; bottom: 0; right: 0; }
   #front[data-screen="quick"] { grid-template-rows:minmax(0,1fr); }
   #front[data-screen="quick"] .front-logo { display:none; }
   #front[data-screen="quick"] .front-panel { align-self:center; width:min(580px, 80%); }
   .quick-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (orientation: landscape) and (max-height: 380px) {
+  #selection { font-size: 12px; }
+  .stats { line-height: 1.15; }
 }
 
 @media (max-width: 359px) {

@@ -10,6 +10,7 @@
 
 pub mod carry;
 pub mod score;
+pub mod sound;
 pub mod stats;
 
 use tidewater_sim::economy;

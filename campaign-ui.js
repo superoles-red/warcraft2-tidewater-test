@@ -41,7 +41,6 @@ export function createCampaignUi(root, campaigns, actions) {
   const progress = loadProgress();
   const ordered = campaignOrder.map(id => campaigns.find(campaign => campaign.id === id)).filter(Boolean);
   let backAction;
-  let selected = null;
 
   const playSound = () => actions.click();
   const findMission = id => campaigns.flatMap(campaign =>
@@ -132,7 +131,6 @@ export function createCampaignUi(root, campaigns, actions) {
   }
 
   function confirm(mission, resume = false) {
-    selected = mission;
     const campaign = campaigns.find(item => item.id === mission.campaign);
     const brief = [
       node('p', t(episodes[mission.campaign]), 'accent'),
@@ -164,7 +162,11 @@ export function createCampaignUi(root, campaigns, actions) {
     const localized = missionLabel(mission);
     const goals = node('ul', null, 'briefing-goals');
     for (const goal of localized.objectives ?? []) goals.append(node('li', goal));
-    const article = node('div', null, 'briefing-text');
+    const briefing = node('div', null, 'briefing-layout');
+    const scene = node('figure', null, 'briefing-scene');
+    const article = node('article', null, 'briefing-text');
+    article.setAttribute('aria-label', localized.title);
+    article.tabIndex = 0;
     const picture = node('img', null, 'briefing-illustration');
     const faction = mission.campaign === 'orc' || mission.campaign === 'xorc' ? 'orc' : 'human';
     const group = mission.number >= 12 ? 3 : mission.number >= 8 ? 2 : mission.number >= 5 ? 1 : 0;
@@ -172,12 +174,17 @@ export function createCampaignUi(root, campaigns, actions) {
     root.style.setProperty('--briefing-art', `url('${picture.src}')`);
     picture.alt = '';
     picture.addEventListener('error', () => picture.remove(), {once:true});
-    article.append(picture);
+    scene.append(picture);
     if (localized.story) article.append(node('p', localized.story));
-    if (goals.children.length) article.append(node('h2', t('Objectives')), goals);
-    show('briefing', localized.title, [article, control('Play', () => launch(mission), {tone:'positive'})], () => {
+    if (goals.children.length) {
+      const caption = node('figcaption', null, 'briefing-objectives');
+      caption.append(node('h2', t('Objectives')), goals);
+      scene.append(caption);
+    }
+    briefing.append(scene, article);
+    show('briefing', localized.title, [briefing, control('Play', () => launch(mission), {tone:'positive'})], () => {
       actions.stopBriefing(true);
-      chapters(campaigns.find(campaign => campaign.id === selected.campaign));
+      chapters(campaigns.find(campaign => campaign.id === mission.campaign));
     });
     actions.briefing(mission.id);
   }

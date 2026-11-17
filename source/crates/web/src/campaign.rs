@@ -102,7 +102,7 @@ pub struct Mission {
     objectives: Vec<String>,
     /// The top-left tile of the opening camera view.
     start: [i32; 2],
-    era: Era,
+    pub(super) era: Era,
     #[serde(skip)]
     pub next: Option<u8>,
     #[serde(skip)]

@@ -9,6 +9,7 @@ use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use tidewater_command_panel::carry::{Carried, Load};
 use tidewater_command_panel::score as results;
+use tidewater_command_panel::sound::{Director, SoundSet};
 use tidewater_formats::{
     identity::{FNV_BASIS, data_hash, fnv_extend},
     install::{Files, Install},
@@ -16,7 +17,7 @@ use tidewater_formats::{
     udta::flags,
 };
 use tidewater_sim::economy::{Event, JobKind};
-use tidewater_sim::sound::{CRITTER, Cue, Pick, Place, Sound};
+use tidewater_sim::sound::{CRITTER, Cue, Pick, Sound};
 use tidewater_sim::timing::{Pacing, Scheduler};
 use tidewater_sim::victory::Outcome;
 use tidewater_sim::vision::Map;
@@ -25,6 +26,7 @@ use tidewater_sim::{Command, Layer, Order, Unit, UnitId, World};
 const TILE: i32 = tidewater_sim::TILE_PX;
 const PEASANT: u8 = 2;
 const WORKER_CAP: usize = 9;
+const SOUND_TICK_MS: u32 = 100;
 
 #[cfg(target_arch = "wasm32")]
 mod abi;
@@ -34,6 +36,9 @@ use campaign::{Campaign, Catalog, Mission};
 
 mod checkpoint;
 use checkpoint::Origin;
+
+mod effects;
+use effects::{EffectAnimations, MapEffect};
 
 mod panel;
 use panel::{Action, Commands, Text};
@@ -84,6 +89,8 @@ enum Request {
     Hash,
     Step {
         cycles: u32,
+        #[serde(default, rename = "soundElapsedMs")]
+        sound_elapsed_ms: Option<u32>,
     },
     Frame {
         now: i64,
@@ -98,6 +105,8 @@ enum Request {
     },
     SelectIds {
         ids: Vec<u32>,
+        #[serde(default)]
+        silent: bool,
     },
     Move {
         x: f64,
@@ -106,17 +115,26 @@ enum Request {
     Smart {
         x: f64,
         y: f64,
+        #[serde(default)]
+        minimap: bool,
     },
     Target {
         action: String,
         spell: Option<u8>,
         x: f64,
         y: f64,
+        #[serde(default)]
+        minimap: bool,
     },
     Cast {
         kind: u8,
     },
     Unload,
+    UnloadOne {
+        transport: u32,
+        slot: u8,
+        passenger: u32,
+    },
     CheckBuild {
         kind: u8,
         x: f64,
@@ -216,6 +234,17 @@ struct UnitView<'a> {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+struct PassengerView<'a> {
+    id: u32,
+    kind: u8,
+    name: Option<&'a str>,
+    colour: u8,
+    hp: u16,
+    max_hp: u16,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct RememberedBuilding {
     owner: u8,
     colour: u8,
@@ -239,12 +268,15 @@ struct Resources {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct SoundView {
     cue: &'static str,
     kind: Option<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
     variant: Option<u8>,
     tile: Option<(i32, i32)>,
+    file: String,
+    off_screen: bool,
 }
 
 #[derive(Serialize)]
@@ -278,7 +310,6 @@ struct DemoView {
     finished: bool,
 }
 
-const BLAST_EFFECT: u8 = 0x17;
 const GROUND_MARKER: u8 = 0x1c;
 const GROUND_MARKER_FRAMES: [u8; 13] = [0, 0, 1, 2, 3, 3, 3, 3, 3, 3, 2, 1, 0];
 
@@ -287,14 +318,6 @@ struct GroundOrder {
     x: i32,
     y: i32,
     tick: u32,
-}
-
-#[derive(Serialize)]
-struct MapEffect {
-    kind: u8,
-    x: i32,
-    y: i32,
-    frame: u8,
 }
 
 #[derive(Serialize)]
@@ -313,6 +336,8 @@ struct Snapshot<'a> {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     remembered_buildings: Vec<RememberedBuilding>,
     selection: Vec<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    passengers: Option<[Option<PassengerView<'a>>; 6]>,
     actions: Vec<Action>,
     fog: bool,
     speed: u8,
@@ -365,7 +390,10 @@ pub struct Engine {
     speeds: Vec<u8>,
     carried: Carried,
     clock: Option<Scheduler>,
+    sound: Director,
+    sound_remainder_ms: u32,
     ground_order: Option<GroundOrder>,
+    effect_animations: EffectAnimations,
     sent_explored: Vec<u8>,
     sent_visible: Vec<u8>,
 }
@@ -382,6 +410,8 @@ impl Engine {
         let simulation_data = data_hash(|name| install.read(name))?;
         let (world, player, mission) = catalog.start(&mut install, campaign::FIRST)?;
         let speeds = tidewater_command_panel::stats::speeds(&world.scripts, &world.stats.0);
+        let sound = Director::new(SoundSet::of_world(&world), mission.era, 0);
+        let effect_animations = EffectAnimations::new(&world.scripts);
         let start_controllers = std::array::from_fn(|slot| world.players[slot].controller);
         let origin = Origin {
             data: simulation_data,
@@ -402,7 +432,10 @@ impl Engine {
             speeds,
             carried: Carried::default(),
             clock: None,
+            sound,
+            sound_remainder_ms: 0,
             ground_order: None,
+            effect_animations,
             sent_explored: Vec::new(),
             sent_visible: Vec::new(),
         })
@@ -443,9 +476,14 @@ impl Engine {
                 full = true;
             }
             Request::Hash => hash = true,
-            Request::Step { cycles } => {
+            Request::Step { cycles, sound_elapsed_ms } => {
                 if !(1..=600).contains(&cycles) {
                     bail!("cycles must be between 1 and 600");
+                }
+                if let Some(ms) = sound_elapsed_ms {
+                    let elapsed = self.sound_remainder_ms.saturating_add(ms);
+                    self.sound_remainder_ms = elapsed % SOUND_TICK_MS;
+                    self.world.sounds.advance_interface(elapsed / SOUND_TICK_MS);
                 }
                 self.step(cycles);
             }
@@ -467,10 +505,12 @@ impl Engine {
                 self.restart()?;
                 full = true;
             }
-            Request::SelectIds { ids } => self.select(&ids.into_iter().map(UnitId).collect::<Vec<_>>())?,
+            Request::SelectIds { ids, silent } => {
+                self.select(&ids.into_iter().map(UnitId).collect::<Vec<_>>(), silent)?;
+            }
             Request::Select { x, y, radius } => {
                 let hit = self.hit(x, y, radius.clamp(0.0, 24.0));
-                self.select(hit.as_slice())?;
+                self.select(hit.as_slice(), false)?;
             }
             Request::Move { x, y } => {
                 let to = self.tile(x, y)?;
@@ -488,27 +528,42 @@ impl Engine {
                 }
                 self.send(Command::Move { player, units, to });
             }
-            Request::Smart { x, y } => {
+            Request::Smart { x, y, minimap } => {
                 let tile = self.tile(x, y)?;
-                let target = self.hit(x, y, 0.0);
-                if target.is_none()
-                    && self
-                        .primary()
-                        .ok()
-                        .and_then(|id| self.world.unit(id))
-                        .is_some_and(|unit| self.world.is_mobile(unit))
-                {
-                    self.mark_order(x, y);
+                let target = if minimap { None } else { self.hit(x, y, 0.0) };
+                let mobile = self
+                    .primary()
+                    .ok()
+                    .and_then(|id| self.world.unit(id))
+                    .is_some_and(|unit| self.world.is_mobile(unit));
+                if !minimap || mobile {
+                    if target.is_none() && mobile {
+                        if minimap {
+                            self.mark_order(f64::from(tile.0 * TILE + 8), f64::from(tile.1 * TILE + 8));
+                        } else {
+                            self.mark_order(x, y);
+                        }
+                    }
+                    self.send(Command::RightClick { player, target, tile });
                 }
-                self.send(Command::RightClick { player, target, tile });
             }
-            Request::Target { action, spell, x, y } => {
+            Request::Target {
+                action,
+                spell,
+                x,
+                y,
+                minimap,
+            } => {
                 let tile = self.tile(x, y)?;
-                let target = self.hit(x, y, 0.0);
+                let target = if minimap { None } else { self.hit(x, y, 0.0) };
                 let aim = self.commands().target(&self.text, &action, spell)?;
                 if let Some(command) = tidewater_command_panel::target_command(aim, player, target, tile) {
                     if target.is_none() {
-                        self.mark_order(x, y);
+                        if minimap {
+                            self.mark_order(f64::from(tile.0 * TILE), f64::from(tile.1 * TILE));
+                        } else {
+                            self.mark_order(x, y);
+                        }
                     }
                     self.send(command);
                 }
@@ -532,6 +587,22 @@ impl Engine {
             Request::Research { kind } => self.execute_panel("research", Some(kind))?,
             Request::Cast { kind } => self.execute_panel("cast", Some(kind))?,
             Request::Unload => self.execute_panel("unload", None)?,
+            Request::UnloadOne {
+                transport,
+                slot,
+                passenger,
+            } => {
+                let unit = UnitId(transport);
+                if self.selection() == [unit]
+                    && self.world.unit(unit).is_some_and(|ship| {
+                        ship.owner == player
+                            && self.world.stats.0[usize::from(ship.kind)].flags & flags::TRANSPORT != 0
+                            && ship.passengers.get(usize::from(slot)) == Some(&Some(UnitId(passenger)))
+                    })
+                {
+                    self.send(Command::UnloadOne { player, unit, slot });
+                }
+            }
             Request::Stop => self.execute_panel("stop", None)?,
             Request::Hold => self.execute_panel("hold", None)?,
             Request::ReturnGoods => self.execute_panel("returnGoods", None)?,
@@ -554,12 +625,12 @@ impl Engine {
     pub fn load_scenario(&mut self, metadata: &[u8], data: &[u8]) -> Result<Vec<u8>> {
         let scenario = Scenario::new(metadata, data)?;
         let state = scenario.start(&mut self.install, &self.catalog)?;
-        self.activate(state);
+        self.activate(state, scenario.seed());
         self.scenario = Some(scenario);
         self.snapshot(true, false, None, None)
     }
 
-    fn activate(&mut self, state: (World, u8, Mission)) {
+    fn activate(&mut self, state: (World, u8, Mission), seed: u32) {
         (self.world, self.player, self.mission) = state;
         self.origin.map = self.mission.map_hash;
         self.origin.start = self.world.state_hash();
@@ -568,12 +639,13 @@ impl Engine {
         self.start_controllers = std::array::from_fn(|slot| self.world.players[slot].controller);
         self.demo = None;
         self.clock = None;
+        self.reset_sound(seed);
         self.ground_order = None;
     }
 
     fn load_mission(&mut self, id: u8) -> Result<()> {
         let state = self.catalog.start(&mut self.install, id)?;
-        self.activate(state);
+        self.activate(state, 0);
         self.scenario = None;
         Ok(())
     }
@@ -603,7 +675,8 @@ impl Engine {
         world.start_cheats(Flags::default().for_demo());
         world.start_up();
         let mission = Mission::demo(path, world.start.view, start.era, fnv_extend(FNV_BASIS, &data));
-        self.activate((world, start.local, mission));
+        self.activate((world, start.local, mission), seed);
+        self.sound.settings.demo = true;
         self.scenario = None;
         self.demo = Some(id);
         Ok(())
@@ -625,7 +698,7 @@ impl Engine {
 
     fn restart(&mut self) -> Result<()> {
         let state = self.fresh_current()?;
-        self.activate(state);
+        self.activate(state, self.scenario.as_ref().map_or(0, Scenario::seed));
         Ok(())
     }
 
@@ -651,6 +724,7 @@ impl Engine {
         self.world = world;
         self.carried = Carried::default();
         self.clock = None;
+        self.reset_sound(seed);
         self.ground_order = None;
         Ok(self.snapshot(true, false, None, None)?)
     }
@@ -661,6 +735,11 @@ impl Engine {
         } else {
             Pacing::Classic
         }
+    }
+
+    fn reset_sound(&mut self, seed: u32) {
+        self.sound = Director::new(SoundSet::of_world(&self.world), self.mission.era, seed);
+        self.sound_remainder_ms = 0;
     }
 
     fn step(&mut self, n: u32) {
@@ -690,29 +769,8 @@ impl Engine {
     }
 
     fn map_effects(&self) -> Vec<MapEffect> {
-        // The simulation already owns the building explosion, including its
-        // position and lifetime when a site is cancelled or killed.
         let world = &self.world;
-        let mut effects = world
-            .missiles
-            .iter()
-            .flatten()
-            .filter(|effect| effect.kind == BLAST_EFFECT && effect.showing())
-            .filter(|effect| {
-                let x = effect.pos.0.div_euclid(TILE);
-                let y = effect.pos.1.div_euclid(TILE);
-                world.reveal_view()
-                    || (-1..=1).any(|dy| (-1..=1).any(|dx| !world.vision.unseen_by(self.player, x + dx, y + dy)))
-            })
-            .map(|effect| MapEffect {
-                kind: BLAST_EFFECT,
-                x: effect.pos.0,
-                y: effect.pos.1,
-                // The original restarted boom.grp script displays 16 frames
-                // for three updates each after its start step.
-                frame: (effect.elapsed.saturating_sub(3) / 3).min(15) as u8,
-            })
-            .collect::<Vec<_>>();
+        let mut effects = self.effect_animations.visible(world, self.player);
 
         // The click's first update starts the animation. Its second update
         // draws the first frame, after which the 13-frame sequence runs.
@@ -725,6 +783,7 @@ impl Engine {
                 x: order.x,
                 y: order.y,
                 frame,
+                mirrored: false,
             });
         }
         effects
@@ -754,7 +813,7 @@ impl Engine {
             .context("Select a unit you control first")
     }
 
-    fn select(&mut self, ids: &[UnitId]) -> Result<()> {
+    fn select(&mut self, ids: &[UnitId], silent: bool) -> Result<()> {
         if ids.len() > WORKER_CAP {
             bail!("Only {WORKER_CAP} units can be selected");
         }
@@ -770,7 +829,7 @@ impl Engine {
             units: self.world.slots_of(&selected),
         });
         let selection = self.selection();
-        if (self.world.rules.enhanced || selection.len() == 1)
+        if !silent && (self.world.rules.enhanced || selection.len() == 1)
             && let Some(&id) = selection.first()
         {
             self.world.select_sound(id);
@@ -903,8 +962,13 @@ impl Engine {
             .collect();
         let sounds = std::mem::take(&mut world.sounds.cues)
             .into_iter()
-            .filter_map(sound_view)
+            .filter_map(|cue| sound_view(&mut self.sound, cue))
             .collect();
+        let selection = world.selection(self.player);
+        let passengers = match selection.as_slice() {
+            [id] if demo.is_none() => transport_passengers(world, &self.text, self.player, *id),
+            _ => None,
+        };
 
         let snapshot = Snapshot {
             tick: world.tick,
@@ -937,7 +1001,8 @@ impl Engine {
             } else {
                 remembered_buildings(world, self.player)
             },
-            selection: world.selection(self.player).into_iter().map(|id| id.0).collect(),
+            selection: selection.into_iter().map(|id| id.0).collect(),
+            passengers,
             fog: world.rules.fog_of_war,
             speed: world.speed,
             cycle_ms,
@@ -977,6 +1042,32 @@ impl Engine {
         };
         Ok(serde_json::to_vec(&snapshot)?)
     }
+}
+
+fn transport_passengers<'a>(
+    world: &World,
+    text: &'a Text,
+    player: u8,
+    ship: UnitId,
+) -> Option<[Option<PassengerView<'a>>; 6]> {
+    let ship = world.unit(ship)?;
+    if ship.owner != player
+        || world.stats.0[usize::from(ship.kind)].flags & flags::TRANSPORT == 0
+        || !ship.passengers.iter().any(Option::is_some)
+    {
+        return None;
+    }
+    Some(ship.passengers.map(|id| {
+        let unit = world.unit(id?)?;
+        Some(PassengerView {
+            id: unit.id.0,
+            kind: unit.kind,
+            name: text.unit_name(unit.kind),
+            colour: world.players[usize::from(unit.colour)].colour,
+            hp: unit.hp,
+            max_hp: world.stats.0[usize::from(unit.kind)].hit_points,
+        })
+    }))
 }
 
 fn remembered_buildings(world: &World, player: u8) -> Vec<RememberedBuilding> {
@@ -1141,13 +1232,9 @@ fn event_view(event: Event, local: u8) -> Option<String> {
     }
 }
 
-fn sound_view(Cue { sound, place }: Cue) -> Option<SoundView> {
-    if matches!(
-        place,
-        Some(Place::Unit { inside: true, .. } | Place::Unit { hidden: true, .. } | Place::Tile { unseen: true, .. })
-    ) {
-        return None;
-    }
+fn sound_view(director: &mut Director, cue: Cue) -> Option<SoundView> {
+    let prepared = director.prepare(&cue)?;
+    let sound = cue.sound;
     let variant = match sound {
         Sound::Select {
             pick: Pick::Annoyed(n), ..
@@ -1181,7 +1268,8 @@ fn sound_view(Cue { sound, place }: Cue) -> Option<SoundView> {
         Sound::Impact { kind, .. } => ("impact", Some(kind)),
         Sound::Construction => ("construction", None),
         Sound::Dock => ("dock", None),
-        Sound::Rescue | Sound::Capture => ("rescue", None),
+        Sound::Rescue => ("rescue", None),
+        Sound::Capture => ("capture", None),
         Sound::Spell(kind) => ("spell", Some(kind)),
         Sound::AttackPending { .. } | Sound::ChopPending { .. } => return None,
     };
@@ -1189,6 +1277,8 @@ fn sound_view(Cue { sound, place }: Cue) -> Option<SoundView> {
         cue,
         kind,
         variant,
-        tile: place.map(|position| position.tile()),
+        tile: prepared.tile,
+        file: prepared.file.to_ascii_lowercase().replace('\\', "/"),
+        off_screen: prepared.off_screen,
     })
 }

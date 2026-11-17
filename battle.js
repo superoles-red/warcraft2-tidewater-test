@@ -14,7 +14,9 @@ const detail = byId('command-detail');
 const modal = byId('modal');
 const cancelGlyph = 91;
 const tickMs = 40;
-const checkpointUpdates = new Set(['smart','move','target','build','train','upgrade','research','cancel','returnGoods','cast']);
+const checkpointUpdates = new Set([
+  'smart','move','target','build','train','upgrade','research','cancel','returnGoods','cast','unload','unloadOne',
+]);
 const unitNames = {0: 'Footman', 1: 'Grunt', 2: 'Peasant', 3: 'Peon', 58: 'Farm', 59: 'Pig Farm',
   60: 'Barracks', 61: 'Barracks', 74: 'Town Hall', 75: 'Great Hall', 92: 'Gold Mine'};
 const targetIcons = {move: 83, attack: 116, repair: 85, harvest: 86, patrol: 184};
@@ -40,8 +42,13 @@ function button(label, activate, tone = '') {
 }
 
 function description(command) {
-  return (command.cost ?? []).flatMap((cost, index) =>
-    cost && resourceFields[index] ? [`${cost} ${t(resourceFields[index][1])}`] : []).join(' · ');
+  return commandCosts(command).map(([, label, amount]) => amount + ' ' + t(label)).join(' · ');
+}
+
+function commandCosts(command) {
+  if (command?.manaCost) return [['mana', 'Mana', command.manaCost]];
+  return (command?.cost ?? []).flatMap((amount, index) =>
+    amount && resourceFields[index] ? [[...resourceFields[index], amount]] : []);
 }
 
 function priceLabel(command) {
@@ -190,7 +197,7 @@ function createInterface({
   }
 
   function orderWithTouchSelection(x, y) {
-    send({op:'selectIds', ids: remembered});
+    send({op:'selectIds', ids: remembered, silent: true});
     send({op:'smart', x, y});
   }
 
@@ -406,15 +413,23 @@ function makeAudio() {
     if (audioContext?.state !== 'running') audioContext?.resume().catch(() => {});
     sync();
   }
-  async function play(key, fallback, level = 1) {
-    const preferred = clip(key);
-    const paths = preferred.length ? preferred : clip(fallback);
-    if (!unlocked || !audioContext || !paths?.length || !volumes.effects || document.hidden) return;
-    const construction = key === 'construct';
+  function play(key) {
+    const paths = clip(key);
+    if (paths.length) return playFile(paths[Math.floor(Math.random() * paths.length)], 0.99, false);
+  }
+
+  function playBattleSound(file, level) {
+    const localized = languageFiles.battleAudio?.[file];
+    const english = files.battleAudio?.[file];
+    const path = localized ? './art/lang/ru/' + localized : english && audioPath(english);
+    if (path) return playFile(path, level, file === 'misc/constrct');
+  }
+
+  async function playFile(file, level, construction) {
+    if (!unlocked || !audioContext || !volumes.effects || document.hidden) return;
     if (construction && constructionPlaying) return;
     if (construction) constructionPlaying = true;
     const epoch = effectEpoch;
-    const file = paths[Math.floor(Math.random() * paths.length)];
     let stop;
     function ended() {
       effects.delete(stop);
@@ -503,7 +518,7 @@ function makeAudio() {
     else narration?.play().catch(() => {});
   });
   return {
-    play, change, volumes, briefing, stopBriefing,
+    play, playBattleSound, change, volumes, briefing, stopBriefing,
     media(active) { mediaActive = active; sync(); },
     quiet() {
       stopBriefing();
@@ -562,6 +577,7 @@ async function start() {
   let canvasRect = game.getBoundingClientRect();
   let frameRequested = false;
   let nextTick = 0;
+  let lastSoundSample = 0;
   let battleActive = false;
   let loadingMission = false;
   let demoReturn;
@@ -626,13 +642,7 @@ async function start() {
       placement: () => placement,
       cancelPlacement,
       preview: previewBuilding,
-      finishTarget(x, y) {
-        if (!aim) return;
-        const {action, spell} = aim;
-        aim = null;
-        adapter.send({op: 'target', action, spell, x, y});
-        updateHud(adapter.world);
-      },
+      finishTarget,
     },
   });
   const controls = createWarcraftDuneControls({...adapter.input, canvasElement: game}, () => canvasRect).enable();
@@ -848,7 +858,7 @@ async function start() {
     if (demoReturn) centerDemo(world);
     else if (Number.isFinite(savedCamera?.x) && Number.isFinite(savedCamera?.y))
       adapter.centerOn(savedCamera.x, savedCamera.y);
-    else if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2);
+    else if (home) adapter.centerOn(home.x + home.width / 2, home.y + home.height / 2, {useEdgeRoom:false});
     if (!demoReturn) updateHud(world);
     nextTick = 0;
     checkpointTime = performance.now();
@@ -875,39 +885,22 @@ async function start() {
   function onWorld(world, command) {
     if (!battleActive || loadingMission || !renderer) return;
     const visual = renderer.update(world);
-    const sounds = {
-      acknowledge: 'ack', select: 'select', ready: 'ready', attack: 'sword',
-      construction: 'construct', constructing: 'construct', chop: 'chop', workComplete: 'workComplete',
-      buildingDeath: 'buildingDeath', critterExplode: 'critterExplode',
-    };
-    for (const {cue, kind, tile, variant} of world.sounds ?? []) {
-      let level = 1;
+    for (const {file, tile, offScreen} of world.sounds ?? []) {
+      let level = 0.99;
       if (tile && adapter.view) {
         const {visibleGlobal: origin, width, height} = adapter.view;
         const [x, y] = tile;
         const size = world.tileSize;
-        const offscreen = x < Math.floor(origin.x / size) || y < Math.floor(origin.y / size) ||
-          x > Math.floor((origin.x + width) / size) || y > Math.floor((origin.y + height) / size);
+        const left = Math.floor(origin.x / size);
+        const top = Math.floor(origin.y / size);
+        const offscreen = x < left || y < top ||
+          x > left + Math.floor(width / size) || y > top + Math.floor(height / size);
         if (offscreen) {
-          if (cue === 'chop') continue;
+          if (!offScreen) continue;
           level = 0.24;
         }
       }
-      if (cue === 'annoyed') {
-        const set = world.orcSounds ? 'orc' : 'human';
-        audio.play(`annoyed-${set}-${kind}-${variant}`);
-      } else if (['critterSelect', 'critterAnnoyed', 'critterDeath'].includes(cue)) {
-        audio.play(cue + '-' + eraDirectory(world).split('/').at(-1), undefined, level);
-      } else if (['acknowledge', 'select', 'ready'].includes(cue)) {
-        audio.play(sounds[cue] + '-' + kind);
-      } else if (cue === 'buildingSelect') {
-        audio.play('buildingSelect-' + kind, [58,59].includes(kind) ? 'farm' : kind === 92 ? 'mine' : 'button');
-      } else if (cue === 'workComplete' || cue === 'help' || cue === 'buildingHelp') {
-        const race = byId('battle').dataset.race;
-        audio.play((cue === 'workComplete' ? 'workComplete-' : 'under-attack-') + race, sounds[cue]);
-      } else if (sounds[cue]) {
-        audio.play(sounds[cue], undefined, level);
-      }
+      audio.playBattleSound(file, level);
     }
     if (demoReturn) {
       if (world.demo?.finished) stopDemo();
@@ -1058,10 +1051,27 @@ async function start() {
       [['OK', async () => { await saveCheckpoint(true); toFront(); }, 'positive'], ['Back', showMenu, 'negative']]);
   }
 
+  async function finishCampaign(mission) {
+    audio.media(true);
+    try {
+      const {playCampaignFinale} = await import('./finale-ui.js');
+      await playCampaignFinale(mission, {
+        language:currentLanguage(), ...audio.volumes, onClick:() => audio.play('button'),
+      });
+    } finally {
+      toFront();
+      audio.media(false);
+    }
+  }
+
   async function showOutcome(world, totalScore) {
     const won = world.outcome === 'victory';
     const next = world.nextMission;
-    const advance = won && Number.isInteger(next) ? () => { toFront(); front.next(next); } : undefined;
+    let advance;
+    if (won && Number.isInteger(next)) advance = () => { toFront(); front.next(next); };
+    else if (won && [26, 27, 50, 51].includes(world.mission?.id)) {
+      advance = () => finishCampaign(world.mission.id).catch(() => {});
+    }
     try {
       const {showResults} = await import('./results-ui.js');
       await showResults({
@@ -1077,13 +1087,11 @@ async function start() {
   }
 
   function costTokens(command) {
-    if (!command?.cost?.some(Boolean)) return null;
+    const items = commandCosts(command);
+    if (!items.length) return null;
     const costs = document.createElement('span');
     costs.className = 'resource-costs';
-    for (const [index, amount] of command.cost.entries()) {
-      const resource = resourceFields[index];
-      if (!amount || !resource) continue;
-      const [name, label] = resource;
+    for (const [name, label, amount] of items) {
       const entry = document.createElement('span');
       entry.className = 'resource-cost';
       entry.setAttribute('role', 'img');
@@ -1216,6 +1224,14 @@ async function start() {
     updateHud(adapter.world);
   }
 
+  function finishTarget(x, y, minimap = false) {
+    if (!aim) return;
+    const {action, spell} = aim;
+    aim = null;
+    adapter.send({op: 'target', action, spell, x, y, minimap});
+    updateHud(adapter.world);
+  }
+
   function updateProgress(value) {
     if (!progressBar || value == null) return;
     const progress = Math.floor(value * 100 / 255);
@@ -1232,12 +1248,47 @@ async function start() {
     manaBar.textContent = value;
   }
 
+  function unitPortrait(unit, label, onClick) {
+    const portrait = document.createElement('button');
+    portrait.type = 'button';
+    portrait.className = 'portrait';
+    portrait.setAttribute('aria-label', label);
+    const meter = document.createElement('div');
+    meter.className = 'health';
+    const bar = document.createElement('span');
+    bar.style.width = `${clamp(unit.hp / Math.max(1, unit.maxHp), 1) * 100}%`;
+    meter.append(bar);
+    portrait.append(art.portrait(unit.kind, unit.colour), meter);
+    portrait.addEventListener('click', onClick);
+    return portrait;
+  }
+
+  function passengerPortraits(ship, passengers) {
+    const grid = document.createElement('div');
+    grid.className = 'portraits passenger-portraits';
+    passengers.forEach((passenger, slot) => {
+      if (!passenger) return;
+      const name = unitLabel(passenger.kind, passenger.name ?? unitNames[passenger.kind] ?? 'Unit');
+      const label = t('Unload {unit}').replace('{unit}', name);
+      const portrait = unitPortrait(passenger, label, () => {
+        adapter.send({op: 'unloadOne', transport: ship.id, slot, passenger: passenger.id});
+      });
+      portrait.title = label;
+      portrait.style.gridColumnStart = slot % 3 + 1;
+      portrait.style.gridRowStart = Math.floor(slot / 3) + 1;
+      grid.append(portrait);
+    });
+    return grid;
+  }
+
   function paintSelection(world) {
     const units = world.selection.map(id => world.units.find(unit => unit.id === id)).filter(Boolean);
     const selected = units.length === 1 ? units[0] : null;
     const subject = selected && world.actions.find(action => action.op === 'cancel' && action.subject?.unit === selected.id)?.subject;
+    const passengers = selected && world.passengers;
+    const cargoKey = passengers?.map(unit => unit && `${unit.id}:${unit.hp}`).join(',') ?? '';
     const key = units.map(unit => [unit.id, unit.kind, unit.colour, unit.hp, unit.progress != null, unit.construction,
-      unit.level, unit.mana != null, unit.resourcesAmount].join(':')).join(',') + ':' + workSubjectKey(subject);
+      unit.level, unit.mana != null, unit.resourcesAmount].join(':')).join(',') + ':' + workSubjectKey(subject) + ':' + cargoKey;
     if (infoKey === key) {
       updateProgress(selected?.progress);
       updateMana(selected?.mana);
@@ -1251,17 +1302,8 @@ async function start() {
     const grid = document.createElement('div');
     grid.className = units.length === 1 ? 'one-selected' : 'portraits';
     for (const unit of units) {
-      const portrait = document.createElement('button');
-      portrait.type = 'button';
-      portrait.className = 'portrait';
-      portrait.setAttribute('aria-label', unitLabel(unit.kind, unit.name ?? unitNames[unit.kind] ?? 'Center on unit'));
-      const meter = document.createElement('div');
-      meter.className = 'health';
-      const bar = document.createElement('span');
-      bar.style.width = `${clamp(unit.hp / Math.max(1, unit.maxHp), 1) * 100}%`;
-      meter.append(bar);
-      portrait.append(art.portrait(unit.kind, unit.colour), meter);
-      portrait.addEventListener('click', () => {
+      const label = unitLabel(unit.kind, unit.name ?? unitNames[unit.kind] ?? 'Center on unit');
+      const portrait = unitPortrait(unit, label, () => {
         const live = adapter.world.units.find(entry => entry.id === unit.id);
         if (!live) return;
         const now = performance.now();
@@ -1285,6 +1327,10 @@ async function start() {
         name.append(level);
       }
       grid.append(name);
+      if (passengers) {
+        selection.append(grid, passengerPortraits(unit, passengers));
+        return;
+      }
       const stats = document.createElement('div');
       stats.className = 'stats';
       const own = unit.owner === world.player;
@@ -1403,7 +1449,7 @@ async function start() {
     const price = hint ? null : armedCommand;
     const summary = commandDescription(price, currentLanguage());
     const reason = price?.enabled === false ? commandReason(price) : '';
-    const nextDetailKey = JSON.stringify([message, price?.cost, summary, reason]);
+    const nextDetailKey = JSON.stringify([message, price?.cost, price?.manaCost, summary, reason]);
     if (detailKey !== nextDetailKey) {
       detailKey = nextDetailKey;
       detail.replaceChildren(message);
@@ -1434,22 +1480,45 @@ async function start() {
     showCommands(world);
   }
 
-  function centerFromMinimap(event) {
+  function minimapPoint(event) {
     const rect = minimap.getBoundingClientRect();
     const world = adapter.world;
-    const x = (event.clientX - rect.left) / rect.width * world.width * world.tileSize;
-    const y = (event.clientY - rect.top) / rect.height * world.height * world.tileSize;
-    adapter.centerOn(clamp(x, world.width * world.tileSize), clamp(y, world.height * world.tileSize));
+    const width = world.width * world.tileSize;
+    const height = world.height * world.tileSize;
+    return {
+      x: clamp((event.clientX - rect.left - minimap.clientLeft) / minimap.clientWidth * width, width - 1),
+      y: clamp((event.clientY - rect.top - minimap.clientTop) / minimap.clientHeight * height, height - 1),
+    };
   }
 
+  function centerAboveBottom(x, y) {
+    if (!adapter.view) return;
+    const ceiling = adapter.world.height * adapter.world.tileSize - adapter.view.height / 2;
+    adapter.centerOn(x, Math.min(y, ceiling));
+  }
+
+  let minimapPan;
   minimap.addEventListener('pointerdown', event => {
+    if (!event.isPrimary || ![0, 2].includes(event.button) || !adapter.input.state().inputAllowed || modal.open) return;
     controls.cancel();
-    minimap.setPointerCapture(event.pointerId);
-    centerFromMinimap(event);
+    const {x, y} = minimapPoint(event);
+    if (event.button === 0 && aim) return finishTarget(x, y, true);
+    if (event.button === 2 && !aim && !placement) return adapter.send({op: 'smart', x, y, minimap: true});
+    if (event.button === 0) {
+      minimapPan = event.pointerId;
+      minimap.setPointerCapture(event.pointerId);
+    }
+    centerAboveBottom(x, y);
   });
   minimap.addEventListener('pointermove', event => {
-    if (minimap.hasPointerCapture(event.pointerId)) centerFromMinimap(event);
+    if (minimapPan !== event.pointerId || !minimap.hasPointerCapture(event.pointerId)) return;
+    const {x, y} = minimapPoint(event);
+    centerAboveBottom(x, y);
   });
+  minimap.addEventListener('lostpointercapture', event => {
+    if (minimapPan === event.pointerId) minimapPan = undefined;
+  });
+  minimap.addEventListener('contextmenu', event => event.preventDefault());
   byId('menu-button').addEventListener('click', () => { audio.play('button'); showMenu(); });
   byId('place-button').addEventListener('click', confirmPlacement);
   byId('cancel-placement').addEventListener('click', () => { audio.play('button'); cancelPlacement(); });
@@ -1463,8 +1532,15 @@ async function start() {
         next.left !== canvasRect.left || next.top !== canvasRect.top) {
       controls.cancel();
       canvasRect = next;
-      adapter.frame(performance.now());
+      const previous = adapter.view;
+      const current = adapter.frame(performance.now());
       if (battleActive && demoReturn) centerDemo(adapter.world);
+      else if (battleActive && previous && current) {
+        const bottom = adapter.world.height * adapter.world.tileSize;
+        if (previous.visibleGlobal.y + previous.height <= bottom + .01 &&
+            current.visibleGlobal.y + current.height > bottom + .01)
+          centerAboveBottom(current.visibleGlobal.x + current.width / 2, current.visibleGlobal.y + current.height / 2);
+      }
       scheduleFrame();
     }
   }
@@ -1495,9 +1571,12 @@ async function start() {
       const time = performance.now();
       const duration = adapter.world.cycleMs || tickMs;
       const cycles = nextTick === 0 ? 1 : Math.min(3, 1 + Math.max(0, Math.floor((time - nextTick) / duration)));
+      const soundSample = Math.round(time);
+      const soundElapsedMs = nextTick === 0 ? 0 : soundSample - lastSoundSample;
+      lastSoundSample = soundSample;
       nextTick = nextTick === 0 ? time + duration : Math.max(time + 1, nextTick + cycles * duration);
       stepPending = true;
-      try { await adapter.run({op: 'step', cycles}); } catch {}
+      try { await adapter.run({op: 'step', cycles, soundElapsedMs}); } catch {}
       finally { stepPending = false; scheduleTick(); }
     }, nextTick ? Math.max(0, nextTick - performance.now()) : 0);
   }

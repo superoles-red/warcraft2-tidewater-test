@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#080706">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Warcraft 2">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Warcraft II</title>
+  <title>Warcraft 2</title>
   <link rel="manifest" href="./pilot.webmanifest">
   <link rel="apple-touch-icon" href="./art/app-icon.png">
   <link rel="stylesheet" href="./battle.css">
   <link rel="stylesheet" href="./act-interlude.css">
   <link rel="stylesheet" href="./story-ui.css">
+  <link rel="stylesheet" href="./finale-ui.css">
   <link rel="stylesheet" href="./results-ui.css">
   <link rel="stylesheet" href="./scene-theme.css">
   <link rel="stylesheet" href="./typography.css">
@@ -23,7 +25,7 @@
   <script type="module" src="./battle.js"></script>
 </head>
 <body>
-  <main id="battle" aria-label="Warcraft II battle">
+  <main id="battle" aria-label="Warcraft 2 battle">
     <canvas id="game" tabindex="0" aria-label="Battlefield"></canvas>
     <header id="hud-top" hidden>
       <button id="menu-button" class="war-button" type="button">Menu</button>
@@ -40,13 +42,13 @@
       </div>
     </div>
     <div id="loading" role="status">
-      <p id="loading-text">Loading Warcraft II…</p>
+      <p id="loading-text">Loading Warcraft 2…</p>
       <progress id="loading-progress"></progress>
       <button id="retry" class="war-button" type="button" hidden>Retry</button>
     </div>
-    <section id="front" aria-label="Warcraft II menus" hidden>
+    <section id="front" aria-label="Warcraft 2 menus" hidden>
       <div class="front-art" aria-hidden="true"></div>
-      <img class="front-logo" src="./art/menu/title-logo.webp" alt="Warcraft II">
+      <img class="front-logo" src="./art/menu/title-logo.webp" alt="Warcraft 2">
       <div class="front-panel">
         <h1 class="front-heading" hidden></h1>
         <div class="front-content"></div>

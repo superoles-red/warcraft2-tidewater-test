@@ -65,7 +65,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     readJson('./art/fog-codes.json'),
     initialWorld.terrain ? null : readImage('./art/terrain.webp'),
     readJson('./art/effects.json'),
-    readImage('./art/effects.webp'),
+    readImage((source.endsWith('/forest') ? './art' : source) + '/effects.webp'),
   ]);
   const tile = initialWorld.tileSize;
   const minimapSize = 128;
@@ -80,6 +80,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
   const miniTerrain = surface(minimapSize, minimapSize);
   const ctx = game.getContext('2d', {alpha: false});
   const miniContext = minimap.getContext('2d');
+  const blendMobileFog = matchMedia('(pointer: coarse)').matches;
   const fogStamps = new Map();
   const fogShown = new Int16Array(mapWidth * mapHeight).fill(-1);
   const chunkTiles = 8;
@@ -141,8 +142,8 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     .map(unit => spriteFrame(unit)?.page).filter(Number.isInteger))]
     .map(loadPage));
 
-  function fogStamp(visible, explored) {
-    const key = visible * 17 + explored;
+  function fogStamp(visible, explored, blend) {
+    const key = (Number(blend) * 17 + visible) * 17 + explored;
     if (fogStamps.has(key)) return fogStamps.get(key);
     const stamp = new ImageData(tile, tile);
     const pixels = stamp.data;
@@ -154,6 +155,27 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     for (let pixel = 0; pixel < tile * tile; ++pixel) {
       const even = (pixel % tile + Math.floor(pixel / tile)) % 2 === 0;
       const offset = 4 * pixel;
+      if (blend) {
+        const grey = lookup(explored, pixel);
+        if (visible === 16) {
+          pixels[offset + 3] = explored === 16 || grey >= 0 ? 255 : 128;
+          if (grey >= 0) {
+            for (let channel = 0; channel < 3; ++channel)
+              pixels[offset + channel] = shapes[grey + channel] * .5;
+          }
+        } else if (grey >= 0) {
+          pixels.set(shapes.subarray(grey, grey + 4), offset);
+        } else {
+          const source = lookup(visible, pixel);
+          if (source >= 0) {
+            pixels.set(shapes.subarray(source, source + 3), offset);
+            // Average the two checker phases so rescaling on a phone cannot
+            // turn adjacent fog pixels into a scrolling interference pattern.
+            pixels[offset + 3] = 128;
+          }
+        }
+        continue;
+      }
       if (visible === 16 && (explored === 16 || even)) pixels[offset + 3] = 255;
       else {
         const grey = lookup(explored, pixel);
@@ -167,9 +189,9 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
     return stampSurface.canvas;
   }
 
-  function fogForTile(index) {
+  function fogForTile(index, blend = blendMobileFog) {
     const key = fogShown[index];
-    return key < 17 ? null : fogStamp(Math.floor(key / 17), key % 17);
+    return key < 17 ? null : fogStamp(Math.floor(key / 17), key % 17, blend);
   }
 
   function paintTerrain(context, i, dx, dy, dw = tile, dh = tile) {
@@ -205,7 +227,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
       context.fillRect(left, top, w, h);
     } else {
       paintTerrain(context, index, left, top, w, h);
-      const fog = fogForTile(index);
+      const fog = fogForTile(index, true);
       if (fog) context.drawImage(fog, left, top, w, h);
     }
   }
@@ -268,7 +290,7 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
 
   function updateMapEffects(state) {
     mapEffects = state.effects ?? [];
-    const key = mapEffects.map(effect => [effect.kind, effect.x, effect.y, effect.frame].join(':')).join(';');
+    const key = mapEffects.map(effect => [effect.kind, effect.x, effect.y, effect.frame, effect.mirrored].join(':')).join(';');
     if (key === effectKey) return;
     effectKey = key;
     ++paintRevision;
@@ -282,10 +304,19 @@ export async function createMapRenderer(game, minimap, initialWorld, invalidate 
       if (!frame) continue;
       const [sx, sy, w, h, ox, oy] = frame;
       if (!w || !h) continue;
-      const x = effect.x + ox - Math.floor(sheet.size[0] / 2);
+      const half = Math.floor(sheet.size[0] / 2);
+      const x = effect.mirrored ? effect.x + half - w - ox : effect.x - half + ox;
       const y = effect.y + oy - Math.floor(sheet.size[1] / 2);
       if (x + w <= left || y + h <= top || x >= left + view.width || y >= top + view.height) continue;
-      ctx.drawImage(effectImage, sx, sy, w, h, x, y, w, h);
+      if (effect.mirrored) {
+        ctx.save();
+        ctx.translate(x + w, y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(effectImage, sx, sy, w, h, 0, 0, w, h);
+        ctx.restore();
+      } else {
+        ctx.drawImage(effectImage, sx, sy, w, h, x, y, w, h);
+      }
     }
   }
 

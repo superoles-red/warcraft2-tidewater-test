@@ -65,6 +65,8 @@ pub struct Action {
     pub icon: u16,
     pub slot: u8,
     pub cost: [u32; 3],
+    #[serde(rename = "manaCost", skip_serializing_if = "Option::is_none")]
+    pub mana_cost: Option<u32>,
     pub enabled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
@@ -246,7 +248,9 @@ impl<'a> Commands<'a> {
             Act::CancelConstruction | Act::CancelJob => "cancel",
             Act::Menu(_) | Act::Back | Act::LeaveMode => return None,
         };
-        let label = panel::tooltip(entry, &text.label(entry.string));
+        let button_label = text.label(entry.string);
+        let (_, _, mana_cost) = panel::costs(entry, &button_label, &self.state);
+        let label = panel::tooltip(entry, &button_label);
         let reason_entry = match effect {
             Effect::Message(entry) => Some(entry),
             _ => None,
@@ -260,6 +264,7 @@ impl<'a> Commands<'a> {
             icon: entry.icon,
             slot: entry.slot,
             cost,
+            mana_cost: (mana_cost != 0).then_some(mana_cost),
             enabled: !matches!(effect, Effect::Nothing | Effect::Message(_)),
             reason: reason_entry.map(|entry| text.message(entry)),
             reason_entry,

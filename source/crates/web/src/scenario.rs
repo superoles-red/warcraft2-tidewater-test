@@ -153,6 +153,10 @@ pub struct Scenario {
 }
 
 impl Scenario {
+    pub fn seed(&self) -> u32 {
+        self.meta.seed
+    }
+
     pub fn new(header: &[u8], data: &[u8]) -> Result<Self> {
         if header.len() > 8192 || data.len() > 1024 * 1024 {
             bail!("The scenario or its metadata is too large");

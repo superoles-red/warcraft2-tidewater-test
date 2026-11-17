@@ -9,7 +9,7 @@ const russian = {
   'Campaign':'Кампания', 'Settings':'Настройки', 'Continue':'Продолжить', 'Back':'Назад',
   'Play':'Играть', 'Start':'Начать', 'Menu':'Меню', 'Game Menu':'Игровое меню',
   'Main Menu':'Главное меню', 'Restart':'Начать заново',
-  'Level':'Уровень', 'Mana':'Мана',
+  'Level':'Уровень', 'Mana':'Мана', 'Unload {unit}':'Высадить: {unit}',
   'Restart the mission?':'Начать миссию заново?', 'Exit to the Main Menu?':'Выйти в главное меню?',
   'Progress in this battle will be replaced.':'Прогресс в этом сражении будет заменён.',
   'Progress in this battle will not be saved.':'Прогресс в этом сражении не сохранится.',
